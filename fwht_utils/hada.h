@@ -3,7 +3,7 @@
 
 #include "base_header.h"
 
-#define _DDIMS ((base_int_t) 3)
+#define _DDIMS ( (base_int_t)3 )
 
 typedef struct {
     base_int_t m;   /**< A is m x n ColMaj */
@@ -38,6 +38,6 @@ void getdimshowmany( view_t *In, base_int_t *Tdims, base_int_t *Thow, base_int_t
  */
 void gethdims( base_int_t *Tdims, base_int_t *Hdims );
 
-void showparsedhdims(base_int_t *Hdims, base_int_t ncols);
+void showparsedhdims( base_int_t *Hdims, base_int_t ncols );
 
 #endif
