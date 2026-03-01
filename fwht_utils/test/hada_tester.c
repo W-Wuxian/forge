@@ -11,8 +11,8 @@
 int
 main()
 {
-    base_int_t ierr  = 0;
-    view_t vIn = { .m = M, .n = N, .st1 = 1, .st2 = M };
+    base_int_t ierr = 0;
+    view_t     vIn  = { .m = M, .n = N, .st1 = 1, .st2 = M };
     printf( "m %zu n %zu st1 %zu st2 %zu\n", vIn.m, vIn.n, vIn.st1, vIn.st2 );
     base_int_t Tdims[_DDIMS], Thow[_DDIMS];
     base_int_t hdim = 0;
@@ -35,6 +35,6 @@ main()
         printf( "%zu ", Hdims[i] );
     printf( "\n" );
     showparsedhdims( ( &Hdims[0] ), hdim );
-    //free(Hdims);Hdims=NULL;
+    // free(Hdims);Hdims=NULL;
     return ierr;
 }

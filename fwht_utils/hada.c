@@ -75,3 +75,27 @@ showparsedhdims( base_int_t *Hdims, base_int_t ncols )
         printf( "\n" );
     }
 }
+
+base_uint_t
+base_ilog2( base_int_t n )
+{
+    base_uint_t l;
+    for ( l = O; n; n >>= 1, ++l )
+        ;
+    return l;
+}
+
+bool
+base_ispow2( base_int_t n )
+{
+    return ( n > 1 ) && ( ( n & ( n - 1 ) ) == 0 );
+}
+
+base_int_t
+base_n2p( base_int_t n )
+{
+    base_uint_t l  = n;
+    base_uint_t l2 = base_ilog2( l ) - base_ispow2( l );
+    base_uint_t N  = 1 << l2;
+    return (base_int_t)N;
+}

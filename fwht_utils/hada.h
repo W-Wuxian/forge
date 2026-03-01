@@ -38,6 +38,37 @@ void getdimshowmany( view_t *In, base_int_t *Tdims, base_int_t *Thow, base_int_t
  */
 void gethdims( base_int_t *Tdims, base_int_t *Hdims );
 
+/**
+ * @brief Show Hdims, a matrix-object as it will be used to fill fftw_iodim
+ *
+ * @param Hdims matrix
+ * @param ncols
+ */
 void showparsedhdims( base_int_t *Hdims, base_int_t ncols );
+
+/**
+ * \fn base_ilog2
+ * \brief Integer logarithm base 2
+ * \param[in] n
+ * \return unsigned p, such that n=2^p
+ */
+base_uint_t base_ilog2( base_int_t n );
+
+/**
+ * \fn base_ispow2
+ * \brief Is a power of 2
+ * \param[in] n
+ * \return 1 if n = 2^p
+ * \return 0 else
+ */
+bool base_ispow2( base_int_t n );
+
+/**
+ * \fn base_n2p
+ * \brief Compute the next power of 2
+ * \param[in] n
+ * \return int value
+ */
+base_int_t base_n2p( base_int_t n );
 
 #endif
