@@ -12,4 +12,7 @@
 // #include "mkl.h"
 #include "base_datatype.h"
 
+#define PRINT_INFO()                                                                               \
+    printf( "In file:%s, function:%s() and line:%d ", __FILE__, __func__, __LINE__ )
+
 #endif  //__BASE_HEADER_H__

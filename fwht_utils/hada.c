@@ -80,7 +80,7 @@ base_uint_t
 base_ilog2( base_int_t n )
 {
     base_uint_t l;
-    for ( l = O; n; n >>= 1, ++l )
+    for ( l = 0; n; n >>= 1, ++l )
         ;
     return l;
 }

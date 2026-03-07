@@ -33,13 +33,12 @@ function hadamardize(dims::Array{Int,2}, bitreverse::Bool)
 end
 
 dims=Array{Int64}(undef, 3, 1);
-dims[1,1]=32
-dims[2,1]=1
-dims[3,1]=1
-display(hadamardize(dims, false))
+# dims[1,1]=32
+# dims[2,1]=1
+# dims[3,1]=1
+# display(hadamardize(dims, false))
 
-dims[1,1]=8
+dims[1,1]=16
 dims[2,1]=1
 dims[3,1]=1
 display(hadamardize(dims, false))
-#display(hadamardize(dims, true))

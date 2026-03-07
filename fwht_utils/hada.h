@@ -48,9 +48,9 @@ void showparsedhdims( base_int_t *Hdims, base_int_t ncols );
 
 /**
  * \fn base_ilog2
- * \brief Integer logarithm base 2
+ * \brief Minus 1 Integer logarithm base 2 (I think...)
  * \param[in] n
- * \return unsigned p, such that n=2^p
+ * \return unsigned p, such that n=2^(p-1)
  */
 base_uint_t base_ilog2( base_int_t n );
 
