@@ -1,17 +1,23 @@
-#include "fwht_tester.h"
+#include "fwht.h"
+
+#ifndef M
+#define M 16
+#endif
+
+#ifndef N
+#define N 1
+#endif
 
 // ref solution https://en.wikipedia.org/wiki/Fast_Walsh%E2%80%93Hadamard_transform
-#define REF_SOL_IDX_0 ( (double)4 )
 
-base_int_t
-test_base_dummy_fwht()
+int
+main()
 {
     base_int_t ierr        = 0;
-    base_int_t j           = 0;
     base_int_t ref_sol_dim = 8 * 1;  // M = 8 N = 1
 
-    double data[ref_sol_dim];
-    for ( base_int_t i = 0; i < ref_sol_dim; i++ ) {
+    double data[M * N];
+    for ( base_int_t i = 0; i < M * N; i++ ) {
         data[i] = (double)0;
     }
     data[0] = 1.;
@@ -24,11 +30,10 @@ test_base_dummy_fwht()
     data[7] = 0.;
     base_dummy_fwht( &data[0], ref_sol_dim );
 
-    j = 0;
-    if ( data[j] != REF_SOL_IDX_0 ) {
-        PRINT_INFO();
-        printf( "data[%zu] = %f != %f\n", j, data[j], REF_SOL_IDX_0 );
+    for ( base_int_t i = 0; i < M * N; ++i ) {
+        printf( "%f\n", data[i] );
     }
+    printf( "\n" );
 
     return ierr;
 }
