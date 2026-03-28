@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -x 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
 echo "SCRIPT DIR IS $SCRIPT_DIR"
@@ -17,6 +16,7 @@ fi
 #FORGE_ROOT=$HOME/Work/github/Forge
 FORGE_ROOT=$PWD/..
 export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht
+RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht"
 echo $CPATH
 
 mkdir -p bin/
@@ -25,18 +25,37 @@ rm -f bin/*
 #-DNDEBUG \
 
 # showcase fwht
-$comp -O2 -Wall -o bin/showcase_fwht $FORGE_ROOT/fwht_utils/hada.c fwht.c test/fwht_showcase.c -DM=16 -I$CPATH 2>&1 | tee build.log
+$comp -O2 -Wall -o bin/showcase_fwht \
+$FORGE_ROOT/fwht_utils/hada.c \
+fwht.c test/fwht_showcase.c \
+-DFWHT_SHOWCASE_COL_M=16 \
+-I$GUIX_ENVIRONMENT/include \
+-L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread \
+$RESOLVE_CPATH \
+2>&1 | tee build.log
+bin/showcase_fwht |& tee -a build.log
 
 $comp -O2 -Wall -o bin/test_base_dummy_fwht \
 $FORGE_ROOT/fwht_utils/hada.c \
 fwht.c test/fwht_tester.c test/fwht_tester_base_dummy_fwht.c \
--I$CPATH \
+-L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread \
+-I$GUIX_ENVIRONMENT/include \
+$RESOLVE_CPATH \
 2>&1 | tee -a build.log
+bin/test_base_dummy_fwht |& tee -a build.log
 
 $comp -O2 -Wall -o bin/test_base_rotatedata_mat \
 $FORGE_ROOT/fwht_utils/hada.c \
 fwht.c test/fwht_tester.c test/fwht_tester_rotatedata_mat.c \
--L -lopenblas \
--I$CPATH \
+-L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread \
+-I$GUIX_ENVIRONMENT/include \
+$RESOLVE_CPATH \
 2>&1 | tee -a build.log
-#-L -lopenblas -lpthread \
+bin/test_base_rotatedata_mat |& tee -a build.log
+
+$comp -O2 -Wall -o bin/test_cblas_open \
+test/test_cblas_dgemm.c \
+-L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread \
+-I$GUIX_ENVIRONMENT/include \
+2>&1 | tee -a build.log
+bin/test_cblas_dgemm |& tee -a build.log

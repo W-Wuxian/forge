@@ -2,7 +2,7 @@
 #define __FWHT_H__
 
 #include "hada.h"
-//#include <cblas.h>
+#include <cblas.h>
 
 /**
  * \fn _base_rotatedata
@@ -35,7 +35,7 @@ void base_dummy_fwht( double *data, base_uint_t n );
  * ncols size(data)[2] \param[in] ridx1 index of the element in array to rotate with respect to
  * ridx2 \param[in] ridx2 index of the element in array to rotate with respect to ridx1
  */
-void _base_rotatedata_mat( double      *data,
+void _base_rotatedata_mat( double     *data,
                            base_int_t  nrows,
                            base_int_t  ncols,
                            base_uint_t ridx1,

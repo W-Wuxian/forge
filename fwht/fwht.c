@@ -33,7 +33,7 @@ base_dummy_fwht( double *data, base_uint_t n )
 }
 
 void
-_base_rotatedata_mat( double      *data,
+_base_rotatedata_mat( double     *data,
                       base_int_t  nrows,
                       base_int_t  ncols,
                       base_uint_t ridx1,

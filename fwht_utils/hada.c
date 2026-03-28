@@ -23,18 +23,18 @@ getdimshowmany( view_t *vIn, base_int_t *Tdims, base_int_t *Thow, base_int_t *hd
 {
     // reg = int[region...]
     // implicit definition :: base_int_t reg    = 1;        /**< region = reg === 1 */
-    Tdims[_DDIMS - _DDIMS] = vIn->m;   /**< size(In)[reg] = m (In is m x n) */
-    Tdims[_DDIMS - 2]      = vIn->st1; /**< strides(In)[reg] = (1,m)[reg] */
-    Tdims[_DDIMS - 1] =
+    Tdims[_HADA_DDIMS - _HADA_DDIMS] = vIn->m;   /**< size(In)[reg] = m (In is m x n) */
+    Tdims[_HADA_DDIMS - 2]           = vIn->st1; /**< strides(In)[reg] = (1,m)[reg] */
+    Tdims[_HADA_DDIMS - 1] =
         vIn->st1; /**< strides(Out)[reg] = (1,m)[reg] we assume that In and Out have EQV view_t */
     // oreg = [1:ndims(In)]
     // implicit definition :: base_int_t oreg       = 2;        /**< zeroed oreg[reg] and filter
     // oreg <- (oreg[]>0) */
-    Thow[_DDIMS - _DDIMS] = vIn->n;   /**< size(In)[oreg] = n (In is m x n) */
-    Thow[_DDIMS - 2]      = vIn->st2; /**< strides(In)[reg] = (1,m)[oreg] */
-    Thow[_DDIMS - 1]      = vIn->st2; /**< strides(Out)[reg] = (1,m)[oreg] */
+    Thow[_HADA_DDIMS - _HADA_DDIMS] = vIn->n;   /**< size(In)[oreg] = n (In is m x n) */
+    Thow[_HADA_DDIMS - 2]           = vIn->st2; /**< strides(In)[reg] = (1,m)[oreg] */
+    Thow[_HADA_DDIMS - 1]           = vIn->st2; /**< strides(Out)[reg] = (1,m)[oreg] */
     // hdim
-    base_int_t nh = Tdims[_DDIMS - _DDIMS];
+    base_int_t nh = Tdims[_HADA_DDIMS - _HADA_DDIMS];
     trz( nh, hdim );
 }
 
@@ -43,18 +43,21 @@ gethdims( base_int_t *Tdims, base_int_t *Hdims )
 {
     base_int_t ntot = 0;
     base_int_t k1 = 0, k2 = 0;
-    k1 = Tdims[_DDIMS - _DDIMS];
+    k1 = Tdims[_HADA_DDIMS - _HADA_DDIMS];
     trz( k1, &ntot );
     k1 = 0;
     k2 = ntot;
-    printf( "Tdims[_DDIMS - _DDIMS] %zu,k1 %zu, k2 %zu\n", Tdims[_DDIMS - _DDIMS], k1, k2 );
-    base_int_t is = Tdims[_DDIMS - 2];
-    base_int_t os = Tdims[_DDIMS - 1];
+    printf( "Tdims[_HADA_DDIMS - _HADA_DDIMS] %zu,k1 %zu, k2 %zu\n",
+            Tdims[_HADA_DDIMS - _HADA_DDIMS],
+            k1,
+            k2 );
+    base_int_t is = Tdims[_HADA_DDIMS - 2];
+    base_int_t os = Tdims[_HADA_DDIMS - 1];
     for ( base_int_t k = k1; k < k2; ++k ) {
-        printf( "k %zu _DDIMS * k %zu is %zu os %zu\n", k, _DDIMS * k, is, os );
-        Hdims[( _DDIMS - _DDIMS ) + _DDIMS * k] = 2;
-        Hdims[( _DDIMS - 2 ) + _DDIMS * k]      = is;
-        Hdims[( _DDIMS - 1 ) + _DDIMS * k]      = os;
+        printf( "k %zu _HADA_DDIMS * k %zu is %zu os %zu\n", k, _HADA_DDIMS * k, is, os );
+        Hdims[( _HADA_DDIMS - _HADA_DDIMS ) + _HADA_DDIMS * k] = 2;
+        Hdims[( _HADA_DDIMS - 2 ) + _HADA_DDIMS * k]           = is;
+        Hdims[( _HADA_DDIMS - 1 ) + _HADA_DDIMS * k]           = os;
         is *= 2;
         os *= 2;
     }
@@ -68,9 +71,9 @@ gethdims( base_int_t *Tdims, base_int_t *Hdims )
 void
 showparsedhdims( base_int_t *Hdims, base_int_t ncols )
 {
-    for ( int j = 0; j < _DDIMS; ++j ) {
+    for ( int j = 0; j < _HADA_DDIMS; ++j ) {
         for ( int i = 0; i < ncols; ++i ) {
-            printf( "%zu\t", Hdims[j + i * _DDIMS] );
+            printf( "%zu\t", Hdims[j + i * _HADA_DDIMS] );
         }
         printf( "\n" );
     }

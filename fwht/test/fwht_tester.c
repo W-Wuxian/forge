@@ -64,20 +64,22 @@ test_base_dummy_fwht()
 //
 // d_10  d_11     -1   6
 //
-// 
-base_int_t test_rotatedata_mat(){
-    base_int_t ierr        = 0;
-    double data[4];
-    data[0]= (double)-2.;
-    data[1]= (double)3.;
-    data[2]= (double)-1.;
-    data[3]= (double)6.;
-    printf("Input matrix - Row-Major format\n");
-    printf("%f  %f\n", data[0], data[1]);
-    printf("%f  %f\n", data[2], data[3]);
-    printf("Output matrix - Row-Major format\n");
-    cblas_drotm(2, &data[0], 1, &data[2], 1, &BLAS_ROTM_PARAM[0]);
-    printf("%f  %f\n", data[0], data[1]);
-    printf("%f  %f\n", data[2], data[3]);
+//
+base_int_t
+test_rotatedata_mat()
+{
+    base_int_t ierr = 0;
+    double     data[4];
+    data[0] = (double)-2.;
+    data[1] = (double)3.;
+    data[2] = (double)-1.;
+    data[3] = (double)6.;
+    printf( "Input matrix - Row-Major format\n" );
+    printf( "%f  %f\n", data[0], data[1] );
+    printf( "%f  %f\n", data[2], data[3] );
+    printf( "Output matrix - Row-Major format\n" );
+    cblas_drotm( 2, &data[0], 1, &data[2], 1, &BLAS_ROTM_PARAM[0] );
+    printf( "%f  %f\n", data[0], data[1] );
+    printf( "%f  %f\n", data[2], data[3] );
     return ierr;
 }
