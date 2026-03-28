@@ -15,6 +15,10 @@
 #define PRINT_INFO()                                                                               \
     printf( "In file:%s, function:%s() and line:%d ", __FILE__, __func__, __LINE__ )
 
+#ifdef NDEBUG
+#define BASE_ASSERT_INT( a, b ) ((void)0)
+#define BASE_SILENT_ASSERT_INT( a, b ) ((void)0)
+#else
 #define BASE_ASSERT_INT( a, b )                                                                    \
     do {                                                                                           \
         if ( ( a ) != ( b ) ) {                                                                    \
@@ -33,5 +37,6 @@
             printf( "a %zu b %zu\n", (size_t)( a ), (size_t)( b ) );                               \
         }                                                                                          \
     } while ( 0 )
+#endif
 
 #endif  //__BASE_HEADER_H__

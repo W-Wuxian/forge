@@ -1,5 +1,6 @@
 // #include "hada.h"
 #include "hada_tester.h"
+
 #ifndef M
 #define M 32
 #endif
