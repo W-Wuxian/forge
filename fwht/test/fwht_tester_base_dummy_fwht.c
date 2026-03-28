@@ -7,5 +7,9 @@ main()
 
     ierr = test_base_dummy_fwht();
 
+    if ( ierr != 0 ) {
+        printf( "test_base_dummy_fwht failed.\n" );
+    }
+
     return ierr;
 }

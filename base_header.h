@@ -17,9 +17,21 @@
 
 #define BASE_ASSERT_INT( a, b )                                                                    \
     do {                                                                                           \
-        PRINT_INFO();                                                                              \
-        printf( "a %zu b %zu\n", (size_t)( a ), (size_t)( b ) );                                   \
+        if ( ( a ) != ( b ) ) {                                                                    \
+            PRINT_INFO();                                                                          \
+            printf( "assertion a==b failed:\n" );                                                  \
+            printf( "a %zu b %zu\n", (size_t)( a ), (size_t)( b ) );                               \
+        }                                                                                          \
         assert( ( a ) == ( b ) );                                                                  \
+    } while ( 0 )
+
+#define BASE_SILENT_ASSERT_INT( a, b )                                                             \
+    do {                                                                                           \
+        if ( ( a ) != ( b ) ) {                                                                    \
+            PRINT_INFO();                                                                          \
+            printf( "assertion a==b failed:\n" );                                                  \
+            printf( "a %zu b %zu\n", (size_t)( a ), (size_t)( b ) );                               \
+        }                                                                                          \
     } while ( 0 )
 
 #endif  //__BASE_HEADER_H__

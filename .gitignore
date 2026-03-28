@@ -55,6 +55,7 @@ dkms.conf
 *.dwo
 
 #
+*.log
 run
 bin/
 preAlps/

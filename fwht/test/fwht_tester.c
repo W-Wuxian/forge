@@ -2,6 +2,16 @@
 
 // ref solution https://en.wikipedia.org/wiki/Fast_Walsh%E2%80%93Hadamard_transform
 #define REF_SOL_IDX_0 ( (double)4 )
+#define REF_SOL_IDX_1 ( (double)2 )
+#define REF_SOL_IDX_2 ( (double)0 )
+#define REF_SOL_IDX_3 ( (double)-2 )
+#define REF_SOL_IDX_4 ( (double)0 )
+#define REF_SOL_IDX_5 ( (double)2 )
+#define REF_SOL_IDX_6 ( (double)0 )
+#define REF_SOL_IDX_7 ( (double)2 )
+
+static const double REF_SOL[] = { REF_SOL_IDX_0, REF_SOL_IDX_1, REF_SOL_IDX_2, REF_SOL_IDX_3,
+                                  REF_SOL_IDX_4, REF_SOL_IDX_5, REF_SOL_IDX_6, REF_SOL_IDX_7 };
 
 base_int_t
 test_base_dummy_fwht()
@@ -24,10 +34,12 @@ test_base_dummy_fwht()
     data[7] = 0.;
     base_dummy_fwht( &data[0], ref_sol_dim );
 
-    j = 0;
-    if ( data[j] != REF_SOL_IDX_0 ) {
-        PRINT_INFO();
-        printf( "data[%zu] = %f != %f\n", j, data[j], REF_SOL_IDX_0 );
+    for ( j = 0; j < ref_sol_dim; ++j ) {
+        if ( data[j] != REF_SOL[j] ) {
+            PRINT_INFO();
+            printf( "data[%zu] = %f != %f\n", j, data[j], REF_SOL[j] );
+            ierr += 1;
+        }
     }
 
     return ierr;
