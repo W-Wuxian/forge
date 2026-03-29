@@ -53,7 +53,7 @@ $RESOLVE_CPATH \
 2>&1 | tee -a build.log
 bin/test_base_rotatedata_mat |& tee -a build.log
 
-$comp -O2 -Wall -o bin/test_cblas_open \
+$comp -O2 -Wall -o bin/test_cblas_dgemm \
 test/test_cblas_dgemm.c \
 -L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread \
 -I$GUIX_ENVIRONMENT/include \
