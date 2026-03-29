@@ -24,8 +24,17 @@ rm -f bin/*
 $comp -O2 -Wall -o bin/bench_base_rotatedata_mat \
 $FORGE_ROOT/fwht_utils/hada.c \
 fwht.c bench/fwht_bench_rotatedata_mat.c \
--L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread \
+-L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread -lm \
 -I$GUIX_ENVIRONMENT/include \
 $RESOLVE_CPATH \
 2>&1 | tee -a bench.log
 bin/bench_base_rotatedata_mat |& tee -a bench.log
+
+$comp -O2 -Wall -o bin/benchv2_base_rotatedata_mat \
+$FORGE_ROOT/fwht_utils/hada.c \
+fwht.c bench/fwht_benchv2_rotatedata_mat.c \
+-L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread -lm \
+-I$GUIX_ENVIRONMENT/include \
+$RESOLVE_CPATH \
+2>&1 | tee -a bench.log
+bin/benchv2_base_rotatedata_mat |& tee -a bench.log
