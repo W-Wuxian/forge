@@ -47,3 +47,19 @@ _base_rotatedata_mat( double     *data,
     // Performs modified Givens rotation of points in the plane
     cblas_drotm( ncols, x, nrows, y, nrows, rotatedata_mat_param );
 }
+
+void
+_base_rotatedata_mat_rmaj( double     *data,
+                           base_int_t  nrows,
+                           base_int_t  ncols,
+                           base_uint_t ridx1,
+                           base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    // Alias
+    double *x = &data[ridx1 * ncols];
+    double *y = &data[ridx2 * ncols];
+    // Performs modified Givens rotation of points in the plane
+    cblas_drotm( ncols, x, 1, y, 1, rotatedata_mat_param );
+}
