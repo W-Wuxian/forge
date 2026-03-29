@@ -3,7 +3,7 @@
 
 #include "base_header.h"
 
-#define _DDIMS ( (base_int_t)3 )
+#define _HADA_DDIMS ( (base_int_t)3 )
 
 typedef struct {
     base_int_t m;   /**< A is m x n ColMaj */
@@ -34,7 +34,7 @@ void getdimshowmany( view_t *In, base_int_t *Tdims, base_int_t *Thow, base_int_t
  * @brief Set data for FFTW (should be eqv to hadamardize from Hadamard.jl)
  *
  * @param[In] Tdims
- * @param[Out] Hdims _DDIMS x hdims
+ * @param[Out] Hdims _HADA_DDIMS x hdims
  */
 void gethdims( base_int_t *Tdims, base_int_t *Hdims );
 

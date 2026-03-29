@@ -1,12 +1,12 @@
 #include "fwht.h"
 
 void
-_base_rotatedata( double *data, base_uint_t c1, base_uint_t c2 )
+_base_rotatedata( double *data, base_uint_t ridx1, base_uint_t ridx2 )
 {
     static double base_rotation;
-    base_rotation = data[c1];
-    data[c1]      = base_rotation + data[c2];
-    data[c2]      = base_rotation - data[c2];
+    base_rotation = data[ridx1];
+    data[ridx1]   = base_rotation + data[ridx2];
+    data[ridx2]   = base_rotation - data[ridx2];
 }
 
 void
@@ -30,4 +30,36 @@ base_dummy_fwht( double *data, base_uint_t n )
             }
         }
     }
+}
+
+void
+_base_rotatedata_mat( double     *data,
+                      base_int_t  nrows,
+                      base_int_t  ncols,
+                      base_uint_t ridx1,
+                      base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    // Alias
+    double *x = &data[ridx1];
+    double *y = &data[ridx2];
+    // Performs modified Givens rotation of points in the plane
+    cblas_drotm( ncols, x, nrows, y, nrows, rotatedata_mat_param );
+}
+
+void
+_base_rotatedata_mat_rmaj( double     *data,
+                           base_int_t  nrows,
+                           base_int_t  ncols,
+                           base_uint_t ridx1,
+                           base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    // Alias
+    double *x = &data[ridx1 * ncols];
+    double *y = &data[ridx2 * ncols];
+    // Performs modified Givens rotation of points in the plane
+    cblas_drotm( ncols, x, 1, y, 1, rotatedata_mat_param );
 }

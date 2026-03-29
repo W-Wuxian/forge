@@ -1,11 +1,12 @@
 // #include "hada.h"
 #include "hada_tester.h"
-#ifndef M
-#define M 32
+
+#ifndef HADA_TESTER_ROW_M
+#define HADA_TESTER_ROW_M 32
 #endif
 
-#ifndef N
-#define N 1
+#ifndef HADA_TESTER_ROW_N
+#define HADA_TESTER_ROW_N 1
 #endif
 
 base_int_t

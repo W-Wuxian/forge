@@ -1,11 +1,11 @@
 #include "fwht.h"
 
-#ifndef M
-#define M 16
+#ifndef FWHT_SHOWCASE_ROW_M
+#define FWHT_SHOWCASE_ROW_M 16
 #endif
 
-#ifndef N
-#define N 1
+#ifndef FWHT_SHOWCASE_COL_N
+#define FWHT_SHOWCASE_COL_N 1
 #endif
 
 // ref solution https://en.wikipedia.org/wiki/Fast_Walsh%E2%80%93Hadamard_transform
@@ -14,10 +14,10 @@ int
 main()
 {
     base_int_t ierr        = 0;
-    base_int_t ref_sol_dim = 8 * 1;  // M = 8 N = 1
+    base_int_t ref_sol_dim = 8 * 1;  // FWHT_SHOWCASE_ROW_M = 8 FWHT_SHOWCASE_COL_N = 1
 
-    double data[M * N];
-    for ( base_int_t i = 0; i < M * N; i++ ) {
+    double data[FWHT_SHOWCASE_ROW_M * FWHT_SHOWCASE_COL_N];
+    for ( base_int_t i = 0; i < FWHT_SHOWCASE_ROW_M * FWHT_SHOWCASE_COL_N; i++ ) {
         data[i] = (double)0;
     }
     data[0] = 1.;
@@ -30,7 +30,7 @@ main()
     data[7] = 0.;
     base_dummy_fwht( &data[0], ref_sol_dim );
 
-    for ( base_int_t i = 0; i < M * N; ++i ) {
+    for ( base_int_t i = 0; i < FWHT_SHOWCASE_ROW_M * FWHT_SHOWCASE_COL_N; ++i ) {
         printf( "%f\n", data[i] );
     }
     printf( "\n" );
