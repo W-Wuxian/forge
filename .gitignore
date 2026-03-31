@@ -58,4 +58,10 @@ dkms.conf
 *.log
 run
 bin/
+output/
+jube_bench_run/
+logs/
+*.pdf
+*.png
+*.jpeg
 preAlps/

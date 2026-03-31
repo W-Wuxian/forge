@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jube>
+  <benchmark name="Rotation_Benchmark" outpath="jube_bench_run">
+    
+    <!-- 1. Paramètres du benchmark (Dimensions de la matrice) -->
+    <parameterset name="matrix_params">
+      <parameter name="nrows" type="int">1024</parameter>
+      <!-- Ajoute ici toutes les tailles NCOLS souhaitées -->
+      <parameter name="ncols" type="int">1024, 2048, 4096, 8192</parameter>
+    </parameterset>
+
+    <!-- Variables d'environnement pour la compilation -->
+    <parameterset name="env_params">
+      <!-- $jube_wp pointe vers le dossier où tu as lancé jube (souvent le dossier parent 'forge') -->
+      <parameter name="FORGE_ROOT">${jube_benchmark_home}/..</parameter>
+      <!-- $GUIX_ENVIRONMENT est transmis automatiquement par ton shell actif -->
+      <parameter name="GUIX_ENV" type="string">${GUIX_ENVIRONMENT}</parameter>
+      <parameter name="RESOLVE_CPATH" type="string">-I${FORGE_ROOT} -I${FORGE_ROOT}/fwht_utils -I${FORGE_ROOT}/fwht</parameter>
+    </parameterset>
+
+    <!-- Fichiers à copier dans le dossier d'exécution (Sandbox JUBE) -->
+    <fileset name="source_files">
+      <copy>${FORGE_ROOT}/fwht_utils/hada.c</copy>
+      <copy>${FORGE_ROOT}/fwht/fwht.c</copy>
+      <copy>${FORGE_ROOT}/fwht/bench/fwht_bench_rotatedata_mat.c</copy>
+    </fileset>
+
+    <parameterset name="run_bench_cmd">
+      <parameter name="command" type="string">./bench_exe --output=results.csv</parameter>
+    </parameterset>
+
+    <!-- 2. Compilation -->
+    <step name="compile">
+      <use>matrix_params</use>
+      <use>env_params</use>
+      <use>source_files</use>
+      
+      <!-- Compilation avec GCC. On passe les dimensions dynamiques avec -D -->
+      <!-- On modifie le fichier C à la volée avant de compiler -->
+      <do>sed -i 's/JUBE_NROWS/${nrows}/g' fwht_bench_rotatedata_mat.c</do>
+      <do>sed -i 's/JUBE_NCOLS/${ncols}/g' fwht_bench_rotatedata_mat.c</do>
+      <!-- "gcc -O2 -Wall -o bench_exe hada.c fwht.c fwht_bench_rotatedata_mat.c -DJUBE_NROWS=${nrows} -DJUBE_NCOLS=${ncols} -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH}" -->
+      <do>
+        gcc -O2 -Wall -o bench_exe hada.c fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH}
+      </do>
+    </step>
+
+    <!-- 3. Exécution -->
+    <step name="execute" depend="compile">
+      <use>matrix_params</use>
+      <use>run_bench_cmd</use>
+      <!-- Exécute le binaire et génère le fichier CSV de ubench -->
+      <do>cp compile/bench_exe .</do>
+      <do>$command</do>
+    </step>
+
+    <!-- 4. Extraction des résultats via Regex -->
+    <patternset name="extract_time">
+      <pattern name="time_base" type="float">rotatedata_mat\.dim_${nrows}x${ncols}.*,\s*($jube_pat_fp),</pattern>
+      <pattern name="time_rmaj" type="float">rotatedata_mat_rmaj\.dim_${nrows}x${ncols}.*,\s*($jube_pat_fp),</pattern>
+    </patternset>
+
+    <analyser name="analyse">
+      <use>extract_time</use>
+      <analyse step="execute">
+        <file>results.csv</file>
+      </analyse>
+    </analyser>
+
+    <!-- 5. Résultats finaux -->
+    <result>
+      <use>analyse</use>
+      <table name="summary" style="pretty" sort="ncols">
+        <column>ncols</column>
+        <column title="Base (ns)">time_base</column>
+        <column title="Row-Major (ns)">time_rmaj</column>
+      </table>
+      <table name="summary_csv" style="csv" sort="ncols">
+        <column>ncols</column>
+        <column>time_base</column>
+        <column>time_rmaj</column>
+      </table>
+    </result>
+
+  </benchmark>
+</jube>
