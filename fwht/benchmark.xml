@@ -54,33 +54,17 @@
       <do>$command</do>
     </step>
 
-    <!-- 4. Extraction des résultats via Regex -->
-    <patternset name="extract_time">
-      <pattern name="time_base" type="float">rotatedata_mat\.dim_${nrows}x${ncols}.*,\s*($jube_pat_fp),</pattern>
-      <pattern name="time_rmaj" type="float">rotatedata_mat_rmaj\.dim_${nrows}x${ncols}.*,\s*($jube_pat_fp),</pattern>
-    </patternset>
-
-    <analyser name="analyse">
-      <use>extract_time</use>
-      <analyse step="execute">
-        <file>results.csv</file>
-      </analyse>
-    </analyser>
-
-    <!-- 5. Résultats finaux -->
-    <result>
-      <use>analyse</use>
-      <table name="summary" style="pretty" sort="ncols">
-        <column>ncols</column>
-        <column title="Base (ns)">time_base</column>
-        <column title="Row-Major (ns)">time_rmaj</column>
-      </table>
-      <table name="summary_csv" style="csv" sort="ncols">
-        <column>ncols</column>
-        <column>time_base</column>
-        <column>time_rmaj</column>
-      </table>
-    </result>
+    <!-- 4. Collect : Collecte et concatène tous les fichiers results.csv -->
+    <step name="collect" depend="execute">
+      <!-- La première fois, on crée le header une seule fois dans le fichier de sortie -->
+      <do><![CDATA[
+        OUT="${jube_benchmark_home}/output/rotatedata_mat_benchmark.csv"
+        if [ ! -f "$OUT" ]; then
+          head -n 1 execute/results.csv > "$OUT"
+        fi
+        tail -n +2 execute/results.csv >> "$OUT"
+      ]]></do>
+    </step>
 
   </benchmark>
 </jube>

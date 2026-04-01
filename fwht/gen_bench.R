@@ -5,7 +5,7 @@ library(scales)
 
 # 1. Lecture du fichier CSV
 # On précise col_names = FALSE car on va renommer proprement pour éviter les problèmes d'espaces
-df <- read_csv("benchv2_base_rotatedata_mat.csv", skip = 1, col_names = c("name", "mean_ns", "stddev_pct", "confidence_pct", "drop")) %>%
+df <- read_csv("output/rotatedata_mat_benchmark.csv", skip = 1, col_names = c("name", "mean_ns", "stddev_pct", "confidence_pct", "drop")) %>%
   select(-drop) # Supprimer la dernière colonne vide causée par la virgule finale
 
 # 2. Extraction des paramètres depuis la colonne "name"
@@ -41,11 +41,11 @@ plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = me
   #scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
   
   labs(
-    title = "Temps d'exécution de la rotation de matrice (NROWS = 2)",
-    subtitle = "Comparaison entre rotatedata_mat et rotatedata_mat_rmaj",
-    x = expression(Nombre~de~colonnes~(NCOLS~en~2^x)), # expression() permet un rendu mathématique du titre
-    y = "Temps moyen (sec)",
-    color = "Méthode"
+    title = "Compute time",
+    subtitle = "Comparison of the different functions",
+    x = expression("number of"~columns), # expression() permet un rendu mathématique du titre
+    y = "mean time (sec)",
+    color = "function"
   ) +
   theme_minimal() +
   theme(

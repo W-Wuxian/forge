@@ -10,33 +10,29 @@ if command -v guix >/dev/null 2>&1; then
     comp="guix shell gcc-toolchain@14.2.0 openblas jube -- gcc "
     run_jube() {
         guix shell gcc-toolchain@14.2.0 openblas jube -- bash -c "jube run benchmark.xml"
-        #"&& jube analyse jube_bench_run && jube result jube_bench_run"
-        #jube_bench_run is a name set at .xml
     }
 else
     echo "Guix is not installed."
     comp=gcc
     run_jube() {
         jube run benchmark.xml
-        #&& jube analyse bench_run && jube result bench_run
     }
 fi
-# guix shell r r-tidyverse -- Rscript gen_bench.R
 
-#FORGE_ROOT=$PWD/..
-FORGE_ROOT=/mnt/e/WSL-WORK/forge
+FORGE_ROOT=$PWD/..
 export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht
 RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht"
 echo $CPATH
 
 mkdir -p bin/ logs/ output/
-rm -f bin/* logs/*
+rm -f bin/* logs/* output/*
 
 LOG_FILE=logs/bench.log
-BENCH_OUT_FILE=output/benchv2_base_rotatedata_mat.csv
+BENCH_OUT_FILE=output/bench_base_rotatedata_mat.csv
 
-run_jube
+run_jube && guix shell r r-tidyverse -- Rscript gen_bench.R
 
+# this one is a dummy one testing fixture ubench
 # $comp -O2 -Wall -o bin/bench_base_fixture_rotatedata_mat \
 # $FORGE_ROOT/fwht_utils/hada.c \
 # fwht.c bench/fwht_bench_fixture_rotatedata_mat.c \
@@ -46,6 +42,7 @@ run_jube
 # 2>&1 | tee -a ${LOG_FILE}
 # bin/bench_base_fixture_rotatedata_mat |& tee -a ${LOG_FILE}
 
+# this one can be run as it, need manual bench case extension from source
 # $comp -O2 -Wall -o bin/benchv2_base_rotatedata_mat \
 # $FORGE_ROOT/fwht_utils/hada.c \
 # fwht.c bench/fwht_benchv2_rotatedata_mat.c \
@@ -56,6 +53,7 @@ run_jube
 # bin/benchv2_base_rotatedata_mat --output=${BENCH_OUT_FILE}
 # #|& tee -a ${LOG_FILE}
 
+# this one is used by jube cannot be run without it
 # $comp -O2 -Wall -o bin/bench_base_rotatedata_mat \
 # $FORGE_ROOT/fwht_utils/hada.c \
 # fwht.c bench/fwht_bench_rotatedata_mat.c \
@@ -65,4 +63,4 @@ run_jube
 # 2>&1 | tee -a ${LOG_FILE}
 # bin/bench_base_rotatedata_mat --output=${BENCH_OUT_FILE}
 
-echo "bin/bench_base_rotatedata_mat $FORGE_ROOT/fwht_utils/hada.c fwht.c bench/fwht_bench_rotatedata_mat.c -L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread -lm -I$GUIX_ENVIRONMENT/include $RESOLVE_CPATH"
+#echo "bin/bench_base_rotatedata_mat $FORGE_ROOT/fwht_utils/hada.c fwht.c bench/fwht_bench_rotatedata_mat.c -L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread -lm -I$GUIX_ENVIRONMENT/include $RESOLVE_CPATH"
