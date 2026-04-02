@@ -1,7 +1,7 @@
 #include "hada.h"
 
 #ifndef HADA_SHOWCASE_ROW_M
-#define HADA_SHOWCASE_ROW_M 32
+#define HADA_SHOWCASE_ROW_M 16
 #endif
 
 #ifndef HADA_SHOWCASE_ROW_N
