@@ -21,10 +21,12 @@ echo $CPATH
 mkdir -p bin/
 rm -f bin/*
 
-#-DNDEBUG \
+mkdir -p prof/
 
+#-DNDEBUG \
+debug_option="-O0 -g3 -pg -Wall"
 # showcase fwht
-$comp -O2 -Wall -o bin/showcase_fwht \
+$comp $debug_option -o bin/showcase_fwht \
 $FORGE_ROOT/fwht_utils/hada.c \
 fwht.c test/fwht_showcase.c \
 -DFWHT_SHOWCASE_COL_M=16 \
@@ -33,8 +35,10 @@ fwht.c test/fwht_showcase.c \
 $RESOLVE_CPATH \
 2>&1 | tee build.log
 bin/showcase_fwht |& tee -a build.log
+mv gmon.out prof/gmon-showcase_fwht.out
+gprof bin/showcase_fwht prof/gmon-showcase_fwht.out > prof/grof-showcase_fwht.out
 
-$comp -O2 -Wall -o bin/test_base_dummy_fwht \
+$comp $debug_option -o bin/test_base_dummy_fwht \
 $FORGE_ROOT/fwht_utils/hada.c \
 fwht.c test/fwht_tester.c test/fwht_tester_base_dummy_fwht.c \
 -L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread \
@@ -42,8 +46,11 @@ fwht.c test/fwht_tester.c test/fwht_tester_base_dummy_fwht.c \
 $RESOLVE_CPATH \
 2>&1 | tee -a build.log
 bin/test_base_dummy_fwht |& tee -a build.log
+mv gmon.out prof/gmon-test_base_dummy_fwht.out
+gprof bin/test_base_dummy_fwht prof/gmon-test_base_dummy_fwht.out > prof/gprof-test_base_dummy_fwht.out
 
-$comp -O2 -Wall -o bin/test_base_rotatedata_mat \
+
+$comp $debug_option -o bin/test_base_rotatedata_mat \
 $FORGE_ROOT/fwht_utils/hada.c \
 fwht.c test/fwht_tester.c test/fwht_tester_rotatedata_mat.c \
 -L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread \
@@ -51,10 +58,14 @@ fwht.c test/fwht_tester.c test/fwht_tester_rotatedata_mat.c \
 $RESOLVE_CPATH \
 2>&1 | tee -a build.log
 bin/test_base_rotatedata_mat |& tee -a build.log
+mv gmon.out prof/gmon-test_base_rotatedata_mat.out
+gprof bin/test_base_rotatedata_mat prof/gmon-test_base_rotatedata_mat.out > prof/gprof-test_base_rotatedata_mat.out
 
-$comp -O2 -Wall -o bin/test_cblas_dgemm \
+$comp $debug_option -o bin/test_cblas_dgemm \
 test/test_cblas_dgemm.c \
 -L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread \
 -I$GUIX_ENVIRONMENT/include \
 2>&1 | tee -a build.log
 bin/test_cblas_dgemm |& tee -a build.log
+mv gmon.out prof/gmon-test_cblas_dgemm.out
+gprof bin/test_cblas_dgemm prof/gmon-test_cblas_dgemm.out > prof/gprof-test_cblas_dgemm.out

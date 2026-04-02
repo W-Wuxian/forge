@@ -57,6 +57,7 @@ dkms.conf
 #
 *.log
 run
+prof/
 bin/
 output/
 jube_bench_run/

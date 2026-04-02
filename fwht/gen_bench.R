@@ -22,14 +22,16 @@ print(df_parsed)
 
 # 3. Création du graphique avec ggplot2
 plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = method)) +
-  facet_grid(ridx2 ~ method ) +
+  #facet_grid(nrows + "nrows" ~ ridx2 + "ridx2") +
+  facet_grid(ridx2 + "ridx2" ~ nrows + "nrows") +
   geom_line(linewidth = 1) +
   geom_point(size = 3) +
   
   # Configuration de l'axe X pour afficher les puissances de 2 (2^x)
   scale_x_continuous(
     trans = log2_trans(), 
-    breaks = trans_breaks("log2", function(x) 2^x),
+    #breaks = trans_breaks("log2", function(x) 2^x),
+    breaks = 2^(10:13),
     labels = trans_format("log2", math_format(2^.x))
   ) +
   
@@ -41,18 +43,17 @@ plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = me
   #scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
   
   labs(
-    title = "Compute time",
-    subtitle = "Comparison of the different functions",
+    title = "Impact of memory access pattern on rotation performance",
+    subtitle = "Mean execution time across matrix sizes and rotation distances",
     x = expression("number of"~columns), # expression() permet un rendu mathématique du titre
     y = "mean time (sec)",
     color = "function"
   ) +
   theme_minimal() +
   theme(
-    plot.title = element_text(face = "bold"),
-    legend.position = "bottom",
-    # Plus besoin d'incliner le texte à 45° car "2^10" prend très peu de place en largeur !
-    axis.text.x = element_text(size = 11) 
+    plot.title       = element_text(face = "bold"),
+    legend.position  = "bottom",
+    axis.text.x      = element_text(size = 8, angle = 45, hjust = 1) 
   )
 
 # 4. Affichage et sauvegarde du graphique

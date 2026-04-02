@@ -142,6 +142,24 @@ test_rotatedata_mat()
     }
     /*********************************************************************************************************************************************/
     /*********************************************************************************************************************************************/
+    colmajor_data[0] = ROTM_INPUT_MATRIX_D11;
+    colmajor_data[1] = ROTM_INPUT_MATRIX_D21;
+    colmajor_data[2] = ROTM_INPUT_MATRIX_D12;
+    colmajor_data[3] = ROTM_INPUT_MATRIX_D22;
+    printf( "Input matrix - Col-Major format\n" );
+    printf( "%f  %f\n", colmajor_data[0], colmajor_data[2] );
+    printf( "%f  %f\n", colmajor_data[1], colmajor_data[3] );
+    _base_rotatedata_mat_v2( &colmajor_data[0], NULL, 2, 2, 0, 1 );
+    printf( "Output matrix - Col-Major format - Compute using _base_rotatedata_mat_v2\n" );
+    printf( "%f  %f\n", colmajor_data[0], colmajor_data[2] );
+    printf( "%f  %f\n", colmajor_data[1], colmajor_data[3] );
+    if ( colmajor_data[0] != ROTM_OUTPUT_MATRIX_D11 && colmajor_data[1] != ROTM_OUTPUT_MATRIX_D21 &&
+         colmajor_data[2] != ROTM_OUTPUT_MATRIX_D12 &&
+         colmajor_data[3] != ROTM_OUTPUT_MATRIX_D22 ) {
+        ierr += 1;
+    }
+    /*********************************************************************************************************************************************/
+    /*********************************************************************************************************************************************/
     data[0] = ROTM_INPUT_MATRIX_D11;
     data[1] = ROTM_INPUT_MATRIX_D12;
     data[2] = ROTM_INPUT_MATRIX_D21;

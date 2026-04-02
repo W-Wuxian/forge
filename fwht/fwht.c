@@ -49,6 +49,80 @@ _base_rotatedata_mat( double     *data,
 }
 
 void
+_base_rotatedata_mat_v2( double     *data,
+                         double     *buffer,
+                         base_int_t  nrows,
+                         base_int_t  ncols,
+                         base_uint_t ridx1,
+                         base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    // static double buffer[2*1024]; need loop to overcome/map dimension : to try
+    double *_buffer = NULL;
+    if ( buffer != NULL ) {
+        _buffer = buffer;
+    }
+    else {
+        _buffer = (double *)malloc( sizeof( double ) * 2 * ncols );
+    }
+    // Alias
+    double *x = &data[ridx1];
+    double *y = &data[ridx2];
+
+    cblas_dcopy( ncols, x, nrows, _buffer, 1 );
+#ifdef _BASE_ROTATEDATA_MAT_V2_DEBUG
+    printf( "_buffer_x\n" );
+    for ( int i = 0; i < nrows; ++i ) {
+        printf( "%f ", _buffer[i] );
+    }
+    printf( "\n" );
+#endif
+    cblas_dcopy( ncols, y, nrows, _buffer + ncols, 1 );
+#ifdef _BASE_ROTATEDATA_MAT_V2_DEBUG
+    printf( "_buffer_y\n" );
+    for ( int i = nrows; i < 2 * nrows; ++i ) {
+        printf( "%f ", _buffer[i] );
+    }
+    printf( "\n" );
+#endif
+
+    x = _buffer;
+#ifdef _BASE_ROTATEDATA_MAT_V2_DEBUG
+    printf( "x\n" );
+    for ( int i = 0; i < nrows; ++i ) {
+        printf( "%f ", x[i] );
+    }
+    printf( "\n" );
+#endif
+
+    y = _buffer + ncols;
+#ifdef _BASE_ROTATEDATA_MAT_V2_DEBUG
+    printf( "y\n" );
+    for ( int i = 0; i < nrows; ++i ) {
+        printf( "%f ", y[i] );
+    }
+    printf( "\n" );
+#endif
+
+    // Performs modified Givens rotation of points in the plane
+    cblas_drotm( ncols, x, 1, y, 1, rotatedata_mat_param );
+
+    // copy back buffer to main memory
+    x = &data[ridx1];
+    y = &data[ridx2];
+    cblas_dcopy( ncols, _buffer, 1, x, nrows );
+    cblas_dcopy( ncols, _buffer + ncols, 1, y, nrows );
+
+    x = NULL;
+    y = NULL;
+    if ( buffer == NULL ) {
+        free( _buffer );
+        _buffer = NULL;
+    }
+}
+
+void
 _base_rotatedata_mat_rmaj( double     *data,
                            base_int_t  nrows,
                            base_int_t  ncols,
