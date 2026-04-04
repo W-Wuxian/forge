@@ -57,15 +57,9 @@ main()
         printf( "\n" );
     }
 
-    // for(base_int_t i = 0; i < nc; ++i){
-    //     for(base_int_t j = 0; j < nr; ++j){
-    //         *(TransA + i + (j*nc)) = *(A + j + (i*nr));
-    //     }
-    // }
     for(base_int_t i = 0; i < nc; ++i){
         for(base_int_t j = 0; j < nr; ++j){
             *(TransA + i + (j*nc)) = *(A + j + (i*nr));
-            //printf("%zu %zu %zu %f = %zu %zu %zu %f\n",i,j,i + (j*nc), *(TransA + i + (j*nc)),j,i,j + (i*nr), *(A + j + (i*nr)));
         }
     }
     printf( "\n" );
@@ -77,7 +71,6 @@ main()
     printf( "TransA matrix Col-Major\n");
     for(base_int_t i = 0; i < nc; ++i){
         for(base_int_t j = 0; j < nr; ++j){
-            //printf("%f ", TransA[j*nc+i]);
             printf("%f ", *(TransA + i + (j*nc)));
         }
         printf( "\n" );

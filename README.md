@@ -13,3 +13,7 @@ https://github.com/hadipourh/fwht
 https://github.com/llnl/caliper
 
 https://github.com/sheredom/ubench.h
+
+# SIMD
+
+https://github.com/simd-everywhere/simde?tab=readme-ov-file

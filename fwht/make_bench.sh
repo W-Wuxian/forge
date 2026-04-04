@@ -9,7 +9,7 @@ if command -v guix >/dev/null 2>&1; then
     echo "Guix is installed."
     comp="guix shell gcc-toolchain@14.2.0 openblas jube -- gcc "
     run_jube() {
-        guix shell gcc-toolchain@14.2.0 openblas jube -- bash -c "jube run benchmark.xml"
+        guix shell --tune gcc-toolchain@14.2.0 openblas jube -- bash -c "jube run benchmark.xml"
     }
 else
     echo "Guix is not installed."

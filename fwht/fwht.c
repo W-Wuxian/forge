@@ -123,6 +123,39 @@ _base_rotatedata_mat_v2( double     *data,
 }
 
 void
+_base_rotatedata_mat_v3( double     *data,
+                         double     *buffer,
+                         base_int_t  nrows,
+                         base_int_t  ncols,
+                         base_uint_t ridx1,
+                         base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    
+    double *_buffer = NULL;
+    if ( buffer != NULL ) {
+        _buffer = buffer;
+    }
+    else {
+        _buffer = (double *)malloc( sizeof( double ) * ncols * 2 );
+    }
+
+    cblas_dcopy(ncols, data + ridx1, nrows, _buffer, 1);
+    cblas_dcopy(ncols, data + ridx2, nrows, _buffer + ncols, 1);
+
+    cblas_drotm(ncols, _buffer, 1, _buffer + ncols, 1, rotatedata_mat_param );
+
+    cblas_dcopy(ncols, _buffer, 1, data + ridx1, nrows);
+    cblas_dcopy(ncols, _buffer + ncols, 1, data + ridx2, nrows);
+
+    if ( buffer == NULL ) {
+        free( _buffer );
+        _buffer = NULL;
+    }
+}
+
+void
 _base_rotatedata_mat_rmaj( double     *data,
                            base_int_t  nrows,
                            base_int_t  ncols,
