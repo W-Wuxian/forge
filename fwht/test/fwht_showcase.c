@@ -37,41 +37,41 @@ main()
 
     base_int_t nr = 3;
     base_int_t nc = 4;
-    double A[nr*nc]; // assuming A is Col-Major
-    double TransA[nc*nr]; // assuming TransA is Col-Major
-    for(base_int_t i = 0; i < nc; ++i){
-        for(base_int_t j = 0; j < nr; ++j){
-            A[j + (i*nr)]  = j + (i*nr);
+    double     A[nr * nc];       // assuming A is Col-Major
+    double     TransA[nc * nr];  // assuming TransA is Col-Major
+    for ( base_int_t i = 0; i < nc; ++i ) {
+        for ( base_int_t j = 0; j < nr; ++j ) {
+            A[j + ( i * nr )] = j + ( i * nr );
         }
     }
-    printf( "A matrix Col-Major\n");
-    for(base_int_t i = 0; i < nr*nc; ++i){
-        printf("%f ",*A + i);
+    printf( "A matrix Col-Major\n" );
+    for ( base_int_t i = 0; i < nr * nc; ++i ) {
+        printf( "%f ", *A + i );
     }
     printf( "\n" );
-    printf( "A matrix Col-Major\n");
-    for(base_int_t i = 0; i < nr; ++i){
-        for(base_int_t j = 0; j < nc; ++j){
-            printf("%f ", *(A + i + (j*nr)));
+    printf( "A matrix Col-Major\n" );
+    for ( base_int_t i = 0; i < nr; ++i ) {
+        for ( base_int_t j = 0; j < nc; ++j ) {
+            printf( "%f ", *( A + i + ( j * nr ) ) );
         }
         printf( "\n" );
     }
 
-    for(base_int_t i = 0; i < nc; ++i){
-        for(base_int_t j = 0; j < nr; ++j){
-            *(TransA + i + (j*nc)) = *(A + j + (i*nr));
+    for ( base_int_t i = 0; i < nc; ++i ) {
+        for ( base_int_t j = 0; j < nr; ++j ) {
+            *( TransA + i + ( j * nc ) ) = *( A + j + ( i * nr ) );
         }
     }
     printf( "\n" );
-    printf( "TransA matrix Col-Major\n");
-    for(base_int_t i = 0; i < nr*nc; ++i){
-        printf("%f ",*TransA + i);
+    printf( "TransA matrix Col-Major\n" );
+    for ( base_int_t i = 0; i < nr * nc; ++i ) {
+        printf( "%f ", *TransA + i );
     }
     printf( "\n" );
-    printf( "TransA matrix Col-Major\n");
-    for(base_int_t i = 0; i < nc; ++i){
-        for(base_int_t j = 0; j < nr; ++j){
-            printf("%f ", *(TransA + i + (j*nc)));
+    printf( "TransA matrix Col-Major\n" );
+    for ( base_int_t i = 0; i < nc; ++i ) {
+        for ( base_int_t j = 0; j < nr; ++j ) {
+            printf( "%f ", *( TransA + i + ( j * nc ) ) );
         }
         printf( "\n" );
     }

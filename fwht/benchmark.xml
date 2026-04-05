@@ -47,6 +47,7 @@
       <do>sed -i 's/JUBE_RIDX2/${ridx2}/g' fwht_bench_rotatedata_mat.c</do>
       <do>
         gcc -O3 -march=native -Wall -o bench_exe hada.c fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH}
+        <!-- gcc -O2 -Wall -o bench_exe hada.c fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH} -->
       </do>
     </step>
 

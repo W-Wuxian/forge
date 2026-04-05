@@ -51,13 +51,14 @@ void _base_rotatedata_mat( double     *data,
                            base_uint_t ridx1,
                            base_uint_t ridx2 );
 
+// v2 data.view -> copy -> buffer -> cblas_drotm -> copy -> data
 void _base_rotatedata_mat_v2( double     *data,
                               double     *buffer,
                               base_int_t  nrows,
                               base_int_t  ncols,
                               base_uint_t ridx1,
                               base_uint_t ridx2 );
-
+// v3 data.view -> copy -> buffer -> cblas_drotm on contiguous elements -> copy -> dat
 void _base_rotatedata_mat_v3( double     *data,
                               double     *buffer,
                               base_int_t  nrows,
@@ -92,5 +93,11 @@ void _base_rotatedata_mat_rmaj( double     *data,
                                 base_int_t  ncols,
                                 base_uint_t ridx1,
                                 base_uint_t ridx2 );
+
+void _base_rotatedata_mat_rmaj_v2( double     *data,
+                                   base_int_t  nrows,
+                                   base_int_t  ncols,
+                                   base_uint_t ridx1,
+                                   base_uint_t ridx2 );
 
 #endif  //__FWHT_H__
