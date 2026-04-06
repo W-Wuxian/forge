@@ -12,50 +12,35 @@ main()
     v = true;
     if ( test_ispow2( n ) != v ) {
         PRINT_INFO();
-        printf( "base_ispow2(%zu) = %s != %s\n",
-                n,
-                base_ispow2( n ) ? "true" : "false",
-                v ? "true" : "false" );
+        printf( "base_ispow2(%zu) = %s != %s\n", n, base_ispow2( n ) ? "true" : "false", v ? "true" : "false" );
     }
 
     n = 4;
     v = true;
     if ( test_ispow2( n ) != v ) {
         PRINT_INFO();
-        printf( "base_ispow2(%zu) = %s != %s\n",
-                n,
-                base_ispow2( n ) ? "true" : "false",
-                v ? "true" : "false" );
+        printf( "base_ispow2(%zu) = %s != %s\n", n, base_ispow2( n ) ? "true" : "false", v ? "true" : "false" );
     }
 
     n = 8;
     v = true;
     if ( test_ispow2( n ) != v ) {
         PRINT_INFO();
-        printf( "base_ispow2(%zu) = %s != %s\n",
-                n,
-                base_ispow2( n ) ? "true" : "false",
-                v ? "true" : "false" );
+        printf( "base_ispow2(%zu) = %s != %s\n", n, base_ispow2( n ) ? "true" : "false", v ? "true" : "false" );
     }
 
     n = 16;
     v = true;
     if ( test_ispow2( n ) != v ) {
         PRINT_INFO();
-        printf( "base_ispow2(%zu) = %s != %s\n",
-                n,
-                base_ispow2( n ) ? "true" : "false",
-                v ? "true" : "false" );
+        printf( "base_ispow2(%zu) = %s != %s\n", n, base_ispow2( n ) ? "true" : "false", v ? "true" : "false" );
     }
 
     n = 19;
     v = false;
     if ( test_ispow2( n ) != v ) {
         PRINT_INFO();
-        printf( "base_ispow2(%zu) = %s != %s\n",
-                n,
-                base_ispow2( n ) ? "true" : "false",
-                v ? "true" : "false" );
+        printf( "base_ispow2(%zu) = %s != %s\n", n, base_ispow2( n ) ? "true" : "false", v ? "true" : "false" );
     }
 
     return ierr;

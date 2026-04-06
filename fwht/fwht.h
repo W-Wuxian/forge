@@ -45,26 +45,12 @@ void base_dummy_fwht( double *data, base_uint_t n );
  * ridx2
  * \param[in] ridx2 index of the element in array to rotate with respect to ridx1
  */
-void _base_rotatedata_mat( double     *data,
-                           base_int_t  nrows,
-                           base_int_t  ncols,
-                           base_uint_t ridx1,
-                           base_uint_t ridx2 );
+void _base_rotatedata_mat( double *data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
 
 // v2 data.view -> copy -> buffer -> cblas_drotm -> copy -> data
-void _base_rotatedata_mat_v2( double     *data,
-                              double     *buffer,
-                              base_int_t  nrows,
-                              base_int_t  ncols,
-                              base_uint_t ridx1,
-                              base_uint_t ridx2 );
+void _base_rotatedata_mat_v2( double *data, double *buffer, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
 // v3 data.view -> copy -> buffer -> cblas_drotm on contiguous elements -> copy -> dat
-void _base_rotatedata_mat_v3( double     *data,
-                              double     *buffer,
-                              base_int_t  nrows,
-                              base_int_t  ncols,
-                              base_uint_t ridx1,
-                              base_uint_t ridx2 );
+void _base_rotatedata_mat_v3( double *data, double *buffer, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
 
 /**
  * \enum _base_rotatedata_mat_rmaj
@@ -88,16 +74,12 @@ void _base_rotatedata_mat_v3( double     *data,
  * ridx2
  * \param[in] ridx2 index of the element in array to rotate with respect to ridx1
  */
-void _base_rotatedata_mat_rmaj( double     *data,
-                                base_int_t  nrows,
-                                base_int_t  ncols,
-                                base_uint_t ridx1,
-                                base_uint_t ridx2 );
+void _base_rotatedata_mat_rmaj( double *data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
 
-void _base_rotatedata_mat_rmaj_v2( double     *data,
-                                   base_int_t  nrows,
-                                   base_int_t  ncols,
-                                   base_uint_t ridx1,
-                                   base_uint_t ridx2 );
+void _base_rotatedata_mat_rmaj_v2( double *data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
+
+void _base_rotatedata_mat_rmaj_v3( double* __restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
+
+void _base_rotatedata_mat_rmaj_v4( double* __restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
 
 #endif  //__FWHT_H__

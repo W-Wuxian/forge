@@ -16,7 +16,9 @@ df_parsed <- df %>%
     regex = "^([^.]+)\\.dim_(\\d+)x(\\d+)_rowidx1_(\\d+)_rowidx2_(\\d+)",
     convert = TRUE # Convertit automatiquement les nombres en entiers (integer)
   )
-
+#df_parsed <- df_parsed |> filter(method != c("rotatedata_mat_rmaj", "rotatedata_rmaj_loop"))
+df_parsed <- df_parsed |> filter(method != c("rotatedata_mat_rmaj"))
+df_parsed <- df_parsed |> filter(method != c("rotatedata_rmaj_loop"))
 # Affichage de vérification dans la console
 print(df_parsed)
 
@@ -48,6 +50,9 @@ plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = me
     x = expression("number of"~columns), # expression() permet un rendu mathématique du titre
     y = "mean time (sec)",
     color = "function"
+  ) +
+  guides(
+    color = guide_legend(nrow = 2)
   ) +
   theme_minimal() +
   theme(

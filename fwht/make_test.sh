@@ -24,6 +24,7 @@ rm -f bin/*
 mkdir -p prof/
 
 #-DNDEBUG \
+#debug_option="-O3 -march=native -g3 -pg -Wall -fopenmp -ftree-vectorize -fdump-tree-vect-details"
 debug_option="-O0 -g3 -pg -Wall"
 # showcase fwht
 $comp $debug_option -o bin/showcase_fwht \

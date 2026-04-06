@@ -42,21 +42,13 @@ UBENCH_F_TEARDOWN( fwht_fixture )
 // 4. Define the benchmark for the standard rotation
 UBENCH_F( fwht_fixture, rotatedata_mat )
 {
-    _base_rotatedata_mat( ubench_fixture->data,
-                          ubench_fixture->nrows,
-                          ubench_fixture->ncols,
-                          ubench_fixture->ridx1,
-                          ubench_fixture->ridx2 );
+    _base_rotatedata_mat( ubench_fixture->data, ubench_fixture->nrows, ubench_fixture->ncols, ubench_fixture->ridx1, ubench_fixture->ridx2 );
 }
 
 // 5. Define the benchmark for the row-major rotation
 UBENCH_F( fwht_fixture, rotatedata_mat_rmaj )
 {
-    _base_rotatedata_mat_rmaj( ubench_fixture->data,
-                               ubench_fixture->nrows,
-                               ubench_fixture->ncols,
-                               ubench_fixture->ridx1,
-                               ubench_fixture->ridx2 );
+    _base_rotatedata_mat_rmaj( ubench_fixture->data, ubench_fixture->nrows, ubench_fixture->ncols, ubench_fixture->ridx1, ubench_fixture->ridx2 );
 }
 
 // 6. Generate the main() function

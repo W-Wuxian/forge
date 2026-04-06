@@ -30,7 +30,7 @@
     </fileset>
 
     <parameterset name="run_bench_cmd">
-      <parameter name="command" type="string">./bench_exe --output=results.csv</parameter>
+      <parameter name="command" type="string">./bench_exe --confidence=10.0 --output=results.csv</parameter>
     </parameterset>
 
     <!-- 2. Compilation -->
@@ -46,7 +46,7 @@
       <do>sed -i 's/JUBE_RIDX1/${ridx1}/g' fwht_bench_rotatedata_mat.c</do>
       <do>sed -i 's/JUBE_RIDX2/${ridx2}/g' fwht_bench_rotatedata_mat.c</do>
       <do>
-        gcc -O3 -march=native -Wall -o bench_exe hada.c fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH}
+        gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -o bench_exe hada.c fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH}
         <!-- gcc -O2 -Wall -o bench_exe hada.c fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH} -->
       </do>
     </step>

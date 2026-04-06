@@ -11,11 +11,7 @@ _base_rotatedata( double *data, base_uint_t ridx1, base_uint_t ridx2 )
 }
 
 void
-_base_rotatedata_mat( double     *data,
-                      base_int_t  nrows,
-                      base_int_t  ncols,
-                      base_uint_t ridx1,
-                      base_uint_t ridx2 )
+_base_rotatedata_mat( double *data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
 {
     // param := flag, h11, h21, h12, h22
     static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
@@ -28,12 +24,7 @@ _base_rotatedata_mat( double     *data,
 
 // v2 and v3 try buffer + copy to get contiguous elements access during cblas_rotm
 void
-_base_rotatedata_mat_v2( double     *data,
-                         double     *buffer,
-                         base_int_t  nrows,
-                         base_int_t  ncols,
-                         base_uint_t ridx1,
-                         base_uint_t ridx2 )
+_base_rotatedata_mat_v2( double *data, double *buffer, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
 {
     // param := flag, h11, h21, h12, h22
     static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
@@ -74,12 +65,7 @@ _base_rotatedata_mat_v2( double     *data,
 }
 
 void
-_base_rotatedata_mat_v3( double     *data,
-                         double     *buffer,
-                         base_int_t  nrows,
-                         base_int_t  ncols,
-                         base_uint_t ridx1,
-                         base_uint_t ridx2 )
+_base_rotatedata_mat_v3( double *data, double *buffer, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
 {
     // param := flag, h11, h21, h12, h22
     static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
@@ -107,11 +93,7 @@ _base_rotatedata_mat_v3( double     *data,
 }
 
 void
-_base_rotatedata_mat_rmaj( double     *data,
-                           base_int_t  nrows,
-                           base_int_t  ncols,
-                           base_uint_t ridx1,
-                           base_uint_t ridx2 )
+_base_rotatedata_mat_rmaj( double *data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
 {
     // param := flag, h11, h21, h12, h22
     static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
@@ -123,11 +105,7 @@ _base_rotatedata_mat_rmaj( double     *data,
 }
 // rowmaj loop
 void
-_base_rotatedata_mat_rmaj_v2( double     *data,
-                              base_int_t  nrows,
-                              base_int_t  ncols,
-                              base_uint_t ridx1,
-                              base_uint_t ridx2 )
+_base_rotatedata_mat_rmaj_v2( double *data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
 {
     // param := flag, h11, h21, h12, h22
     // static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
@@ -137,6 +115,44 @@ _base_rotatedata_mat_rmaj_v2( double     *data,
     double *x = &data[ridx1 * ncols];
     double *y = &data[ridx2 * ncols];
     // Performs modified Givens rotation of points in the plane
+    for ( int i = 0; i < ncols; ++i ) {
+        base_rotation  = data[i + ridx1 * ncols];
+        base_rotation2 = data[i + ridx2 * ncols];
+        x[i]           = base_rotation + base_rotation2;
+        y[i]           = base_rotation - base_rotation2;
+    }
+}
+void
+_base_rotatedata_mat_rmaj_v3( double* __restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    // static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    static double base_rotation;
+    static double base_rotation2;
+    // Alias
+    double *x = &data[ridx1 * ncols];
+    double *y = &data[ridx2 * ncols];
+// Performs modified Givens rotation of points in the plane
+#pragma omp simd
+    for ( int i = 0; i < ncols; ++i ) {
+        base_rotation  = data[i + ridx1 * ncols];
+        base_rotation2 = data[i + ridx2 * ncols];
+        x[i]           = base_rotation + base_rotation2;
+        y[i]           = base_rotation - base_rotation2;
+    }
+}
+void
+_base_rotatedata_mat_rmaj_v4( double* __restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    // static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    static double base_rotation;
+    static double base_rotation2;
+    // Alias
+    double *x = &data[ridx1 * ncols];
+    double *y = &data[ridx2 * ncols];
+// Performs modified Givens rotation of points in the plane
+#pragma omp simd simdlen(8) aligned(data:64)
     for ( int i = 0; i < ncols; ++i ) {
         base_rotation  = data[i + ridx1 * ncols];
         base_rotation2 = data[i + ridx2 * ncols];
