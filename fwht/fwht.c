@@ -123,7 +123,7 @@ _base_rotatedata_mat_rmaj_v2( double *data, base_int_t nrows, base_int_t ncols, 
     }
 }
 void
-_base_rotatedata_mat_rmaj_v3( double* __restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
+_base_rotatedata_mat_rmaj_v3( double *__restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
 {
     // param := flag, h11, h21, h12, h22
     // static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
@@ -142,7 +142,7 @@ _base_rotatedata_mat_rmaj_v3( double* __restrict__ data, base_int_t nrows, base_
     }
 }
 void
-_base_rotatedata_mat_rmaj_v4( double* __restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
+_base_rotatedata_mat_rmaj_v4( double *__restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
 {
     // param := flag, h11, h21, h12, h22
     // static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
@@ -152,7 +152,7 @@ _base_rotatedata_mat_rmaj_v4( double* __restrict__ data, base_int_t nrows, base_
     double *x = &data[ridx1 * ncols];
     double *y = &data[ridx2 * ncols];
 // Performs modified Givens rotation of points in the plane
-#pragma omp simd simdlen(8) aligned(data:64)
+#pragma omp simd simdlen( 8 ) aligned( data : 64 )
     for ( int i = 0; i < ncols; ++i ) {
         base_rotation  = data[i + ridx1 * ncols];
         base_rotation2 = data[i + ridx2 * ncols];
@@ -179,6 +179,78 @@ base_dummy_fwht( double *data, base_uint_t n )
             for ( k = 0; k < l3; ++k ) {
                 tmp = j + k;
                 _base_rotatedata( data, tmp, tmp + l3 );
+            }
+        }
+    }
+}
+
+void
+base_fwht_mat( double *data, base_int_t n, base_int_t ncols )
+{
+    // Require localsize to be a power of 2
+    base_uint_t localsize = (base_uint_t)n;
+    base_uint_t l2        = base_ilog2( localsize ) - 1;
+    base_uint_t l3        = 1 << l2;
+    BASE_ASSERT_INT( localsize, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < localsize; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = j + k;
+                _base_rotatedata_mat( data, localsize, ncols, tmp, tmp + l3 );
+            }
+        }
+    }
+}
+
+void
+base_fwht_mat_v3( double *data, double *buffer, base_int_t n, base_int_t ncols )
+{
+    // Require localsize to be a power of 2
+    base_uint_t localsize = n;
+    base_uint_t l2        = base_ilog2( localsize ) - 1;
+    base_uint_t l3        = 1 << l2;
+    BASE_ASSERT_INT( localsize, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < localsize; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = j + k;
+                _base_rotatedata_mat_v3( data, buffer, localsize, ncols, tmp, tmp + l3 );
+            }
+        }
+    }
+}
+
+void
+base_fwht_mat_rmaj( double *data, base_int_t n, base_int_t ncols )
+{
+    // Require localsize to be a power of 2
+    base_uint_t localsize = n;
+    base_uint_t l2        = base_ilog2( localsize ) - 1;
+    base_uint_t l3        = 1 << l2;
+    BASE_ASSERT_INT( localsize, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < localsize; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = ( j + k );
+                _base_rotatedata_mat_rmaj( data, localsize, ncols, tmp, tmp + l3 );
             }
         }
     }

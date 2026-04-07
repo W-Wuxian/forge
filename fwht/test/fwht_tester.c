@@ -73,6 +73,108 @@ test_base_dummy_fwht()
     return ierr;
 }
 
+base_int_t
+test_base_fwht_mat()
+{
+    base_int_t ierr = 0;
+    base_int_t m = 8, n = 3;
+    base_int_t ref_sol_dim = m * n;
+
+    double data[ref_sol_dim];
+    for ( base_int_t i = 0; i < ref_sol_dim; i++ ) {
+        data[i] = (double)0;
+    }
+    for ( base_int_t i = 0; i < n; i++ ) {
+        data[0 + i * m] = 1.;
+        data[1 + i * m] = 0.;
+        data[2 + i * m] = 1.;
+        data[3 + i * m] = 0.;
+        data[4 + i * m] = 0.;
+        data[5 + i * m] = 1.;
+        data[6 + i * m] = 1.;
+        data[7 + i * m] = 0.;
+    }
+    base_fwht_mat( &data[0], m, n );
+
+    printf( "data matrix Col-Major - Using base_fwht_mat method\n" );
+    for ( base_int_t i = 0; i < m; ++i ) {
+        for ( base_int_t j = 0; j < n; ++j ) {
+            printf( "%f ", *( data + i + ( j * m ) ) );
+        }
+        printf( "\n" );
+    }
+    for ( base_int_t i = 0; i < n; i++ ) {
+        for ( base_int_t j = 0; j < m; j++ ) {
+            if ( data[j + i * m] != REF_SOL[j] ) {
+                PRINT_INFO();
+                printf( "data[%zu] = %f != %f\n", j, data[j + i * m], REF_SOL[j] );
+                ierr += 1;
+            }
+        }
+    }
+    printf( "------------------------------------------------------------\n" );
+    double *buffer = (double *)malloc( sizeof( double ) * n * 2 );
+    for ( base_int_t i = 0; i < n; i++ ) {
+        data[0 + i * m] = 1.;
+        data[1 + i * m] = 0.;
+        data[2 + i * m] = 1.;
+        data[3 + i * m] = 0.;
+        data[4 + i * m] = 0.;
+        data[5 + i * m] = 1.;
+        data[6 + i * m] = 1.;
+        data[7 + i * m] = 0.;
+    }
+    base_fwht_mat_v3( &data[0], buffer, m, n );
+    free( buffer );
+    buffer = NULL;
+    printf( "data matrix Col-Major - Using base_fwht_mat_v3 method\n" );
+    for ( base_int_t i = 0; i < m; ++i ) {
+        for ( base_int_t j = 0; j < n; ++j ) {
+            printf( "%f ", *( data + i + ( j * m ) ) );
+        }
+        printf( "\n" );
+    }
+    for ( base_int_t i = 0; i < n; i++ ) {
+        for ( base_int_t j = 0; j < m; j++ ) {
+            if ( data[j + i * m] != REF_SOL[j] ) {
+                PRINT_INFO();
+                printf( "data[%zu] = %f != %f\n", j, data[j + i * m], REF_SOL[j] );
+                ierr += 1;
+            }
+        }
+    }
+    printf( "------------------------------------------------------------\n" );
+    for ( base_int_t i = 0; i < n; ++i ) {
+        data[i + 0 * n] = 1.;
+        data[i + 1 * n] = 0.;
+        data[i + 2 * n] = 1.;
+        data[i + 3 * n] = 0.;
+        data[i + 4 * n] = 0.;
+        data[i + 5 * n] = 1.;
+        data[i + 6 * n] = 1.;
+        data[i + 7 * n] = 0.;
+    }
+    base_fwht_mat_rmaj( &data[0], m, n );
+    printf( "data matrix Row-Major - Using base_fwht_mat_rmaj method\n" );
+    for ( base_int_t i = 0; i < m; ++i ) {
+        for ( base_int_t j = 0; j < n; ++j ) {
+            printf( "%f ", *( data + j + ( i * n ) ) );
+        }
+        printf( "\n" );
+    }
+    for ( base_int_t i = 0; i < n; ++i ) {
+        for ( base_int_t j = 0; j < m; ++j ) {
+            if ( data[i + j * n] != REF_SOL[j] ) {
+                PRINT_INFO();
+                printf( "data[%zu] = %f != %f\n", j, data[i + j * n], REF_SOL[j] );
+                ierr += 1;
+            }
+        }
+    }
+
+    return ierr;
+}
+
 // data is 2x2 matrice data[k] = d_ij = d_{j+i*2} i is row index and j is column index
 // C/C++ is Row-Major data = {-2,3,-1,6} = {d_00, d_01, d_10, d_11}
 //

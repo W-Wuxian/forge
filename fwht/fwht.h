@@ -78,8 +78,14 @@ void _base_rotatedata_mat_rmaj( double *data, base_int_t nrows, base_int_t ncols
 
 void _base_rotatedata_mat_rmaj_v2( double *data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
 
-void _base_rotatedata_mat_rmaj_v3( double* __restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
+void _base_rotatedata_mat_rmaj_v3( double *__restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
 
-void _base_rotatedata_mat_rmaj_v4( double* __restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
+void _base_rotatedata_mat_rmaj_v4( double *__restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
+
+void base_fwht_mat( double *data, base_int_t n, base_int_t ncols );
+
+void base_fwht_mat_v3( double *data, double *buffer, base_int_t n, base_int_t ncols );
+
+void base_fwht_mat_rmaj( double *data, base_int_t n, base_int_t ncols );
 
 #endif  //__FWHT_H__
