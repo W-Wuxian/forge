@@ -12,7 +12,18 @@
 #define REF_SOL_IDX_6 ( (double)0 )
 #define REF_SOL_IDX_7 ( (double)2 )
 
-static const double REF_SOL[] = { REF_SOL_IDX_0, REF_SOL_IDX_1, REF_SOL_IDX_2, REF_SOL_IDX_3, REF_SOL_IDX_4, REF_SOL_IDX_5, REF_SOL_IDX_6, REF_SOL_IDX_7 };
+#define REF_INIT_IDX_0 ( (double)1 )
+#define REF_INIT_IDX_1 ( (double)0 )
+#define REF_INIT_IDX_2 ( (double)1 )
+#define REF_INIT_IDX_3 ( (double)0 )
+#define REF_INIT_IDX_4 ( (double)0 )
+#define REF_INIT_IDX_5 ( (double)1 )
+#define REF_INIT_IDX_6 ( (double)1 )
+#define REF_INIT_IDX_7 ( (double)0 )
+
+static const double REF_SOL[]  = { REF_SOL_IDX_0, REF_SOL_IDX_1, REF_SOL_IDX_2, REF_SOL_IDX_3, REF_SOL_IDX_4, REF_SOL_IDX_5, REF_SOL_IDX_6, REF_SOL_IDX_7 };
+static const double REF_INIT[] = { REF_INIT_IDX_0, REF_INIT_IDX_1, REF_INIT_IDX_2, REF_INIT_IDX_3, REF_INIT_IDX_4, REF_INIT_IDX_5, REF_INIT_IDX_6, REF_INIT_IDX_7 };
+
 /**********************************************************************************************************************/
 /**********************************************************************************************************************/
 // ref implementation
@@ -49,26 +60,21 @@ test_base_dummy_fwht()
     base_int_t ref_sol_dim = 8 * 1;  // M = 8 N = 1
 
     double data[ref_sol_dim];
-    for ( base_int_t i = 0; i < ref_sol_dim; i++ ) {
-        data[i] = (double)0;
-    }
-    data[0] = 1.;
-    data[1] = 0.;
-    data[2] = 1.;
-    data[3] = 0.;
-    data[4] = 0.;
-    data[5] = 1.;
-    data[6] = 1.;
-    data[7] = 0.;
+    // for ( base_int_t i = 0; i < ref_sol_dim; i++ ) {
+    //     data[i] = REF_INIT[i];
+    // }
+    FILL_COLMAJ_MAT_WITH_VEC( &data[0], &REF_INIT[0], 8, 1 );
+    PRINT_COLMAJ_MAT( &data[0], 8, 1, "base_dummy_fwht :: Initialized data is" );
     base_dummy_fwht( &data[0], ref_sol_dim );
-
-    for ( j = 0; j < ref_sol_dim; ++j ) {
-        if ( data[j] != REF_SOL[j] ) {
-            PRINT_INFO();
-            printf( "data[%zu] = %f != %f\n", j, data[j], REF_SOL[j] );
-            ierr += 1;
-        }
-    }
+    PRINT_COLMAJ_MAT( &data[0], 8, 1, "base_dummy_fwht :: Solution is" );
+    // for ( j = 0; j < ref_sol_dim; ++j ) {
+    //     if ( data[j] != REF_SOL[j] ) {
+    //         PRINT_INFO();
+    //         printf( "data[%zu] = %f != %f\n", j, data[j], REF_SOL[j] );
+    //         ierr += 1;
+    //     }
+    // }
+    CHECK_COLMAJ_MAT_WITH_VEC( data, REF_SOL, 8, 1, ierr );
 
     return ierr;
 }
@@ -84,65 +90,71 @@ test_base_fwht_mat()
     for ( base_int_t i = 0; i < ref_sol_dim; i++ ) {
         data[i] = (double)0;
     }
-    for ( base_int_t i = 0; i < n; i++ ) {
-        data[0 + i * m] = 1.;
-        data[1 + i * m] = 0.;
-        data[2 + i * m] = 1.;
-        data[3 + i * m] = 0.;
-        data[4 + i * m] = 0.;
-        data[5 + i * m] = 1.;
-        data[6 + i * m] = 1.;
-        data[7 + i * m] = 0.;
-    }
+    FILL_COLMAJ_MAT_WITH_VEC( &data[0], &REF_INIT[0], m, n );
+    PRINT_COLMAJ_MAT( &data[0], m, n, "base_fwht_mat :: Initialized data:" );
+    // for ( base_int_t i = 0; i < n; i++ ) {
+    //     data[0 + i * m] = 1.;
+    //     data[1 + i * m] = 0.;
+    //     data[2 + i * m] = 1.;
+    //     data[3 + i * m] = 0.;
+    //     data[4 + i * m] = 0.;
+    //     data[5 + i * m] = 1.;
+    //     data[6 + i * m] = 1.;
+    //     data[7 + i * m] = 0.;
+    // }
     base_fwht_mat( &data[0], m, n );
+    PRINT_COLMAJ_MAT( &data[0], m, n, "base_fwht_mat :: Solution is:" );
 
-    printf( "data matrix Col-Major - Using base_fwht_mat method\n" );
-    for ( base_int_t i = 0; i < m; ++i ) {
-        for ( base_int_t j = 0; j < n; ++j ) {
-            printf( "%f ", *( data + i + ( j * m ) ) );
-        }
-        printf( "\n" );
-    }
-    for ( base_int_t i = 0; i < n; i++ ) {
-        for ( base_int_t j = 0; j < m; j++ ) {
-            if ( data[j + i * m] != REF_SOL[j] ) {
-                PRINT_INFO();
-                printf( "data[%zu] = %f != %f\n", j, data[j + i * m], REF_SOL[j] );
-                ierr += 1;
-            }
-        }
-    }
+    // printf( "data matrix Col-Major - Using base_fwht_mat method\n" );
+    // for ( base_int_t i = 0; i < m; ++i ) {
+    //     for ( base_int_t j = 0; j < n; ++j ) {
+    //         printf( "%f ", *( data + i + ( j * m ) ) );
+    //     }
+    //     printf( "\n" );
+    // }
+    // for ( base_int_t i = 0; i < n; i++ ) {
+    //     for ( base_int_t j = 0; j < m; j++ ) {
+    //         if ( data[j + i * m] != REF_SOL[j] ) {
+    //             PRINT_INFO();
+    //             printf( "data[%zu] = %f != %f\n", j, data[j + i * m], REF_SOL[j] );
+    //             ierr += 1;
+    //         }
+    //     }
+    // }
     printf( "------------------------------------------------------------\n" );
     double *buffer = (double *)malloc( sizeof( double ) * n * 2 );
-    for ( base_int_t i = 0; i < n; i++ ) {
-        data[0 + i * m] = 1.;
-        data[1 + i * m] = 0.;
-        data[2 + i * m] = 1.;
-        data[3 + i * m] = 0.;
-        data[4 + i * m] = 0.;
-        data[5 + i * m] = 1.;
-        data[6 + i * m] = 1.;
-        data[7 + i * m] = 0.;
-    }
+    FILL_COLMAJ_MAT_WITH_VEC( &data[0], &REF_INIT[0], m, n );
+    PRINT_COLMAJ_MAT( &data[0], m, n, "base_fwht_mat_v3 :: Initialized data:" );
+    // for ( base_int_t i = 0; i < n; i++ ) {
+    //     data[0 + i * m] = 1.;
+    //     data[1 + i * m] = 0.;
+    //     data[2 + i * m] = 1.;
+    //     data[3 + i * m] = 0.;
+    //     data[4 + i * m] = 0.;
+    //     data[5 + i * m] = 1.;
+    //     data[6 + i * m] = 1.;
+    //     data[7 + i * m] = 0.;
+    // }
     base_fwht_mat_v3( &data[0], buffer, m, n );
     free( buffer );
     buffer = NULL;
-    printf( "data matrix Col-Major - Using base_fwht_mat_v3 method\n" );
-    for ( base_int_t i = 0; i < m; ++i ) {
-        for ( base_int_t j = 0; j < n; ++j ) {
-            printf( "%f ", *( data + i + ( j * m ) ) );
-        }
-        printf( "\n" );
-    }
-    for ( base_int_t i = 0; i < n; i++ ) {
-        for ( base_int_t j = 0; j < m; j++ ) {
-            if ( data[j + i * m] != REF_SOL[j] ) {
-                PRINT_INFO();
-                printf( "data[%zu] = %f != %f\n", j, data[j + i * m], REF_SOL[j] );
-                ierr += 1;
-            }
-        }
-    }
+    PRINT_COLMAJ_MAT( &data[0], m, n, "base_fwht_mat_v3 :: Solution is:" );
+    // printf( "data matrix Col-Major - Using base_fwht_mat_v3 method\n" );
+    // for ( base_int_t i = 0; i < m; ++i ) {
+    //     for ( base_int_t j = 0; j < n; ++j ) {
+    //         printf( "%f ", *( data + i + ( j * m ) ) );
+    //     }
+    //     printf( "\n" );
+    // }
+    // for ( base_int_t i = 0; i < n; i++ ) {
+    //     for ( base_int_t j = 0; j < m; j++ ) {
+    //         if ( data[j + i * m] != REF_SOL[j] ) {
+    //             PRINT_INFO();
+    //             printf( "data[%zu] = %f != %f\n", j, data[j + i * m], REF_SOL[j] );
+    //             ierr += 1;
+    //         }
+    //     }
+    // }
     printf( "------------------------------------------------------------\n" );
     for ( base_int_t i = 0; i < n; ++i ) {
         data[i + 0 * n] = 1.;
