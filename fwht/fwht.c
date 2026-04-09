@@ -255,3 +255,75 @@ base_fwht_mat_rmaj( double *data, base_int_t n, base_int_t ncols )
         }
     }
 }
+
+void
+base_fwht_mat_rmaj_v2( double *data, base_int_t n, base_int_t ncols )
+{
+    // Require localsize to be a power of 2
+    base_uint_t localsize = n;
+    base_uint_t l2        = base_ilog2( localsize ) - 1;
+    base_uint_t l3        = 1 << l2;
+    BASE_ASSERT_INT( localsize, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < localsize; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = ( j + k );
+                _base_rotatedata_mat_rmaj_v2( data, localsize, ncols, tmp, tmp + l3 );
+            }
+        }
+    }
+}
+
+void
+base_fwht_mat_rmaj_v3( double *data, base_int_t n, base_int_t ncols )
+{
+    // Require localsize to be a power of 2
+    base_uint_t localsize = n;
+    base_uint_t l2        = base_ilog2( localsize ) - 1;
+    base_uint_t l3        = 1 << l2;
+    BASE_ASSERT_INT( localsize, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < localsize; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = ( j + k );
+                _base_rotatedata_mat_rmaj_v3( data, localsize, ncols, tmp, tmp + l3 );
+            }
+        }
+    }
+}
+
+void
+base_fwht_mat_rmaj_v4( double *data, base_int_t n, base_int_t ncols )
+{
+    // Require localsize to be a power of 2
+    base_uint_t localsize = n;
+    base_uint_t l2        = base_ilog2( localsize ) - 1;
+    base_uint_t l3        = 1 << l2;
+    BASE_ASSERT_INT( localsize, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < localsize; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = ( j + k );
+                _base_rotatedata_mat_rmaj_v4( data, localsize, ncols, tmp, tmp + l3 );
+            }
+        }
+    }
+}

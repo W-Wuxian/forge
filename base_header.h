@@ -38,6 +38,10 @@
     } while ( 0 )
 #endif
 
+#ifdef NOPRINTMAT
+#define PRINT_COLMAJ_MAT( macro_mat, macro_nr, macro_nc, msg ) ( (void)0 )
+#define PRINT_ROWMAJ_MAT( macro_mat, macro_nr, macro_nc, msg ) ( (void)0 )
+#else
 #define PRINT_COLMAJ_MAT( macro_mat, macro_nr, macro_nc, msg )                                                                                                                                         \
     do {                                                                                                                                                                                               \
         printf( "%s\n", msg );                                                                                                                                                                         \
@@ -59,6 +63,7 @@
             printf( "\n" );                                                                                                                                                                            \
         }                                                                                                                                                                                              \
     } while ( 0 )
+#endif
 
 #define CHECK_COLMAJ_MAT_WITH_VEC( macro_mat, macro_vec, macro_nr, macro_nc, macro_ierr )                                                                                                              \
     do {                                                                                                                                                                                               \

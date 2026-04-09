@@ -25,7 +25,11 @@ mkdir -p prof/
 
 #-DNDEBUG \
 #debug_option="-O3 -march=native -g3 -pg -Wall -fopenmp -ftree-vectorize -fdump-tree-vect-details"
-debug_option="-O0 -g3 -pg -Wall"
+#debug_option="-O0 -g3 -pg -Wall -Wno-unknown-pragmas -DNOPRINTMAT"
+#debug_option="-O0 -g3 -pg -Wall -Wno-unknown-pragmas -DPRINTMAT"
+#debug_option="-O3 -g3 -pg -Wall -fopenmp -ftree-vectorize -fdump-tree-vect-details -DPRINTMAT"
+debug_option="-O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -DNOPRINTMAT"
+debug_option="-O3 -march=native -Wall -fopenmp -fopt-info-vec-optimized=vec_success.report -DNOPRINTMAT"
 # showcase fwht
 $comp $debug_option -o bin/showcase_fwht \
 $FORGE_ROOT/fwht_utils/hada.c \

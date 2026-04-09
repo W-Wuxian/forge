@@ -88,4 +88,8 @@ void base_fwht_mat_v3( double *data, double *buffer, base_int_t n, base_int_t nc
 
 void base_fwht_mat_rmaj( double *data, base_int_t n, base_int_t ncols );
 
+void base_fwht_mat_rmaj_v2( double *data, base_int_t n, base_int_t ncols );
+void base_fwht_mat_rmaj_v3( double *data, base_int_t n, base_int_t ncols );
+void base_fwht_mat_rmaj_v4( double *data, base_int_t n, base_int_t ncols );
+
 #endif  //__FWHT_H__
