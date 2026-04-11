@@ -68,3 +68,6 @@ logs/
 *.jpeg
 preAlps/
 *.report
+*.xml
+*.html
+c.bash

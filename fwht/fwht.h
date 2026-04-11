@@ -2,7 +2,7 @@
 #define __FWHT_H__
 
 #include "hada.h"
-#include <cblas.h>
+// #include <cblas.h>
 
 /**
  * \fn _base_rotatedata
@@ -82,6 +82,8 @@ void _base_rotatedata_mat_rmaj_v3( double *__restrict__ data, base_int_t nrows, 
 
 void _base_rotatedata_mat_rmaj_v4( double *__restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
 
+void _base_rotatedata_mat_rmaj_v5( double *__restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 );
+
 void base_fwht_mat( double *data, base_int_t n, base_int_t ncols );
 
 void base_fwht_mat_v3( double *data, double *buffer, base_int_t n, base_int_t ncols );
@@ -89,7 +91,38 @@ void base_fwht_mat_v3( double *data, double *buffer, base_int_t n, base_int_t nc
 void base_fwht_mat_rmaj( double *data, base_int_t n, base_int_t ncols );
 
 void base_fwht_mat_rmaj_v2( double *data, base_int_t n, base_int_t ncols );
-void base_fwht_mat_rmaj_v3( double *data, base_int_t n, base_int_t ncols );
-void base_fwht_mat_rmaj_v4( double *data, base_int_t n, base_int_t ncols );
+
+void base_fwht_mat_rmaj_v3( double *__restrict__ data, base_int_t n, base_int_t ncols );
+
+void base_fwht_mat_rmaj_v4( double *__restrict__ data, base_int_t n, base_int_t ncols );
+
+void base_fwht_mat_rmaj_v5( double *__restrict__ data, base_int_t nrows, base_int_t ncols );
+
+/**
+ * @brief base_SetFFTW
+ *
+ * @param Hadaplan pointer to fftw_plan
+ * @param vIn pointer to viewt_t
+ * @param FT int 0: FFTW_ESTIMATE 1: FFTW_MEASURE
+ * @param In pointer to Input data to be transform (out-of-place)
+ * @param Out pointer to Output data
+ */
+void base_SetFFTW( fftw_plan *Hadaplan, view_t *vIn, int FT, double *In, double *Out );
+
+/**
+ * @brief base_FreeFFTW
+ * @details Free memory used by FFTW
+ * @param Hadaplan fftw_plan
+ */
+void base_FreeFFTW( fftw_plan *Hadaplan );
+
+/**
+ * @brief FWHT flops
+ * Formulae: m*n*log(m)
+ * @param m
+ * @param n
+ * @return size_t
+ */
+size_t base_flops_FWHT( base_int_t m, base_int_t n );
 
 #endif  //__FWHT_H__

@@ -119,6 +119,22 @@ test_base_fwht_mat()
     PRINT_ROWMAJ_MAT( &data[0], m, n, "base_fwht_mat_rmaj_v4 :: Solution is:" );
     CHECK_ROWMAJ_MAT_WITH_VEC( data, REF_SOL, m, n, ierr );
 
+    FILL_ROWMAJ_MAT_WITH_VEC( &data[0], &REF_INIT[0], m, n );
+    PRINT_ROWMAJ_MAT( &data[0], m, n, "base_fwht_mat_rmaj_v5 :: Initialized data:" );
+    base_fwht_mat_rmaj_v5( &data[0], m, n );
+    PRINT_ROWMAJ_MAT( &data[0], m, n, "base_fwht_mat_rmaj_v5 :: Solution is:" );
+    CHECK_ROWMAJ_MAT_WITH_VEC( data, REF_SOL, m, n, ierr );
+
+    view_t    vIn = { .m = m, .n = n, .st1 = 1, .st2 = m };
+    fftw_plan Hadaplan;
+    base_SetFFTW( &Hadaplan, &vIn, 1, &data[0], &data[0] );
+    FILL_COLMAJ_MAT_WITH_VEC( &data[0], &REF_INIT[0], m, n );
+    PRINT_COLMAJ_MAT( &data[0], m, n, "base_SetFFTW + execute plan :: Initialized data:" );
+    fftw_execute_r2r( Hadaplan, &data[0], &data[0] );
+    base_FreeFFTW( &Hadaplan );
+    PRINT_COLMAJ_MAT( &data[0], m, n, "base_SetFFTW + execute plan :: Solution is:" );
+    CHECK_COLMAJ_MAT_WITH_VEC( data, REF_SOL, m, n, ierr );
+
     return ierr;
 }
 

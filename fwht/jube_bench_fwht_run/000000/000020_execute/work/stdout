@@ -1,0 +1,27 @@
+[==========] Running 12 benchmarks.
+[ RUN      ] fwht_mat.dim_2048x1024
+[       OK ] fwht_mat.dim_2048x1024 (mean 109.576ms, confidence interval +- 0.655367%)
+[ RUN      ] fwht_mat_v3.dim_2048x1024
+[       OK ] fwht_mat_v3.dim_2048x1024 (mean 148.946ms, confidence interval +- 1.039953%)
+[ RUN      ] fwht_mat_v3_prealloc.dim_2048x1024
+[       OK ] fwht_mat_v3_prealloc.dim_2048x1024 (mean 147.756ms, confidence interval +- 1.469706%)
+[ RUN      ] fwht_mat_rmaj.dim_2048x1024
+[       OK ] fwht_mat_rmaj.dim_2048x1024 (mean 11.168ms, confidence interval +- 4.009431%)
+[ RUN      ] fwht_mat_rmaj_v2.dim_2048x1024
+[       OK ] fwht_mat_rmaj_v2.dim_2048x1024 (mean 7.348ms, confidence interval +- 9.086271%)
+[ RUN      ] fwht_mat_rmaj_v3.dim_2048x1024
+[       OK ] fwht_mat_rmaj_v3.dim_2048x1024 (mean 7.514ms, confidence interval +- 5.917584%)
+[ RUN      ] fwht_mat_rmaj_v31.dim_2048x1024
+[       OK ] fwht_mat_rmaj_v31.dim_2048x1024 (mean 7.541ms, confidence interval +- 6.599165%)
+[ RUN      ] fwht_mat_rmaj_v4.dim_2048x1024
+[       OK ] fwht_mat_rmaj_v4.dim_2048x1024 (mean 7.534ms, confidence interval +- 8.381873%)
+[ RUN      ] fwht_mat_rmaj_v41.dim_2048x1024
+[       OK ] fwht_mat_rmaj_v41.dim_2048x1024 (mean 7.664ms, confidence interval +- 8.782582%)
+[ RUN      ] fwht_mat_rmaj_v5.dim_2048x1024
+[       OK ] fwht_mat_rmaj_v5.dim_2048x1024 (mean 7.218ms, confidence interval +- 5.634663%)
+[ RUN      ] fwht_fftw_measure_mat.dim_2048x1024
+[       OK ] fwht_fftw_measure_mat.dim_2048x1024 (mean 13.845ms, confidence interval +- 0.968914%)
+[ RUN      ] fwht_fftw_estimate_mat.dim_2048x1024
+[       OK ] fwht_fftw_estimate_mat.dim_2048x1024 (mean 14.251ms, confidence interval +- 1.497855%)
+[==========] 12 benchmarks ran.
+[  PASSED  ] 12 benchmarks.

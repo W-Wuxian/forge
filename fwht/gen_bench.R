@@ -3,9 +3,11 @@
 library(tidyverse)
 library(scales) 
 
+args <- commandArgs(trailingOnly = TRUE)
 # 1. Lecture du fichier CSV
 # On précise col_names = FALSE car on va renommer proprement pour éviter les problèmes d'espaces
-df <- read_csv("output/rotatedata_mat_benchmark.csv", skip = 1, col_names = c("name", "mean_ns", "stddev_pct", "confidence_pct", "drop")) %>%
+# "output/rotatedata_mat_benchmark.csv"
+df <- read_csv(args[1], skip = 1, col_names = c("name", "mean_ns", "stddev_pct", "confidence_pct", "drop")) %>%
   select(-drop) # Supprimer la dernière colonne vide causée par la virgule finale
 
 # 2. Extraction des paramètres depuis la colonne "name"

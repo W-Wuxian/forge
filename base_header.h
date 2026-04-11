@@ -9,10 +9,21 @@
 #include <math.h>
 #include <assert.h>
 #include <inttypes.h>
+#include <cblas.h>
+#include "fftw3.h"
 // #include "mkl.h"
 #include "base_datatype.h"
 
 #define PRINT_INFO() printf( "In file:%s, function:%s() and line:%d ", __FILE__, __FUNCTION__, __LINE__ )
+
+#define BASE_ASSERT_ISNOTNULL( a )                                                                                                                                                                     \
+    do {                                                                                                                                                                                               \
+        if ( ( a ) == NULL ) {                                                                                                                                                                         \
+            PRINT_INFO();                                                                                                                                                                              \
+            printf( "assertion a != NULL failed:\n" );                                                                                                                                                 \
+        }                                                                                                                                                                                              \
+        assert( ( a ) != NULL );                                                                                                                                                                       \
+    } while ( 0 )
 
 #ifdef NOASSERTINT
 #define BASE_ASSERT_INT( a, b ) ( (void)0 )

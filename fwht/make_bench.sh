@@ -11,6 +11,9 @@ if command -v guix >/dev/null 2>&1; then
     run_jube() {
         guix shell --tune gcc-toolchain@14.2.0 openblas jube -- bash -c "jube run benchmark.xml"
     }
+    run_jube_fwht() {
+        guix shell --tune gcc-toolchain@14.2.0 openblas fftw jube -- bash -c "jube run benchmark_fwht.xml"
+    }
 else
     echo "Guix is not installed."
     comp=gcc
@@ -30,8 +33,8 @@ rm -f bin/* logs/* output/*
 LOG_FILE=logs/bench.log
 BENCH_OUT_FILE=output/bench_base_rotatedata_mat.csv
 
-run_jube && guix shell r r-tidyverse -- Rscript gen_bench.R
-
+#run_jube && guix shell r r-tidyverse -- Rscript gen_bench.R output/rotatedata_mat_benchmark.csv
+run_jube_fwht && guix shell r r-tidyverse r-plotly -- Rscript gen_bench_fwht.R output/fwht_mat_benchmark.csv
 # this one is a dummy one testing fixture ubench
 # $comp -O2 -Wall -o bin/bench_base_fixture_rotatedata_mat \
 # $FORGE_ROOT/fwht_utils/hada.c \

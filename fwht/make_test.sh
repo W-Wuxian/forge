@@ -7,7 +7,7 @@ cd $SCRIPT_DIR
 
 if command -v guix >/dev/null 2>&1; then
     echo "Guix is installed."
-    comp="guix shell gcc-toolchain@14.2.0 openblas -- gcc "
+    comp="guix shell gcc-toolchain@14.2.0 openblas fftw -- gcc "
 else
     echo "Guix is not installed."
     comp=gcc
@@ -26,17 +26,17 @@ mkdir -p prof/
 #-DNDEBUG \
 #debug_option="-O3 -march=native -g3 -pg -Wall -fopenmp -ftree-vectorize -fdump-tree-vect-details"
 #debug_option="-O0 -g3 -pg -Wall -Wno-unknown-pragmas -DNOPRINTMAT"
-#debug_option="-O0 -g3 -pg -Wall -Wno-unknown-pragmas -DPRINTMAT"
+debug_option="-O0 -g3 -pg -Wall -Wno-unknown-pragmas -DPRINTMAT"
 #debug_option="-O3 -g3 -pg -Wall -fopenmp -ftree-vectorize -fdump-tree-vect-details -DPRINTMAT"
-debug_option="-O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -DNOPRINTMAT"
-debug_option="-O3 -march=native -Wall -fopenmp -fopt-info-vec-optimized=vec_success.report -DNOPRINTMAT"
+#debug_option="-O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -DNOPRINTMAT"
+#debug_option="-O3 -march=native -Wall -fopenmp -fopt-info-vec-optimized=vec_success.report -DPRINTMAT"
 # showcase fwht
 $comp $debug_option -o bin/showcase_fwht \
 $FORGE_ROOT/fwht_utils/hada.c \
 fwht.c test/fwht_showcase.c \
 -DFWHT_SHOWCASE_COL_M=16 \
 -I$GUIX_ENVIRONMENT/include \
--L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread \
+-L$GUIX_ENVIRONMENT/lib -lopenblas -lfftw3 -lpthread -lm \
 $RESOLVE_CPATH \
 2>&1 | tee build.log
 bin/showcase_fwht |& tee -a build.log
@@ -46,7 +46,7 @@ gprof bin/showcase_fwht prof/gmon-showcase_fwht.out > prof/grof-showcase_fwht.ou
 $comp $debug_option -o bin/test_base_dummy_fwht \
 $FORGE_ROOT/fwht_utils/hada.c \
 fwht.c test/fwht_tester.c test/fwht_tester_base_dummy_fwht.c \
--L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread \
+-L$GUIX_ENVIRONMENT/lib -lopenblas -lfftw3 -lpthread -lm \
 -I$GUIX_ENVIRONMENT/include \
 $RESOLVE_CPATH \
 2>&1 | tee -a build.log
@@ -58,7 +58,7 @@ gprof bin/test_base_dummy_fwht prof/gmon-test_base_dummy_fwht.out > prof/gprof-t
 $comp $debug_option -o bin/test_base_rotatedata_mat \
 $FORGE_ROOT/fwht_utils/hada.c \
 fwht.c test/fwht_tester.c test/fwht_tester_rotatedata_mat.c \
--L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread \
+-L$GUIX_ENVIRONMENT/lib -lopenblas -lfftw3 -lpthread -lm \
 -I$GUIX_ENVIRONMENT/include \
 $RESOLVE_CPATH \
 2>&1 | tee -a build.log
@@ -68,7 +68,7 @@ gprof bin/test_base_rotatedata_mat prof/gmon-test_base_rotatedata_mat.out > prof
 
 $comp $debug_option -o bin/test_cblas_dgemm \
 test/test_cblas_dgemm.c \
--L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread \
+-L$GUIX_ENVIRONMENT/lib -lopenblas -lfftw3 -lpthread -lm \
 -I$GUIX_ENVIRONMENT/include \
 2>&1 | tee -a build.log
 bin/test_cblas_dgemm |& tee -a build.log
