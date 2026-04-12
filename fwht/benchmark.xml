@@ -25,7 +25,7 @@
     <!-- Fichiers à copier dans le dossier d'exécution (Sandbox JUBE) -->
     <fileset name="source_files">
       <copy>${FORGE_ROOT}/fwht_utils/hada.c</copy>
-      <copy>${FORGE_ROOT}/fwht/fwht.c</copy>
+      <copy>${FORGE_ROOT}/fwht/base_fwht.c</copy>
       <copy>${FORGE_ROOT}/fwht/bench/fwht_bench_rotatedata_mat.c</copy>
     </fileset>
 
@@ -46,8 +46,8 @@
       <do>sed -i 's/JUBE_RIDX1/${ridx1}/g' fwht_bench_rotatedata_mat.c</do>
       <do>sed -i 's/JUBE_RIDX2/${ridx2}/g' fwht_bench_rotatedata_mat.c</do>
       <do>
-        gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -o bench_exe hada.c fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH}
-        <!-- gcc -O2 -Wall -o bench_exe hada.c fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH} -->
+        gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -o bench_exe hada.c base_fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH}
+        <!-- gcc -O2 -Wall -o bench_exe hada.c base_fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH} -->
       </do>
     </step>
 

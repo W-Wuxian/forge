@@ -1,4 +1,4 @@
-#include "fwht.h"
+#include "base_fwht.h"
 
 void
 _base_rotatedata( double *data, base_uint_t ridx1, base_uint_t ridx2 )

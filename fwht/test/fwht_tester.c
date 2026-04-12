@@ -1,5 +1,5 @@
 #include "fwht_tester.h"
-
+#include "fwht.h"
 /**********************************************************************************************************************/
 // ref solution https://en.wikipedia.org/wiki/Fast_Walsh%E2%80%93Hadamard_transform
 // Testting wikipedia 1D fwht transform, setting reference solution:
@@ -134,6 +134,77 @@ test_base_fwht_mat()
     base_FreeFFTW( &Hadaplan );
     PRINT_COLMAJ_MAT( &data[0], m, n, "base_SetFFTW + execute plan :: Solution is:" );
     CHECK_COLMAJ_MAT_WITH_VEC( data, REF_SOL, m, n, ierr );
+
+    FILL_COLMAJ_MAT_WITH_VEC( &data[0], &REF_INIT[0], m, n );
+    PRINT_COLMAJ_MAT( &data[0], m, n, "hadi-fwht with loop :: Initialized data:" );
+    for ( base_int_t i = 0; i < n; ++i ) {
+        fwht_status_t status = fwht_f64( &data[i * m], m );
+        if ( status != FWHT_SUCCESS ) {
+            fprintf( stderr, "%s\n", fwht_error_string( status ) );
+            return 1;
+        }
+    }
+    PRINT_COLMAJ_MAT( &data[0], m, n, "hadi-fwht with loop :: Solution is:" );
+    CHECK_COLMAJ_MAT_WITH_VEC( data, REF_SOL, m, n, ierr );
+
+    double *coldata[n];
+    for ( base_int_t i = 0; i < n; i++ ) {
+        coldata[i] = &data[i * m];
+    }
+    FILL_COLMAJ_MAT_WITH_VEC( &data[0], &REF_INIT[0], m, n );
+    PRINT_COLMAJ_MAT( &data[0], m, n, "hadi-fwht fwht_batch_f64 :: Initialized data:" );
+    fwht_status_t status = fwht_batch_f64( NULL, coldata, m, n );
+    if ( status != FWHT_SUCCESS ) {
+        fprintf( stderr, "%s\n", fwht_error_string( status ) );
+        return 1;
+    }
+    PRINT_COLMAJ_MAT( &data[0], m, n, "hadi-fwht fwht_batch_f64 :: Solution is:" );
+    CHECK_COLMAJ_MAT_WITH_VEC( data, REF_SOL, m, n, ierr );
+
+    FILL_COLMAJ_MAT_WITH_VEC( &data[0], &REF_INIT[0], m, n );
+    PRINT_COLMAJ_MAT( &data[0], m, n, "hadi-fwht fwht_f64_batch :: Initialized data:" );
+    status = fwht_f64_batch( coldata, m, n );
+    if ( status != FWHT_SUCCESS ) {
+        fprintf( stderr, "%s\n", fwht_error_string( status ) );
+        return 1;
+    }
+    PRINT_COLMAJ_MAT( &data[0], m, n, "hadi-fwht fwht_f64_batch :: Solution is:" );
+    CHECK_COLMAJ_MAT_WITH_VEC( data, REF_SOL, m, n, ierr );
+
+    fwht_config_t   config = { .backend = FWHT_BACKEND_CPU, .num_threads = 1, .gpu_device = 0, .normalize = true };
+    fwht_context_t *ctx    = fwht_create_context( &config );
+
+    FILL_COLMAJ_MAT_WITH_VEC( &data[0], &REF_INIT[0], m, n );
+    PRINT_COLMAJ_MAT( &data[0], m, n, "hadi-fwht fwht_batch_f64 CONFIG :: Initialized data:" );
+    status = fwht_batch_f64( ctx, coldata, m, n );
+    if ( status != FWHT_SUCCESS ) {
+        fprintf( stderr, "%s\n", fwht_error_string( status ) );
+        return 1;
+    }
+    PRINT_COLMAJ_MAT( &data[0], m, n, "hadi-fwht fwht_batch_f64 CONFIG :: Solution is:" );
+    CHECK_COLMAJ_MAT_WITH_VEC( data, REF_SOL, m, n, ierr );
+
+    FILL_COLMAJ_MAT_WITH_VEC( &data[0], &REF_INIT[0], m, n );
+    PRINT_COLMAJ_MAT( &data[0], m, n, "hadi-fwht fwht_batch_f64 CONFIG BATCHLOOP :: Initialized data:" );
+    base_int_t k = 2;
+    double    *cols[k];
+    for ( base_int_t b = 0; b < n; b += k ) {
+        base_int_t current_k = ( b + k <= n ) ? k : n - b;  // gère le dernier batch partiel
+        printf( "b %zu current_k %zu \n", b, current_k );
+        for ( base_int_t j = 0; j < current_k; j++ ) {
+            printf( "\r j %zu \n", j );
+            cols[j] = &data[( b + j ) * m];
+        }
+        status = fwht_batch_f64( ctx, cols, m, current_k );
+        if ( status != FWHT_SUCCESS ) {
+            fprintf( stderr, "%s\n", fwht_error_string( status ) );
+            return 1;
+        }
+    }
+    PRINT_COLMAJ_MAT( &data[0], m, n, "hadi-fwht fwht_batch_f64 CONFIG BATCHLOOP :: Solution is:" );
+    CHECK_COLMAJ_MAT_WITH_VEC( data, REF_SOL, m, n, ierr );
+
+    fwht_destroy_context( ctx );
 
     return ierr;
 }

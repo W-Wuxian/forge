@@ -1,5 +1,5 @@
-#ifndef __FWHT_H__
-#define __FWHT_H__
+#ifndef __BASE_FWHT_H__
+#define __BASE_FWHT_H__
 
 #include "hada.h"
 // #include <cblas.h>

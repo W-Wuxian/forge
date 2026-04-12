@@ -38,7 +38,7 @@ run_jube_fwht && guix shell r r-tidyverse r-plotly -- Rscript gen_bench_fwht.R o
 # this one is a dummy one testing fixture ubench
 # $comp -O2 -Wall -o bin/bench_base_fixture_rotatedata_mat \
 # $FORGE_ROOT/fwht_utils/hada.c \
-# fwht.c bench/fwht_bench_fixture_rotatedata_mat.c \
+# base_fwht.c bench/fwht_bench_fixture_rotatedata_mat.c \
 # -L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread -lm \
 # -I$GUIX_ENVIRONMENT/include \
 # $RESOLVE_CPATH \
@@ -48,7 +48,7 @@ run_jube_fwht && guix shell r r-tidyverse r-plotly -- Rscript gen_bench_fwht.R o
 # this one can be run as it, need manual bench case extension from source
 # $comp -O2 -Wall -o bin/benchv2_base_rotatedata_mat \
 # $FORGE_ROOT/fwht_utils/hada.c \
-# fwht.c bench/fwht_benchv2_rotatedata_mat.c \
+# base_fwht.c bench/fwht_benchv2_rotatedata_mat.c \
 # -L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread -lm \
 # -I$GUIX_ENVIRONMENT/include \
 # $RESOLVE_CPATH \
@@ -59,11 +59,11 @@ run_jube_fwht && guix shell r r-tidyverse r-plotly -- Rscript gen_bench_fwht.R o
 # this one is used by jube cannot be run without it
 # $comp -O2 -Wall -o bin/bench_base_rotatedata_mat \
 # $FORGE_ROOT/fwht_utils/hada.c \
-# fwht.c bench/fwht_bench_rotatedata_mat.c \
+# base_fwht.c bench/fwht_bench_rotatedata_mat.c \
 # -L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread -lm \
 # -I$GUIX_ENVIRONMENT/include \
 # $RESOLVE_CPATH \
 # 2>&1 | tee -a ${LOG_FILE}
 # bin/bench_base_rotatedata_mat --output=${BENCH_OUT_FILE}
 
-#echo "bin/bench_base_rotatedata_mat $FORGE_ROOT/fwht_utils/hada.c fwht.c bench/fwht_bench_rotatedata_mat.c -L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread -lm -I$GUIX_ENVIRONMENT/include $RESOLVE_CPATH"
+#echo "bin/bench_base_rotatedata_mat $FORGE_ROOT/fwht_utils/hada.c base_fwht.c bench/fwht_bench_rotatedata_mat.c -L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread -lm -I$GUIX_ENVIRONMENT/include $RESOLVE_CPATH"

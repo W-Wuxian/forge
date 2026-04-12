@@ -57,6 +57,7 @@ dkms.conf
 #
 *.log
 run
+ext/
 keep/
 prof/
 bin/
@@ -69,6 +70,5 @@ logs/
 *.jpeg
 preAlps/
 *.report
-*.xml
 *.html
 c.bash

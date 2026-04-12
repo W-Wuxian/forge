@@ -1,4 +1,4 @@
-#include "fwht.h"
+#include "base_fwht.h"
 #include "ubench.h"
 
 // 1. Define your initialization helper function

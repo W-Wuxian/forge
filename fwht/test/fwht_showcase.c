@@ -1,4 +1,4 @@
-#include "fwht.h"
+#include "base_fwht.h"
 
 #ifndef FWHT_SHOWCASE_ROW_M
 #define FWHT_SHOWCASE_ROW_M 16
