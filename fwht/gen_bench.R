@@ -19,8 +19,8 @@ df_parsed <- df %>%
     convert = TRUE # Convertit automatiquement les nombres en entiers (integer)
   )
 #df_parsed <- df_parsed |> filter(method != c("rotatedata_mat_rmaj", "rotatedata_rmaj_loop"))
-df_parsed <- df_parsed |> filter(method != c("rotatedata_mat_rmaj"))
-df_parsed <- df_parsed |> filter(method != c("rotatedata_rmaj_loop"))
+#df_parsed <- df_parsed |> filter(method != c("rotatedata_mat_rmaj"))
+#df_parsed <- df_parsed |> filter(method != c("rotatedata_rmaj_loop"))
 # Affichage de vérification dans la console
 print(df_parsed)
 

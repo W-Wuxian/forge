@@ -23,8 +23,9 @@ else
 fi
 
 FORGE_ROOT=$PWD/..
-export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht
-RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht"
+export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:$FORGE_ROOT/ext/hadi-fwht-2.0.1/include
+export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:$FORGE_ROOT/ext/hadi-fwht-2.0.1/lib:$LD_LIBRARY_PATH
+RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I$FORGE_ROOT/ext/hadi-fwht-2.0.1/include"
 echo $CPATH
 
 mkdir -p bin/ logs/ output/

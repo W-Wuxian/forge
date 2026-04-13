@@ -1,7 +1,7 @@
 #include "base_fwht.h"
 #include "ubench.h"
-
-// 1. Define your initialization helper function
+#include "fwht.h"
+//  1. Define your initialization helper function
 void
 set_mat_values( double *mat, int nele, int ncols )
 {
@@ -231,7 +231,7 @@ set_mat_values( double *mat, int nele, int ncols )
         base_int_t num_elements = nrows * ncols;                                                                                                                                                       \
         view_t     vIn          = { .m = nrows, .n = ncols, .st1 = 1, .st2 = nrows };                                                                                                                  \
         size_t     array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                         \
-        double    *data         = (double *)malloc( array_size );                                                                                                                                      \
+        double    *data         = (double *)fftw_malloc( array_size );                                                                                                                                 \
         fftw_plan  Hadaplan;                                                                                                                                                                           \
         base_SetFFTW( &Hadaplan, &vIn, 1, &data[0], &data[0] );                                                                                                                                        \
         /* Call your initialization function here */                                                                                                                                                   \
@@ -243,7 +243,7 @@ set_mat_values( double *mat, int nele, int ncols )
             fftw_execute_r2r( Hadaplan, &data[0], &data[0] );                                                                                                                                          \
         }                                                                                                                                                                                              \
         base_FreeFFTW( &Hadaplan );                                                                                                                                                                    \
-        free( data );                                                                                                                                                                                  \
+        fftw_free( data );                                                                                                                                                                             \
         data = NULL;                                                                                                                                                                                   \
     }
 
@@ -255,7 +255,7 @@ set_mat_values( double *mat, int nele, int ncols )
         base_int_t num_elements = nrows * ncols;                                                                                                                                                       \
         view_t     vIn          = { .m = nrows, .n = ncols, .st1 = 1, .st2 = nrows };                                                                                                                  \
         size_t     array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                         \
-        double    *data         = (double *)malloc( array_size );                                                                                                                                      \
+        double    *data         = (double *)fftw_malloc( array_size );                                                                                                                                 \
         fftw_plan  Hadaplan;                                                                                                                                                                           \
         base_SetFFTW( &Hadaplan, &vIn, 0, &data[0], &data[0] );                                                                                                                                        \
         /* Call your initialization function here */                                                                                                                                                   \
@@ -267,23 +267,160 @@ set_mat_values( double *mat, int nele, int ncols )
             fftw_execute_r2r( Hadaplan, &data[0], &data[0] );                                                                                                                                          \
         }                                                                                                                                                                                              \
         base_FreeFFTW( &Hadaplan );                                                                                                                                                                    \
+        fftw_free( data );                                                                                                                                                                             \
+        data = NULL;                                                                                                                                                                                   \
+    }
+
+#define BENCH_HADI_FWHT_MAT_V1( NROWS, NCOLS )                                                                                                                                                         \
+    UBENCH_EX( hadi_fwht_mat_v1, dim_##NROWS##x##NCOLS )                                                                                                                                               \
+    {                                                                                                                                                                                                  \
+        base_int_t    nrows        = (base_int_t)NROWS;                                                                                                                                                \
+        base_int_t    ncols        = (base_int_t)NCOLS;                                                                                                                                                \
+        base_int_t    num_elements = nrows * ncols;                                                                                                                                                    \
+        fwht_status_t status       = FWHT_SUCCESS;                                                                                                                                                     \
+        size_t        array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                      \
+        double       *data         = NULL;                                                                                                                                                             \
+        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
+                                                                                                                                                                                                       \
+        set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
+                                                                                                                                                                                                       \
+        UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
+        {                                                                                                                                                                                              \
+            for ( base_int_t i = 0; i < ncols; ++i ) {                                                                                                                                                 \
+                status = fwht_f64( &data[i * nrows], nrows );                                                                                                                                          \
+            }                                                                                                                                                                                          \
+        }                                                                                                                                                                                              \
+                                                                                                                                                                                                       \
+        free( data );                                                                                                                                                                                  \
+        data = NULL;                                                                                                                                                                                   \
+    }
+
+#define BENCH_HADI_FWHT_MAT_V2( NROWS, NCOLS )                                                                                                                                                         \
+    UBENCH_EX( hadi_fwht_mat_v2, dim_##NROWS##x##NCOLS )                                                                                                                                               \
+    {                                                                                                                                                                                                  \
+        base_int_t    nrows        = (base_int_t)NROWS;                                                                                                                                                \
+        base_int_t    ncols        = (base_int_t)NCOLS;                                                                                                                                                \
+        base_int_t    num_elements = nrows * ncols;                                                                                                                                                    \
+        fwht_status_t status       = FWHT_SUCCESS;                                                                                                                                                     \
+        size_t        array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                      \
+        double       *data         = NULL;                                                                                                                                                             \
+        double       *coldata[ncols];                                                                                                                                                                  \
+        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
+                                                                                                                                                                                                       \
+        set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
+        for ( base_int_t i = 0; i < ncols; i++ ) {                                                                                                                                                     \
+            coldata[i] = &data[i * nrows];                                                                                                                                                             \
+        }                                                                                                                                                                                              \
+        UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
+        {                                                                                                                                                                                              \
+            status = fwht_batch_f64( NULL, coldata, nrows, ncols );                                                                                                                                    \
+        }                                                                                                                                                                                              \
+                                                                                                                                                                                                       \
+        free( data );                                                                                                                                                                                  \
+        data = NULL;                                                                                                                                                                                   \
+    }
+
+#define BENCH_HADI_FWHT_MAT_V3( NROWS, NCOLS )                                                                                                                                                         \
+    UBENCH_EX( hadi_fwht_mat_v3, dim_##NROWS##x##NCOLS )                                                                                                                                               \
+    {                                                                                                                                                                                                  \
+        base_int_t    nrows        = (base_int_t)NROWS;                                                                                                                                                \
+        base_int_t    ncols        = (base_int_t)NCOLS;                                                                                                                                                \
+        base_int_t    num_elements = nrows * ncols;                                                                                                                                                    \
+        fwht_status_t status       = FWHT_SUCCESS;                                                                                                                                                     \
+        size_t        array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                      \
+        double       *data         = NULL;                                                                                                                                                             \
+        double       *coldata[ncols];                                                                                                                                                                  \
+        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
+                                                                                                                                                                                                       \
+        set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
+        for ( base_int_t i = 0; i < ncols; i++ ) {                                                                                                                                                     \
+            coldata[i] = &data[i * nrows];                                                                                                                                                             \
+        }                                                                                                                                                                                              \
+        UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
+        {                                                                                                                                                                                              \
+            status = fwht_f64_batch( coldata, nrows, ncols );                                                                                                                                          \
+        }                                                                                                                                                                                              \
+                                                                                                                                                                                                       \
+        free( data );                                                                                                                                                                                  \
+        data = NULL;                                                                                                                                                                                   \
+    }
+
+#define BENCH_HADI_FWHT_MAT_V4( NROWS, NCOLS )                                                                                                                                                         \
+    UBENCH_EX( hadi_fwht_mat_v4, dim_##NROWS##x##NCOLS )                                                                                                                                               \
+    {                                                                                                                                                                                                  \
+        base_int_t      nrows        = (base_int_t)NROWS;                                                                                                                                              \
+        base_int_t      ncols        = (base_int_t)NCOLS;                                                                                                                                              \
+        base_int_t      num_elements = nrows * ncols;                                                                                                                                                  \
+        fwht_status_t   status       = FWHT_SUCCESS;                                                                                                                                                   \
+        fwht_config_t   config       = { .backend = FWHT_BACKEND_CPU, .num_threads = 1, .gpu_device = 0, .normalize = true };                                                                          \
+        fwht_context_t *ctx          = fwht_create_context( &config );                                                                                                                                 \
+        size_t          array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                    \
+        double         *data         = NULL;                                                                                                                                                           \
+        double         *coldata[ncols];                                                                                                                                                                \
+        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
+                                                                                                                                                                                                       \
+        set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
+        for ( base_int_t i = 0; i < ncols; i++ ) {                                                                                                                                                     \
+            coldata[i] = &data[i * nrows];                                                                                                                                                             \
+        }                                                                                                                                                                                              \
+        UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
+        {                                                                                                                                                                                              \
+            status = fwht_batch_f64( ctx, coldata, nrows, ncols );                                                                                                                                     \
+        }                                                                                                                                                                                              \
+        fwht_destroy_context( ctx );                                                                                                                                                                   \
+        free( data );                                                                                                                                                                                  \
+        data = NULL;                                                                                                                                                                                   \
+    }
+
+#define BENCH_HADI_FWHT_MAT_V5( NROWS, NCOLS )                                                                                                                                                         \
+    UBENCH_EX( hadi_fwht_mat_v5, dim_##NROWS##x##NCOLS )                                                                                                                                               \
+    {                                                                                                                                                                                                  \
+        base_int_t      nrows        = (base_int_t)NROWS;                                                                                                                                              \
+        base_int_t      ncols        = (base_int_t)NCOLS;                                                                                                                                              \
+        base_int_t      num_elements = nrows * ncols;                                                                                                                                                  \
+        base_int_t      k            = 5;                                                                                                                                                            \
+        fwht_status_t   status       = FWHT_SUCCESS;                                                                                                                                                   \
+        fwht_config_t   config       = { .backend = FWHT_BACKEND_CPU, .num_threads = 1, .gpu_device = 0, .normalize = true };                                                                          \
+        fwht_context_t *ctx          = fwht_create_context( &config );                                                                                                                                 \
+        size_t          array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                    \
+        double         *data         = NULL;                                                                                                                                                           \
+        double         *coldata[k];                                                                                                                                                                    \
+        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
+                                                                                                                                                                                                       \
+        set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
+        UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
+        {                                                                                                                                                                                              \
+            for ( base_int_t b = 0; b < ncols; b += k ) {                                                                                                                                              \
+                base_int_t current_k = ( b + k <= ncols ) ? k : ncols - b;                                                                                                                             \
+                for ( base_int_t j = 0; j < current_k; j++ ) {                                                                                                                                         \
+                    coldata[j] = &data[( b + j ) * nrows];                                                                                                                                             \
+                }                                                                                                                                                                                      \
+                status = fwht_batch_f64( ctx, coldata, nrows, current_k );                                                                                                                             \
+            }                                                                                                                                                                                          \
+        }                                                                                                                                                                                              \
+        fwht_destroy_context( ctx );                                                                                                                                                                   \
         free( data );                                                                                                                                                                                  \
         data = NULL;                                                                                                                                                                                   \
     }
 
 // 3. Generate benchmarks for any dimensions (square or rectangular)
 BENCH_FWHT_MAT( JUBE_NROWS, JUBE_NCOLS )
-BENCH_FWHT_MAT_V3( JUBE_NROWS, JUBE_NCOLS )
-BENCH_FWHT_MAT_V3_PREALLOC( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_FWHT_MAT_V3( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_FWHT_MAT_V3_PREALLOC( JUBE_NROWS, JUBE_NCOLS )
 BENCH_FWHT_MAT_RMAJ( JUBE_NROWS, JUBE_NCOLS )
 BENCH_FWHT_MAT_RMAJ_V2( JUBE_NROWS, JUBE_NCOLS )
 BENCH_FWHT_MAT_RMAJ_V3( JUBE_NROWS, JUBE_NCOLS )
-BENCH_FWHT_MAT_RMAJ_V31( JUBE_NROWS, JUBE_NCOLS )
+//BENCH_FWHT_MAT_RMAJ_V31( JUBE_NROWS, JUBE_NCOLS )
 BENCH_FWHT_MAT_RMAJ_V4( JUBE_NROWS, JUBE_NCOLS )
-BENCH_FWHT_MAT_RMAJ_V41( JUBE_NROWS, JUBE_NCOLS )
+//BENCH_FWHT_MAT_RMAJ_V41( JUBE_NROWS, JUBE_NCOLS )
 BENCH_FWHT_MAT_RMAJ_V5( JUBE_NROWS, JUBE_NCOLS )
 BENCH_FWHT_FFTW_MEASURE_MAT( JUBE_NROWS, JUBE_NCOLS )
-BENCH_FWHT_FFTW_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS )
+//BENCH_FWHT_FFTW_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS )
+BENCH_HADI_FWHT_MAT_V1( JUBE_NROWS, JUBE_NCOLS )
+BENCH_HADI_FWHT_MAT_V2( JUBE_NROWS, JUBE_NCOLS )
+BENCH_HADI_FWHT_MAT_V3( JUBE_NROWS, JUBE_NCOLS )
+BENCH_HADI_FWHT_MAT_V4( JUBE_NROWS, JUBE_NCOLS )
+BENCH_HADI_FWHT_MAT_V5( JUBE_NROWS, JUBE_NCOLS )
 
 // 4. Generate the main() function
 UBENCH_MAIN()
