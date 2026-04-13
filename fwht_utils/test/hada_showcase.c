@@ -12,9 +12,7 @@ int
 main()
 {
     base_int_t ierr = 0;
-    view_t     vIn  = {
-             .m = HADA_SHOWCASE_ROW_M, .n = HADA_SHOWCASE_ROW_N, .st1 = 1, .st2 = HADA_SHOWCASE_ROW_M
-    };
+    view_t     vIn  = { .m = HADA_SHOWCASE_ROW_M, .n = HADA_SHOWCASE_ROW_N, .st1 = 1, .st2 = HADA_SHOWCASE_ROW_M };
     printf( "m %zu n %zu st1 %zu st2 %zu\n", vIn.m, vIn.n, vIn.st1, vIn.st2 );
     base_int_t Tdims[_HADA_DDIMS], Thow[_HADA_DDIMS];
     base_int_t hdim = 0;

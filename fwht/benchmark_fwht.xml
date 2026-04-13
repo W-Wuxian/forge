@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jube>
+  <benchmark name="FWHT_Benchmark" outpath="jube_bench_fwht_run">
+    
+    <!-- 1. Paramètres du benchmark (Dimensions de la matrice) -->
+    <parameterset name="matrix_params">
+      <parameter name="nrows" type="int">1048576, 2097152, 4194304</parameter>
+      <parameter name="ncols" type="int">1, 10, 100</parameter>
+      <!-- <parameter name="nrows" type="int">1024, 2048, 4096, 8192, 16384, 32768</parameter>
+      <parameter name="ncols" type="int">1024, 2048, 4096, 8192, 16384, 32768</parameter> -->
+    </parameterset>
+
+    <!-- Variables d'environnement pour la compilation -->
+    <parameterset name="env_params">
+      <parameter name="FORGE_ROOT">${jube_benchmark_home}/..</parameter>
+      <!-- $GUIX_ENVIRONMENT est transmis automatiquement par ton shell actif -->
+      <parameter name="GUIX_ENV" type="string">${GUIX_ENVIRONMENT}</parameter>
+      <parameter name="RESOLVE_CPATH" type="string">-I${FORGE_ROOT} -I${FORGE_ROOT}/fwht_utils -I${FORGE_ROOT}/fwht -I$FORGE_ROOT/ext/hadi-fwht-2.0.1/include</parameter>
+      <parameter name="HADI_FWHT" type="string">${FORGE_ROOT}/ext/hadi-fwht-2.0.1</parameter>
+    </parameterset>
+
+    <!-- Fichiers à copier dans le dossier d'exécution (Sandbox JUBE) -->
+    <fileset name="source_files">
+      <copy>${FORGE_ROOT}/fwht_utils/hada.c</copy>
+      <copy>${FORGE_ROOT}/fwht/base_fwht.c</copy>
+      <copy>${FORGE_ROOT}/fwht/bench/fwht_bench_fwht_mat.c</copy>
+    </fileset>
+
+    <parameterset name="run_bench_cmd">
+      <parameter name="command" type="string">./bench_fwht_exe --confidence=10.0 --output=results_fwht.csv</parameter>
+    </parameterset>
+
+    <!-- 2. Compilation -->
+    <step name="compile">
+      <use>matrix_params</use>
+      <use>env_params</use>
+      <use>source_files</use>
+      
+      <!-- Compilation avec GCC -->
+      <!-- On modifie le fichier C à la volée avant de compiler -->
+      <do>sed -i 's/JUBE_NROWS/${nrows}/g' fwht_bench_fwht_mat.c</do>
+      <do>sed -i 's/JUBE_NCOLS/${ncols}/g' fwht_bench_fwht_mat.c</do>
+      <do>
+        gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -DNDEBUG -DNOASSERTINT -DNOPRINTMAT -o bench_fwht_exe hada.c base_fwht.c fwht_bench_fwht_mat.c -L${GUIX_ENV}/lib -lopenblas -lfftw3 -lpthread -lm -L${HADI_FWHT}/lib -lfwht -I${GUIX_ENV}/include ${RESOLVE_CPATH}
+        <!-- gcc -O0 -march=native -g3 -Wall -fopenmp -fopt-info-vec-all=vec.report -DNDEBUG -DNOASSERTINT -DNOPRINTMAT -o bench_fwht_exe hada.c base_fwht.c fwht_bench_fwht_mat.c -L${GUIX_ENV}/lib -lopenblas -lfftw3 -lpthread -lm -L${HADI_FWHT}/lib -lfwht -I${GUIX_ENV}/include ${RESOLVE_CPATH} -->
+        <!-- gcc -O2 -Wall -o bench_fwht_exe hada.c base_fwht.c fwht_bench_fwht_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH} -->
+      </do>
+    </step>
+
+    <!-- 3. Exécution -->
+    <step name="execute" depend="compile">
+      <use>matrix_params</use>
+      <use>run_bench_cmd</use>
+      <!-- Exécute le binaire et génère le fichier CSV de ubench -->
+      <do>cp compile/bench_fwht_exe .</do>
+      <do>$command</do>
+    </step>
+
+    <!-- 4. Collect : Collecte et concatène tous les fichiers results_fwht.csv -->
+    <step name="collect" depend="execute">
+      <!-- La première fois, on crée le header une seule fois dans le fichier de sortie -->
+      <do><![CDATA[
+        OUT="${jube_benchmark_home}/output/fwht_mat_benchmark.csv"
+        if [ ! -f "$OUT" ]; then
+          head -n 1 execute/results_fwht.csv > "$OUT"
+        fi
+        tail -n +2 execute/results_fwht.csv >> "$OUT"
+      ]]></do>
+    </step>
+
+  </benchmark>
+</jube>

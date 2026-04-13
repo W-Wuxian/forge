@@ -1,0 +1,449 @@
+#include "base_fwht.h"
+
+void
+_base_rotatedata( double *data, base_uint_t ridx1, base_uint_t ridx2 )
+{
+    static double base_rotation;
+    base_rotation = data[ridx1];
+    // printf( "%f  %f\n", data[ridx1], data[ridx2] );
+    data[ridx1] = base_rotation + data[ridx2];
+    data[ridx2] = base_rotation - data[ridx2];
+}
+
+void
+_base_rotatedata_mat( double *data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    // Alias
+    double *x = &data[ridx1];
+    double *y = &data[ridx2];
+    // Performs modified Givens rotation of points in the plane
+    cblas_drotm( ncols, x, nrows, y, nrows, rotatedata_mat_param );
+}
+
+// v2 and v3 try buffer + copy to get contiguous elements access during cblas_rotm
+void
+_base_rotatedata_mat_v2( double *data, double *buffer, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    // static double buffer[2*1024]; need loop to overcome/map dimension : to try
+    double *_buffer = NULL;
+    if ( buffer != NULL ) {
+        _buffer = buffer;
+    }
+    else {
+        _buffer = (double *)malloc( sizeof( double ) * 2 * ncols );
+    }
+    // Alias
+    double *x = &data[ridx1];
+    double *y = &data[ridx2];
+
+    cblas_dcopy( ncols, x, nrows, _buffer, 1 );
+    cblas_dcopy( ncols, y, nrows, _buffer + ncols, 1 );
+
+    x = _buffer;
+    y = _buffer + ncols;
+
+    // Performs modified Givens rotation of points in the plane
+    cblas_drotm( ncols, x, 1, y, 1, rotatedata_mat_param );
+
+    // copy back buffer to main memory
+    x = &data[ridx1];
+    y = &data[ridx2];
+
+    cblas_dcopy( ncols, _buffer, 1, x, nrows );
+    cblas_dcopy( ncols, _buffer + ncols, 1, y, nrows );
+
+    x = NULL;
+    y = NULL;
+    if ( buffer == NULL ) {
+        free( _buffer );
+        _buffer = NULL;
+    }
+}
+
+void
+_base_rotatedata_mat_v3( double *data, double *buffer, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+
+    double *_buffer = NULL;
+    if ( buffer != NULL ) {
+        _buffer = buffer;
+    }
+    else {
+        _buffer = (double *)malloc( sizeof( double ) * ncols * 2 );
+    }
+
+    cblas_dcopy( ncols, data + ridx1, nrows, _buffer, 1 );
+    cblas_dcopy( ncols, data + ridx2, nrows, _buffer + ncols, 1 );
+
+    cblas_drotm( ncols, _buffer, 1, _buffer + ncols, 1, rotatedata_mat_param );
+
+    cblas_dcopy( ncols, _buffer, 1, data + ridx1, nrows );
+    cblas_dcopy( ncols, _buffer + ncols, 1, data + ridx2, nrows );
+
+    if ( buffer == NULL ) {
+        free( _buffer );
+        _buffer = NULL;
+    }
+}
+
+void
+_base_rotatedata_mat_rmaj( double *data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    // Alias
+    double *x = &data[ridx1 * ncols];
+    double *y = &data[ridx2 * ncols];
+    // Performs modified Givens rotation of points in the plane
+    cblas_drotm( ncols, x, 1, y, 1, rotatedata_mat_param );
+}
+// rowmaj loop
+void
+_base_rotatedata_mat_rmaj_v2( double *data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    // static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    static double base_rotation;
+    static double base_rotation2;
+    // Alias
+    double *x = &data[ridx1 * ncols];
+    double *y = &data[ridx2 * ncols];
+    // Performs modified Givens rotation of points in the plane
+    for ( int i = 0; i < ncols; ++i ) {
+        base_rotation  = data[i + ridx1 * ncols];
+        base_rotation2 = data[i + ridx2 * ncols];
+        x[i]           = base_rotation + base_rotation2;
+        y[i]           = base_rotation - base_rotation2;
+    }
+}
+void
+_base_rotatedata_mat_rmaj_v3( double *__restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    // static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    static double base_rotation;
+    static double base_rotation2;
+    // Alias
+    double *x = &data[ridx1 * ncols];
+    double *y = &data[ridx2 * ncols];
+// Performs modified Givens rotation of points in the plane
+#pragma omp simd
+    for ( int i = 0; i < ncols; ++i ) {
+        base_rotation  = data[i + ridx1 * ncols];
+        base_rotation2 = data[i + ridx2 * ncols];
+        x[i]           = base_rotation + base_rotation2;
+        y[i]           = base_rotation - base_rotation2;
+    }
+}
+
+void
+_base_rotatedata_mat_rmaj_v4( double *__restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    // static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    static double base_rotation;
+    static double base_rotation2;
+    // Alias
+    double *x = &data[ridx1 * ncols];
+    double *y = &data[ridx2 * ncols];
+// Performs modified Givens rotation of points in the plane
+#pragma omp simd simdlen( 8 ) aligned( data : 64 )
+    for ( int i = 0; i < ncols; ++i ) {
+        base_rotation  = data[i + ridx1 * ncols];
+        base_rotation2 = data[i + ridx2 * ncols];
+        x[i]           = base_rotation + base_rotation2;
+        y[i]           = base_rotation - base_rotation2;
+    }
+}
+
+void
+_base_rotatedata_mat_rmaj_v5( double *__restrict__ data, base_int_t nrows, base_int_t ncols, base_uint_t ridx1, base_uint_t ridx2 )
+{
+    // param := flag, h11, h21, h12, h22
+    // static const double rotatedata_mat_param[] = { -1.0, 1.0, 1.0, 1.0, -1.0 };
+    double *__restrict__ x = data + ridx1 * (size_t)ncols;
+    double *__restrict__ y = data + ridx2 * (size_t)ncols;
+// Performs modified Givens rotation of points in the plane
+#pragma omp simd simdlen( 8 ) aligned( data : 64 )
+    for ( int i = 0; i < ncols; ++i ) {
+        double base_rotation  = x[i];
+        double base_rotation2 = y[i];
+        x[i]                  = base_rotation + base_rotation2;
+        y[i]                  = base_rotation - base_rotation2;
+    }
+}
+
+void
+base_dummy_fwht( double *data, base_uint_t n )
+{
+    // Require n to be a power of 2
+    base_uint_t l2 = base_ilog2( n ) - 1;
+    base_uint_t l3 = 1 << l2;
+    BASE_ASSERT_INT( n, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < n; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = j + k;
+                _base_rotatedata( data, tmp, tmp + l3 );
+            }
+        }
+    }
+}
+
+void
+base_fwht_mat( double *data, base_int_t n, base_int_t ncols )
+{
+    // Require localsize to be a power of 2
+    base_uint_t localsize = (base_uint_t)n;
+    base_uint_t l2        = base_ilog2( localsize ) - 1;
+    base_uint_t l3        = 1 << l2;
+    BASE_ASSERT_INT( localsize, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < localsize; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = j + k;
+                _base_rotatedata_mat( data, localsize, ncols, tmp, tmp + l3 );
+            }
+        }
+    }
+}
+
+void
+base_fwht_mat_v3( double *data, double *buffer, base_int_t n, base_int_t ncols )
+{
+    // Require localsize to be a power of 2
+    base_uint_t localsize = n;
+    base_uint_t l2        = base_ilog2( localsize ) - 1;
+    base_uint_t l3        = 1 << l2;
+    BASE_ASSERT_INT( localsize, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < localsize; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = j + k;
+                _base_rotatedata_mat_v3( data, buffer, localsize, ncols, tmp, tmp + l3 );
+            }
+        }
+    }
+}
+
+void
+base_fwht_mat_rmaj( double *data, base_int_t n, base_int_t ncols )
+{
+    // Require localsize to be a power of 2
+    base_uint_t localsize = n;
+    base_uint_t l2        = base_ilog2( localsize ) - 1;
+    base_uint_t l3        = 1 << l2;
+    BASE_ASSERT_INT( localsize, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < localsize; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = ( j + k );
+                _base_rotatedata_mat_rmaj( data, localsize, ncols, tmp, tmp + l3 );
+            }
+        }
+    }
+}
+
+void
+base_fwht_mat_rmaj_v2( double *data, base_int_t n, base_int_t ncols )
+{
+    // Require localsize to be a power of 2
+    base_uint_t localsize = n;
+    base_uint_t l2        = base_ilog2( localsize ) - 1;
+    base_uint_t l3        = 1 << l2;
+    BASE_ASSERT_INT( localsize, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < localsize; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = ( j + k );
+                _base_rotatedata_mat_rmaj_v2( data, localsize, ncols, tmp, tmp + l3 );
+            }
+        }
+    }
+}
+
+void
+base_fwht_mat_rmaj_v3( double *__restrict__ data, base_int_t n, base_int_t ncols )
+{
+    // Require localsize to be a power of 2
+    base_uint_t localsize = n;
+    base_uint_t l2        = base_ilog2( localsize ) - 1;
+    base_uint_t l3        = 1 << l2;
+    BASE_ASSERT_INT( localsize, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < localsize; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = ( j + k );
+                _base_rotatedata_mat_rmaj_v3( data, localsize, ncols, tmp, tmp + l3 );
+            }
+        }
+    }
+}
+
+void
+base_fwht_mat_rmaj_v4( double *__restrict__ data, base_int_t n, base_int_t ncols )
+{
+    // Require localsize to be a power of 2
+    base_uint_t localsize = n;
+    base_uint_t l2        = base_ilog2( localsize ) - 1;
+    base_uint_t l3        = 1 << l2;
+    BASE_ASSERT_INT( localsize, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < localsize; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = ( j + k );
+                _base_rotatedata_mat_rmaj_v4( data, localsize, ncols, tmp, tmp + l3 );
+            }
+        }
+    }
+}
+
+void
+base_fwht_mat_rmaj_v5( double *__restrict__ data, base_int_t n, base_int_t ncols )
+{
+    // Require localsize to be a power of 2
+    base_uint_t localsize = n;
+    base_uint_t l2        = base_ilog2( localsize ) - 1;
+    base_uint_t l3        = 1 << l2;
+    BASE_ASSERT_INT( localsize, l3 );
+    // Compute the FWHT
+    base_uint_t tmp;
+    base_uint_t i;
+    base_uint_t j;
+    base_uint_t k;
+    for ( i = 0; i < l2; ++i ) {
+        l3 = (base_uint_t)( 1 << i );
+        for ( j = 0; j < localsize; j += ( 1 << ( i + 1 ) ) ) {
+            for ( k = 0; k < l3; ++k ) {
+                tmp = ( j + k );
+                _base_rotatedata_mat_rmaj_v5( data, localsize, ncols, tmp, tmp + l3 );
+            }
+        }
+    }
+}
+
+void
+base_SetFFTW( fftw_plan *Hadaplan, view_t *vIn, int FT, double *In, double *Out )
+{
+    /*int ierr = 0;
+    ierr = fftw_init_threads();CPLM_ASSERT(ierr!=0);
+    fftw_plan_with_nthreads(mkl_get_max_threads());
+    printf("fftw_init used nthreads = %d\n", fftw_planner_nthreads());*/
+    base_int_t *ffdims  = NULL;
+    base_int_t *ffhow   = NULL;
+    base_int_t *ffhdims = NULL;
+    base_int_t  hdim    = 0;
+    base_int_t  ntot;
+    ffdims = (base_int_t *)malloc( _HADA_DDIMS * sizeof( base_int_t ) );
+    ffhow  = (base_int_t *)malloc( _HADA_DDIMS * sizeof( base_int_t ) );
+
+    getdimshowmany( vIn, ffdims, ffhow, &hdim );
+    ffhdims = (base_int_t *)malloc( _HADA_DDIMS * hdim * sizeof( base_int_t ) );
+    trz( ffdims[0], &ntot );
+    gethdims( ffdims, ffhdims );
+    fftw_r2r_kind tkind[hdim];
+    for ( base_int_t i = 0; i < hdim; ++i )
+        tkind[i] = FFTW_R2HC;
+
+    fftw_iodim *AD  = NULL;
+    AD              = (fftw_iodim *)calloc( hdim, sizeof( fftw_iodim ) );
+    fftw_iodim *AH  = NULL;
+    base_int_t  sz2 = 1;
+    AH              = (fftw_iodim *)calloc( sz2, sizeof( fftw_iodim ) );
+    for ( base_int_t j = 0; j < hdim; ++j ) {
+        AD[j].n  = ffhdims[j * _HADA_DDIMS];
+        AD[j].is = ffhdims[1 + j * _HADA_DDIMS];
+        AD[j].os = ffhdims[2 + j * _HADA_DDIMS];
+    }
+    AH[0].n            = ffhow[0];
+    AH[0].is           = ffhow[1];
+    AH[0].os           = ffhow[2];
+    base_uint_t FlagFT = ( FT == 1 ) ? FFTW_MEASURE : FFTW_ESTIMATE;
+    *Hadaplan          = fftw_plan_guru_r2r( hdim, AD, sz2, AH, In, Out, tkind, FlagFT );
+    BASE_ASSERT_ISNOTNULL( Hadaplan );
+    if ( AD != NULL ) {
+        fftw_free( AD );
+        AD = NULL;
+    }
+    if ( AH != NULL ) {
+        fftw_free( AH );
+        AH = NULL;
+    }
+
+    if ( ffdims != NULL ) {
+        free( ffdims );
+        ffdims = NULL;
+    }
+
+    if ( ffhow != NULL ) {
+        free( ffhow );
+        ffhow = NULL;
+    }
+
+    if ( ffhdims != NULL ) {
+        free( ffhdims );
+        ffhdims = NULL;
+    }
+}
+
+void
+base_FreeFFTW( fftw_plan *Hadaplan )
+{
+    BASE_ASSERT_ISNOTNULL( Hadaplan );
+    fftw_destroy_plan( *Hadaplan );
+    /*fftw_cleanup_threads();*/
+}
+
+size_t
+base_flops_FWHT( base_int_t m, base_int_t n )
+{
+    return m * n * ( (size_t)ceil( log( m ) / log( 2 ) ) );  // UpperBound (else round)
+}

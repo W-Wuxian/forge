@@ -4,10 +4,10 @@
     
     <!-- 1. Paramètres du benchmark (Dimensions de la matrice) -->
     <parameterset name="matrix_params">
-      <parameter name="nrows" type="int">1024, 2048, 4096, 8192</parameter>
-      <parameter name="ncols" type="int">1024, 2048, 4096, 8192</parameter>
+      <parameter name="nrows" type="int">1024, 2048, 4096, 8192, 16384</parameter>
+      <parameter name="ncols" type="int">1024, 2048, 4096, 8192, 16384</parameter>
       <parameter name="ridx1" type="int">0</parameter>
-      <parameter name="ridx2" type="int">1, 500, 1023, 2047, 4095, 8191</parameter>
+      <parameter name="ridx2" type="int">1, 1023, 2047, 4095, 8191, 16383</parameter>
 
       <!-- Paramètre dérivé : vaut 1 si la combinaison est valide, 0 sinon -->
       <!-- ridx2 doit être strictement inférieur à nrows -->
@@ -25,12 +25,12 @@
     <!-- Fichiers à copier dans le dossier d'exécution (Sandbox JUBE) -->
     <fileset name="source_files">
       <copy>${FORGE_ROOT}/fwht_utils/hada.c</copy>
-      <copy>${FORGE_ROOT}/fwht/fwht.c</copy>
+      <copy>${FORGE_ROOT}/fwht/base_fwht.c</copy>
       <copy>${FORGE_ROOT}/fwht/bench/fwht_bench_rotatedata_mat.c</copy>
     </fileset>
 
     <parameterset name="run_bench_cmd">
-      <parameter name="command" type="string">./bench_exe --output=results.csv</parameter>
+      <parameter name="command" type="string">./bench_exe --confidence=10.0 --output=results.csv</parameter>
     </parameterset>
 
     <!-- 2. Compilation -->
@@ -46,7 +46,8 @@
       <do>sed -i 's/JUBE_RIDX1/${ridx1}/g' fwht_bench_rotatedata_mat.c</do>
       <do>sed -i 's/JUBE_RIDX2/${ridx2}/g' fwht_bench_rotatedata_mat.c</do>
       <do>
-        gcc -O2 -Wall -o bench_exe hada.c fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH}
+        gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -o bench_exe hada.c base_fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH}
+        <!-- gcc -O2 -Wall -o bench_exe hada.c base_fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH} -->
       </do>
     </step>
 

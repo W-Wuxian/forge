@@ -3,24 +3,39 @@
 library(tidyverse)
 library(scales) 
 
-args <- commandArgs(trailingOnly = TRUE)
 # 1. Lecture du fichier CSV
 # On précise col_names = FALSE car on va renommer proprement pour éviter les problèmes d'espaces
-# "output/rotatedata_mat_benchmark.csv"
-df <- read_csv(args[1], skip = 1, col_names = c("name", "mean_ns", "stddev_pct", "confidence_pct", "drop")) %>%
+df <- read_csv("keep/RplotO2.csv", skip = 1, col_names = c("name", "mean_ns", "stddev_pct", "confidence_pct", "drop")) %>%
   select(-drop) # Supprimer la dernière colonne vide causée par la virgule finale
 
 # 2. Extraction des paramètres depuis la colonne "name"
-df_parsed <- df %>%
+df1_parsed <- df %>%
   extract(
     col = name,
     into = c("method", "nrows", "ncols", "ridx1", "ridx2"),
     regex = "^([^.]+)\\.dim_(\\d+)x(\\d+)_rowidx1_(\\d+)_rowidx2_(\\d+)",
     convert = TRUE # Convertit automatiquement les nombres en entiers (integer)
-  )
-#df_parsed <- df_parsed |> filter(method != c("rotatedata_mat_rmaj", "rotatedata_rmaj_loop"))
-#df_parsed <- df_parsed |> filter(method != c("rotatedata_mat_rmaj"))
-#df_parsed <- df_parsed |> filter(method != c("rotatedata_rmaj_loop"))
+  ) %>%
+  mutate(method = paste0(method, "_O2"))
+df1_parsed <- df1_parsed |> filter(method != "rotatedata_mat_O2")
+
+# 1. Lecture du fichier CSV
+# On précise col_names = FALSE car on va renommer proprement pour éviter les problèmes d'espaces
+df <- read_csv("keep/RplotO3.csv", skip = 1, col_names = c("name", "mean_ns", "stddev_pct", "confidence_pct", "drop")) %>%
+  select(-drop) # Supprimer la dernière colonne vide causée par la virgule finale
+
+# 2. Extraction des paramètres depuis la colonne "name"
+df2_parsed <- df %>%
+  extract(
+    col = name,
+    into = c("method", "nrows", "ncols", "ridx1", "ridx2"),
+    regex = "^([^.]+)\\.dim_(\\d+)x(\\d+)_rowidx1_(\\d+)_rowidx2_(\\d+)",
+    convert = TRUE # Convertit automatiquement les nombres en entiers (integer)
+  ) %>%
+  mutate(method = paste0(method, "_O3"))
+df2_parsed <- df2_parsed |> filter(method != "rotatedata_mat_O3")
+
+df_parsed <- bind_rows(df1_parsed, df2_parsed)
 # Affichage de vérification dans la console
 print(df_parsed)
 
@@ -45,7 +60,6 @@ plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = me
   ) +
   # (Optionnel) Axe Y rendu plus lisible
   #scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
-  
   labs(
     title = "Impact of memory access pattern on rotation performance",
     subtitle = "Mean execution time across matrix sizes and rotation distances",
@@ -65,4 +79,4 @@ plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = me
 
 # 4. Affichage et sauvegarde du graphique
 print(plot)
-ggsave("plot_benchmark_rotatedata.png", plot, width = 8, height = 6, dpi = 300)
+ggsave("plot_benchmark_rotatedata2.png", plot, width = 8, height = 6, dpi = 300)

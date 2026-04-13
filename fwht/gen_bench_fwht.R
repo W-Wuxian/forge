@@ -1,7 +1,8 @@
 # Charger les bibliothèques nécessaires
 # Installe-les avec install.packages("tidyverse") si ce n'est pas déjà fait
 library(tidyverse)
-library(scales) 
+library(scales)
+library(plotly)
 
 args <- commandArgs(trailingOnly = TRUE)
 # 1. Lecture du fichier CSV
@@ -14,20 +15,18 @@ df <- read_csv(args[1], skip = 1, col_names = c("name", "mean_ns", "stddev_pct",
 df_parsed <- df %>%
   extract(
     col = name,
-    into = c("method", "nrows", "ncols", "ridx1", "ridx2"),
-    regex = "^([^.]+)\\.dim_(\\d+)x(\\d+)_rowidx1_(\\d+)_rowidx2_(\\d+)",
+    into = c("method", "nrows", "ncols"),
+    regex = "^([^.]+)\\.dim_(\\d+)x(\\d+)",
     convert = TRUE # Convertit automatiquement les nombres en entiers (integer)
   )
-#df_parsed <- df_parsed |> filter(method != c("rotatedata_mat_rmaj", "rotatedata_rmaj_loop"))
 #df_parsed <- df_parsed |> filter(method != c("rotatedata_mat_rmaj"))
 #df_parsed <- df_parsed |> filter(method != c("rotatedata_rmaj_loop"))
 # Affichage de vérification dans la console
 print(df_parsed)
 
 # 3. Création du graphique avec ggplot2
-plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = method)) +
-  #facet_grid(nrows + "nrows" ~ ridx2 + "ridx2") +
-  facet_grid(ridx2 + "ridx2" ~ nrows + "nrows") +
+fwht_plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = method)) +
+  facet_grid( ~ nrows + "nrows") +
   geom_line(linewidth = 1) +
   geom_point(size = 3) +
   
@@ -35,7 +34,7 @@ plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = me
   scale_x_continuous(
     trans = log2_trans(), 
     #breaks = trans_breaks("log2", function(x) 2^x),
-    breaks = 2^(10:13),
+    breaks = 2^(10:15),
     labels = trans_format("log2", math_format(2^.x))
   ) +
   
@@ -47,14 +46,14 @@ plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = me
   #scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
   
   labs(
-    title = "Impact of memory access pattern on rotation performance",
-    subtitle = "Mean execution time across matrix sizes and rotation distances",
+    title = "Impact of memory access pattern on fwht performance",
+    subtitle = "Mean execution time across matrix sizes",
     x = expression("number of"~columns), # expression() permet un rendu mathématique du titre
     y = "mean time (sec)",
     color = "function"
   ) +
   guides(
-    color = guide_legend(nrow = 2)
+    color = guide_legend(nrow = 4)
   ) +
   theme_minimal() +
   theme(
@@ -64,5 +63,13 @@ plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = me
   )
 
 # 4. Affichage et sauvegarde du graphique
-print(plot)
-ggsave("plot_benchmark_rotatedata.png", plot, width = 8, height = 6, dpi = 300)
+#print(fwht_plot)
+ggsave("plot_benchmark_fwht.pdf", fwht_plot, device="pdf", width = 8, height = 6, dpi = 300)
+ggsave("plot_benchmark_fwht.png", fwht_plot, width = 8, height = 6, dpi = 300)
+
+# Conversion en plot interactif
+interactive_plot <- ggplotly(fwht_plot) %>%
+  config(scrollZoom = TRUE)  # Active le zoom à la molette
+
+# Sauvegarde en HTML
+htmlwidgets::saveWidget(interactive_plot, "fwht_plot_interactive.html")

@@ -1,9 +1,11 @@
 #ifndef __FWHT_TESTER_H__
 #define __FWHT_TESTER_H__
 
-#include "fwht.h"
+#include "base_fwht.h"
 
 base_int_t test_base_dummy_fwht();
+
+base_int_t test_base_fwht_mat();
 
 base_int_t test_rotatedata_mat();
 
