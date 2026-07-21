@@ -3,9 +3,10 @@
 #include "fwht.h"
 //  1. Define your initialization helper function
 void
-set_mat_values( double *mat, int nele, int ncols )
+set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
 {
-    for ( int i = 0; i < nele; ++i ) {
+    base_int_t i = 0;
+    for ( ; i < nele; ++i ) {
         mat[i] = ( ( (double)i ) / ( (double)ncols ) ) + 3.14748;
     }
 }
