@@ -1,6 +1,7 @@
 #include "base_fwht.h"
 #include "ubench.h"
 #include "fwht.h"
+#include "omp.h"
 //  1. Define your initialization helper function
 void
 set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
@@ -379,7 +380,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         base_int_t      nrows        = (base_int_t)NROWS;                                                                                                                                              \
         base_int_t      ncols        = (base_int_t)NCOLS;                                                                                                                                              \
         base_int_t      num_elements = nrows * ncols;                                                                                                                                                  \
-        base_int_t      k            = 5;                                                                                                                                                            \
+        base_int_t      k            = 5;                                                                                                                                                              \
         fwht_status_t   status       = FWHT_SUCCESS;                                                                                                                                                   \
         fwht_config_t   config       = { .backend = FWHT_BACKEND_CPU, .num_threads = 1, .gpu_device = 0, .normalize = true };                                                                          \
         fwht_context_t *ctx          = fwht_create_context( &config );                                                                                                                                 \
@@ -404,24 +405,54 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         data = NULL;                                                                                                                                                                                   \
     }
 
+#define BENCH_HADI_FWHT_MAT_V6( NROWS, NCOLS, NT )                                                                                                                                                     \
+    UBENCH_EX( hadi_fwht_openmp_##NT##_mat_v6, dim_##NROWS##x##NCOLS )                                                                                                                                 \
+    {                                                                                                                                                                                                  \
+        base_int_t      nrows        = (base_int_t)NROWS;                                                                                                                                              \
+        base_int_t      ncols        = (base_int_t)NCOLS;                                                                                                                                              \
+        base_int_t      num_elements = nrows * ncols;                                                                                                                                                  \
+        fwht_status_t   status       = FWHT_SUCCESS;                                                                                                                                                   \
+        fwht_config_t   config       = { .backend = FWHT_BACKEND_OPENMP, .num_threads = NT, .gpu_device = 0, .normalize = true };                                                                      \
+        fwht_context_t *ctx          = fwht_create_context( &config );                                                                                                                                 \
+        size_t          array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                    \
+        double         *data         = NULL;                                                                                                                                                           \
+        double         *coldata[ncols];                                                                                                                                                                \
+        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
+        printf( "NUM THREADS %d\n", omp_get_num_threads() );                                                                                                                                           \
+        set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
+        for ( base_int_t i = 0; i < ncols; i++ ) {                                                                                                                                                     \
+            coldata[i] = &data[i * nrows];                                                                                                                                                             \
+        }                                                                                                                                                                                              \
+        UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
+        {                                                                                                                                                                                              \
+            status = fwht_batch_f64( ctx, coldata, nrows, ncols );                                                                                                                                     \
+        }                                                                                                                                                                                              \
+        fwht_destroy_context( ctx );                                                                                                                                                                   \
+        free( data );                                                                                                                                                                                  \
+        data = NULL;                                                                                                                                                                                   \
+    }
+
 // 3. Generate benchmarks for any dimensions (square or rectangular)
-//BENCH_FWHT_MAT( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_FWHT_MAT( JUBE_NROWS, JUBE_NCOLS )
 // BENCH_FWHT_MAT_V3( JUBE_NROWS, JUBE_NCOLS )
 // BENCH_FWHT_MAT_V3_PREALLOC( JUBE_NROWS, JUBE_NCOLS )
-//BENCH_FWHT_MAT_RMAJ( JUBE_NROWS, JUBE_NCOLS )
-//BENCH_FWHT_MAT_RMAJ_V2( JUBE_NROWS, JUBE_NCOLS )
-//BENCH_FWHT_MAT_RMAJ_V3( JUBE_NROWS, JUBE_NCOLS )
-//BENCH_FWHT_MAT_RMAJ_V31( JUBE_NROWS, JUBE_NCOLS )
-//BENCH_FWHT_MAT_RMAJ_V4( JUBE_NROWS, JUBE_NCOLS )
-//BENCH_FWHT_MAT_RMAJ_V41( JUBE_NROWS, JUBE_NCOLS )
-BENCH_FWHT_MAT_RMAJ_V5( JUBE_NROWS, JUBE_NCOLS )
-BENCH_FWHT_FFTW_MEASURE_MAT( JUBE_NROWS, JUBE_NCOLS )
-//BENCH_FWHT_FFTW_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS )
-BENCH_HADI_FWHT_MAT_V1( JUBE_NROWS, JUBE_NCOLS )
-BENCH_HADI_FWHT_MAT_V2( JUBE_NROWS, JUBE_NCOLS )
-BENCH_HADI_FWHT_MAT_V3( JUBE_NROWS, JUBE_NCOLS )
-BENCH_HADI_FWHT_MAT_V4( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_FWHT_MAT_RMAJ( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_FWHT_MAT_RMAJ_V2( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_FWHT_MAT_RMAJ_V3( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_FWHT_MAT_RMAJ_V31( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_FWHT_MAT_RMAJ_V4( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_FWHT_MAT_RMAJ_V41( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_FWHT_MAT_RMAJ_V5( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_FWHT_FFTW_MEASURE_MAT( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_FWHT_FFTW_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_HADI_FWHT_MAT_V1( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_HADI_FWHT_MAT_V2( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_HADI_FWHT_MAT_V3( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_HADI_FWHT_MAT_V4( JUBE_NROWS, JUBE_NCOLS )
 BENCH_HADI_FWHT_MAT_V5( JUBE_NROWS, JUBE_NCOLS )
-
+BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 1 )
+BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 2 )
+BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 4 )
+BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 6 )
 // 4. Generate the main() function
 UBENCH_MAIN()

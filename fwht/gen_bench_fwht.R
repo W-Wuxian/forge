@@ -32,10 +32,12 @@ fwht_plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group
   
   # Configuration de l'axe X pour afficher les puissances de 2 (2^x)
   scale_x_continuous(
-    trans = log2_trans(), 
-    #breaks = trans_breaks("log2", function(x) 2^x),
-    breaks = 2^(10:15),
-    labels = trans_format("log2", math_format(2^.x))
+  #  trans = log2_trans(),
+  breaks = unique(df_parsed$ncols),
+  #  #breaks = trans_breaks("log2", function(x) 2^x),
+  #  breaks = 2^(10:15),
+  labels = unique(df_parsed$ncols)
+  #  labels = trans_format("log2", math_format(2^.x))
   ) +
   
   # Axe Y : Conversion de nanosecondes en secondes
@@ -48,7 +50,7 @@ fwht_plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group
   labs(
     title = "Impact of memory access pattern on fwht performance",
     subtitle = "Mean execution time across matrix sizes",
-    x = expression("number of"~columns), # expression() permet un rendu mathématique du titre
+    x = "number of columns", #expression("number of"~columns), # expression() permet un rendu mathématique du titre
     y = "mean time (sec)",
     color = "function"
   ) +

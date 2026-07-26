@@ -6,7 +6,7 @@
     <parameterset name="matrix_params">
       <parameter name="nrows" type="int">1048576, 2097152, 4194304</parameter>
       <!-- <parameter name="nrows" type="int">1048576</parameter> -->
-      <parameter name="ncols" type="int">1, 10, 100</parameter>
+      <parameter name="ncols" type="int">1, 10, 50, 100, 200</parameter>
       <!-- <parameter name="nrows" type="int">1024, 2048, 4096, 8192, 16384, 32768</parameter>
       <parameter name="ncols" type="int">1024, 2048, 4096, 8192, 16384, 32768</parameter> -->
     </parameterset>
