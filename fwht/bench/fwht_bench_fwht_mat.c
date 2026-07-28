@@ -273,6 +273,30 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         data = NULL;                                                                                                                                                                                   \
     }
 
+#define BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( NROWS, NCOLS, NT )                                                                                                                                           \
+    UBENCH_EX( fwht_fftw_omp_##NT##_estimate_mat, dim_##NROWS##x##NCOLS )                                                                                                                              \
+    {                                                                                                                                                                                                  \
+        base_int_t nrows        = (base_int_t)NROWS;                                                                                                                                                   \
+        base_int_t ncols        = (base_int_t)NCOLS;                                                                                                                                                   \
+        base_int_t num_elements = nrows * ncols;                                                                                                                                                       \
+        view_t     vIn          = { .m = nrows, .n = ncols, .st1 = 1, .st2 = nrows };                                                                                                                  \
+        size_t     array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                         \
+        double    *data         = (double *)fftw_malloc( array_size );                                                                                                                                 \
+        fftw_plan  Hadaplan;                                                                                                                                                                           \
+        base_SetFFTW_OMP( &Hadaplan, &vIn, NT, 0, &data[0], &data[0] );                                                                                                                                \
+        /* Call your initialization function here */                                                                                                                                                   \
+        set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
+                                                                                                                                                                                                       \
+        /* ubench ONLY times the execution inside this block */                                                                                                                                        \
+        UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
+        {                                                                                                                                                                                              \
+            fftw_execute_r2r( Hadaplan, &data[0], &data[0] );                                                                                                                                          \
+        }                                                                                                                                                                                              \
+        base_FreeFFTW_OMP( &Hadaplan );                                                                                                                                                                \
+        fftw_free( data );                                                                                                                                                                             \
+        data = NULL;                                                                                                                                                                                   \
+    }
+
 #define BENCH_HADI_FWHT_MAT_V1( NROWS, NCOLS )                                                                                                                                                         \
     UBENCH_EX( hadi_fwht_mat_v1, dim_##NROWS##x##NCOLS )                                                                                                                                               \
     {                                                                                                                                                                                                  \
@@ -443,7 +467,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
 // BENCH_FWHT_MAT_RMAJ_V4( JUBE_NROWS, JUBE_NCOLS )
 // BENCH_FWHT_MAT_RMAJ_V41( JUBE_NROWS, JUBE_NCOLS )
 // BENCH_FWHT_MAT_RMAJ_V5( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_FWHT_FFTW_MEASURE_MAT( JUBE_NROWS, JUBE_NCOLS )
+BENCH_FWHT_FFTW_MEASURE_MAT( JUBE_NROWS, JUBE_NCOLS )
 // BENCH_FWHT_FFTW_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS )
 // BENCH_HADI_FWHT_MAT_V1( JUBE_NROWS, JUBE_NCOLS )
 // BENCH_HADI_FWHT_MAT_V2( JUBE_NROWS, JUBE_NCOLS )
@@ -454,5 +478,10 @@ BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 1 )
 BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 2 )
 BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 4 )
 BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 6 )
+
+BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 1 )
+BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 2 )
+BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 4 )
+BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 6 )
 // 4. Generate the main() function
 UBENCH_MAIN()

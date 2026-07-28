@@ -23,10 +23,11 @@ else
 fi
 
 HADI_FWHT_INSTALL=hadi-fwht-master
+FFTW_EXT_INSTALL=fftw-omp-double
 FORGE_ROOT=$PWD/..
-export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/include:$FORGE_ROOT/ext/fftw-seq-double/3.3.11/include
-export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/lib:$FORGE_ROOT/ext/fftw-seq-double/3.3.11/lib:$LD_LIBRARY_PATH
-RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/include -I$FORGE_ROOT/ext/fftw-seq-double/3.3.11/include"
+export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/include:$FORGE_ROOT/ext/${FFTW_EXT_INSTALL}/3.3.11/include
+export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/lib:$FORGE_ROOT/ext/${FFTW_EXT_INSTALL}/3.3.11/lib:$LD_LIBRARY_PATH
+RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/include -I$FORGE_ROOT/ext/${FFTW_EXT_INSTALL}/3.3.11/include"
 echo $CPATH
 
 mkdir -p bin/ logs/ output/
