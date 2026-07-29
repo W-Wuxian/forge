@@ -435,11 +435,87 @@ base_SetFFTW( fftw_plan *Hadaplan, view_t *vIn, int FT, double *In, double *Out 
 }
 
 void
+base_SetFFTW_OMP( fftw_plan *Hadaplan, view_t *vIn, int nt, int FT, double *In, double *Out )
+{
+    int ierr = 0;
+    ierr     = fftw_init_threads();
+    if ( ierr == 0 ) {
+        PRINT_INFO();
+        printf( "fftw_init_threads failed\n" );
+        assert( ierr != 0 );
+    }
+    fftw_plan_with_nthreads( nt );
+    printf( "fftw_init used nthreads = %d\n", fftw_planner_nthreads() );
+    base_int_t *ffdims  = NULL;
+    base_int_t *ffhow   = NULL;
+    base_int_t *ffhdims = NULL;
+    base_int_t  hdim    = 0;
+    base_int_t  ntot;
+    ffdims = (base_int_t *)malloc( _HADA_DDIMS * sizeof( base_int_t ) );
+    ffhow  = (base_int_t *)malloc( _HADA_DDIMS * sizeof( base_int_t ) );
+
+    getdimshowmany( vIn, ffdims, ffhow, &hdim );
+    ffhdims = (base_int_t *)malloc( _HADA_DDIMS * hdim * sizeof( base_int_t ) );
+    trz( ffdims[0], &ntot );
+    gethdims( ffdims, ffhdims );
+    fftw_r2r_kind tkind[hdim];
+    for ( base_int_t i = 0; i < hdim; ++i )
+        tkind[i] = FFTW_R2HC;
+
+    fftw_iodim *AD  = NULL;
+    AD              = (fftw_iodim *)calloc( hdim, sizeof( fftw_iodim ) );
+    fftw_iodim *AH  = NULL;
+    base_int_t  sz2 = 1;
+    AH              = (fftw_iodim *)calloc( sz2, sizeof( fftw_iodim ) );
+    for ( base_int_t j = 0; j < hdim; ++j ) {
+        AD[j].n  = ffhdims[j * _HADA_DDIMS];
+        AD[j].is = ffhdims[1 + j * _HADA_DDIMS];
+        AD[j].os = ffhdims[2 + j * _HADA_DDIMS];
+    }
+    AH[0].n            = ffhow[0];
+    AH[0].is           = ffhow[1];
+    AH[0].os           = ffhow[2];
+    base_uint_t FlagFT = ( FT == 1 ) ? FFTW_MEASURE : FFTW_ESTIMATE;
+    *Hadaplan          = fftw_plan_guru_r2r( hdim, AD, sz2, AH, In, Out, tkind, FlagFT );
+    BASE_ASSERT_ISNOTNULL( Hadaplan );
+    if ( AD != NULL ) {
+        fftw_free( AD );
+        AD = NULL;
+    }
+    if ( AH != NULL ) {
+        fftw_free( AH );
+        AH = NULL;
+    }
+
+    if ( ffdims != NULL ) {
+        free( ffdims );
+        ffdims = NULL;
+    }
+
+    if ( ffhow != NULL ) {
+        free( ffhow );
+        ffhow = NULL;
+    }
+
+    if ( ffhdims != NULL ) {
+        free( ffhdims );
+        ffhdims = NULL;
+    }
+}
+
+void
 base_FreeFFTW( fftw_plan *Hadaplan )
 {
     BASE_ASSERT_ISNOTNULL( Hadaplan );
     fftw_destroy_plan( *Hadaplan );
-    /*fftw_cleanup_threads();*/
+    fftw_cleanup();
+}
+void
+base_FreeFFTW_OMP( fftw_plan *Hadaplan )
+{
+    BASE_ASSERT_ISNOTNULL( Hadaplan );
+    fftw_destroy_plan( *Hadaplan );
+    fftw_cleanup_threads();
 }
 
 size_t

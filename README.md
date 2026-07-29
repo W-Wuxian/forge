@@ -1,5 +1,8 @@
 # forge
 
+- [] install latest version of fftw form sources
+- [] install latest version of hadi/fwht
+
 I need to looks for:
 
 # FWHT
