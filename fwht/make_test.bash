@@ -7,19 +7,19 @@ cd $SCRIPT_DIR
 
 if command -v guix >/dev/null 2>&1; then
     echo "Guix is installed."
-    comp="guix shell gcc-toolchain@14.2.0 openblas fftw -- gcc "
+    comp="guix time-machine -C ../forge-channels.scm -- shell -m fwht_fftw_manifest.scm -- gcc"
 else
     echo "Guix is not installed."
     comp=gcc
 fi
 
 HADI_FWHT_INSTALL=hadi-fwht-master
+EXT_ROOT=/mnt/e/WSL-WORK/forge/ext
 FORGE_ROOT=$PWD/..
-#export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht
-#export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:$LD_LIBRARY_PATH
-export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/include
-export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/lib:$LD_LIBRARY_PATH
-RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/include"
+
+export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:${EXT_ROOT}/${HADI_FWHT_INSTALL}/include
+export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib:$LD_LIBRARY_PATH
+RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I${EXT_ROOT}/${HADI_FWHT_INSTALL}/include"
 echo $CPATH
 
 mkdir -p bin/
@@ -42,7 +42,7 @@ base_fwht.c test/fwht_showcase.c \
 -DFWHT_SHOWCASE_COL_M=16 \
 -I$GUIX_ENVIRONMENT/include \
 -L$GUIX_ENVIRONMENT/lib -lopenblas -lfftw3 -lpthread -lm \
--L/mnt/e/WSL-WORK/forge/ext/${HADI_FWHT_INSTALL}/lib -lfwht \
+-L${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib -lfwht \
 $RESOLVE_CPATH \
 2>&1 | tee build.log
 bin/showcase_fwht |& tee -a build.log
@@ -54,7 +54,7 @@ $comp $debug_option -o bin/test_base_dummy_fwht \
 $FORGE_ROOT/fwht_utils/hada.c \
 base_fwht.c test/fwht_tester.c test/fwht_tester_base_dummy_fwht.c \
 -L$GUIX_ENVIRONMENT/lib -lopenblas -lfftw3 -lpthread -lm \
--L/mnt/e/WSL-WORK/forge/ext/${HADI_FWHT_INSTALL}/lib -lfwht \
+-L${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib -lfwht \
 -I$GUIX_ENVIRONMENT/include \
 $RESOLVE_CPATH \
 2>&1 | tee -a build.log
@@ -67,7 +67,7 @@ $comp $debug_option -o bin/test_base_rotatedata_mat \
 $FORGE_ROOT/fwht_utils/hada.c \
 base_fwht.c test/fwht_tester.c test/fwht_tester_rotatedata_mat.c \
 -L$GUIX_ENVIRONMENT/lib -lopenblas -lfftw3 -lpthread -lm \
--L/mnt/e/WSL-WORK/forge/ext/${HADI_FWHT_INSTALL}/lib -lfwht \
+-L${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib -lfwht \
 -I$GUIX_ENVIRONMENT/include \
 $RESOLVE_CPATH \
 2>&1 | tee -a build.log

@@ -435,6 +435,16 @@ base_SetFFTW( fftw_plan *Hadaplan, view_t *vIn, int FT, double *In, double *Out 
 }
 
 void
+base_FreeFFTW( fftw_plan *Hadaplan )
+{
+    BASE_ASSERT_ISNOTNULL( Hadaplan );
+    fftw_destroy_plan( *Hadaplan );
+    fftw_cleanup();
+}
+
+
+#ifdef FFTW_WITH_OMP
+void
 base_SetFFTW_OMP( fftw_plan *Hadaplan, view_t *vIn, int nt, int FT, double *In, double *Out )
 {
     int ierr = 0;
@@ -502,14 +512,6 @@ base_SetFFTW_OMP( fftw_plan *Hadaplan, view_t *vIn, int nt, int FT, double *In, 
         ffhdims = NULL;
     }
 }
-
-void
-base_FreeFFTW( fftw_plan *Hadaplan )
-{
-    BASE_ASSERT_ISNOTNULL( Hadaplan );
-    fftw_destroy_plan( *Hadaplan );
-    fftw_cleanup();
-}
 void
 base_FreeFFTW_OMP( fftw_plan *Hadaplan )
 {
@@ -517,6 +519,7 @@ base_FreeFFTW_OMP( fftw_plan *Hadaplan )
     fftw_destroy_plan( *Hadaplan );
     fftw_cleanup_threads();
 }
+#endif
 
 size_t
 base_flops_FWHT( base_int_t m, base_int_t n )

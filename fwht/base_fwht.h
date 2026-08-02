@@ -108,14 +108,17 @@ void base_fwht_mat_rmaj_v5( double *__restrict__ data, base_int_t nrows, base_in
  * @param Out pointer to Output data
  */
 void base_SetFFTW( fftw_plan *Hadaplan, view_t *vIn, int FT, double *In, double *Out );
-void base_SetFFTW_OMP( fftw_plan *Hadaplan, view_t *vIn, int nt, int FT, double *In, double *Out );
 /**
  * @brief base_FreeFFTW
  * @details Free memory used by FFTW
  * @param Hadaplan fftw_plan
  */
 void base_FreeFFTW( fftw_plan *Hadaplan );
+
+#ifdef FFTW_WITH_OMP
+void base_SetFFTW_OMP( fftw_plan *Hadaplan, view_t *vIn, int nt, int FT, double *In, double *Out );
 void base_FreeFFTW_OMP( fftw_plan *Hadaplan );
+#endif
 
 /**
  * @brief FWHT flops
