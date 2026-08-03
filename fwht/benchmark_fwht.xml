@@ -16,11 +16,11 @@
       <parameter name="FORGE_ROOT">${jube_benchmark_home}/..</parameter>
       <!-- <parameter name="EXT_ROOT">${EXT_ROOT}</parameter> -->
       <!-- $GUIX_ENVIRONMENT est transmis automatiquement par ton shell actif -->
-      <parameter name="HADI_FWHT_INSTALL" type="string">hadi-fwht-master</parameter>
-      <parameter name="HADI_FWHT" type="string">${EXT_ROOT}/${HADI_FWHT_INSTALL}</parameter>
-      <parameter name="FFTW_EXT" type="string">${EXT_ROOT}/fftw-omp-double/3.3.11</parameter>
+      <!-- <parameter name="HADI_FWHT_INSTALL" type="string">hadi-fwht-master</parameter> -->
+      <!-- <parameter name="HADI_FWHT" type="string">${EXT_ROOT}/${HADI_FWHT_INSTALL}</parameter> -->
+      <!-- <parameter name="FFTW_EXT" type="string">${EXT_ROOT}/fftw-omp-double/3.3.11</parameter> -->
       <parameter name="GUIX_ENV" type="string">${GUIX_ENVIRONMENT}</parameter>
-      <parameter name="RESOLVE_CPATH" type="string">-I${FORGE_ROOT} -I${FORGE_ROOT}/fwht_utils -I${FORGE_ROOT}/fwht -I${HADI_FWHT}/include -I${GUIX_ENV}/include</parameter>
+      <!-- <parameter name="RESOLVE_CPATH" type="string">-I${FORGE_ROOT} -I${FORGE_ROOT}/fwht_utils -I${FORGE_ROOT}/fwht -I${HADI_FWHT}/include -I${GUIX_ENV}/include</parameter> -->
     </parameterset>
 
     <!-- Fichiers à copier dans le dossier d'exécution (Sandbox JUBE) -->
@@ -45,7 +45,8 @@
       <do>sed -i 's/JUBE_NROWS/${nrows}/g' fwht_bench_fwht_mat.c</do>
       <do>sed -i 's/JUBE_NCOLS/${ncols}/g' fwht_bench_fwht_mat.c</do>
       <do>
-        gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -DNDEBUG -DNOASSERTINT -DNOPRINTMAT -DFFTW_WITH_OMP -o bench_fwht_exe hada.c base_fwht.c fwht_bench_fwht_mat.c -L${GUIX_ENV}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -L${HADI_FWHT}/lib -lfwht ${RESOLVE_CPATH}
+      gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -DNDEBUG -DNOASSERTINT -DNOPRINTMAT -DFFTW_WITH_OMP -o bench_fwht_exe hada.c base_fwht.c fwht_bench_fwht_mat.c ${RESOLVE_LD} ${RESOLVE_CPATH}
+        <!-- gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -DNDEBUG -DNOASSERTINT -DNOPRINTMAT -DFFTW_WITH_OMP -o bench_fwht_exe hada.c base_fwht.c fwht_bench_fwht_mat.c -L${GUIX_ENV}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -L${HADI_FWHT}/lib -lfwht ${RESOLVE_CPATH} -->
         <!-- gcc -O0 -march=native -g3 -Wall -fopenmp -fopt-info-vec-all=vec.report -DNDEBUG -DNOASSERTINT -DNOPRINTMAT -o bench_fwht_exe hada.c base_fwht.c fwht_bench_fwht_mat.c -L${GUIX_ENV}/lib -lopenblas -lfftw3 -lpthread -lm -L${HADI_FWHT}/lib -lfwht -I${GUIX_ENV}/include ${RESOLVE_CPATH} -->
         <!-- gcc -O2 -Wall -o bench_fwht_exe hada.c base_fwht.c fwht_bench_fwht_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH} -->
       </do>
