@@ -9,10 +9,16 @@ if command -v guix >/dev/null 2>&1; then
     echo "Guix is installed."
     comp="guix shell gcc-toolchain@14.2.0 openblas jube -- gcc "
     run_jube() {
-        guix shell --tune gcc-toolchain@14.2.0 openblas jube -- bash -c "jube run benchmark.xml"
+        guix time-machine -C ../forge-channels.scm -- shell -m fwht_manifest.scm --  bash -c "jube run benchmark.xml"
+    }
+    run_R() {
+        guix time-machine -C ../forge-channels.scm -- shell -m fwht_R_manifest.scm -- bash -c "Rscript gen_bench.R output/rotatedata_mat_benchmark.csv"
     }
     run_jube_fwht() {
-        guix shell --tune gcc-toolchain@14.2.0 openblas jube -- bash -c "jube run benchmark_fwht.xml"
+        guix time-machine -C ../forge-channels.scm -- shell -m fwht_manifest.scm -- bash -c "jube run benchmark_fwht_ext.xml"
+    }
+    run_R_fwht() {
+        guix time-machine -C ../forge-channels.scm -- shell -m fwht_R_manifest.scm -- bash -c "Rscript gen_bench_fwht.R output/fwht_mat_benchmark.csv"
     }
 else
     echo "Guix is not installed."
@@ -24,11 +30,24 @@ fi
 
 HADI_FWHT_INSTALL=hadi-fwht-master
 FFTW_EXT_INSTALL=fftw-omp-double
+FFTW_EXT_VER=3.3.11
+EXT_ROOT=/mnt/e/WSL-WORK/forge/ext
 FORGE_ROOT=$PWD/..
-export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/include:$FORGE_ROOT/ext/${FFTW_EXT_INSTALL}/3.3.11/include
-export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/lib:$FORGE_ROOT/ext/${FFTW_EXT_INSTALL}/3.3.11/lib:$LD_LIBRARY_PATH
-RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/include -I$FORGE_ROOT/ext/${FFTW_EXT_INSTALL}/3.3.11/include"
-echo $CPATH
+
+export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:${EXT_ROOT}/${HADI_FWHT_INSTALL}/include:${EXT_ROOT}/${FFTW_EXT_INSTALL}/${FFTW_EXT_VER}/include:$GUIX_ENVIRONMENT/include
+export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib:${EXT_ROOT}/${FFTW_EXT_INSTALL}/${FFTW_EXT_VER}/lib:$LD_LIBRARY_PATH
+#RESOLVE_CPATH=="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I${EXT_ROOT}/${HADI_FWHT_INSTALL}/include -I${EXT_ROOT}/${FFTW_EXT_INSTALL}/${FFTW_EXT_VER}/include"
+
+export RESOLVE_CPATH_FORGE="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht"
+export RESOLVE_CPATH_GUIX="-I$GUIX_ENVIRONMENT/include"
+export RESOLVE_CPATH_HADI="-I${EXT_ROOT}/${HADI_FWHT_INSTALL}/include"
+export RESOLVE_CPATH_FFTW="-I${EXT_ROOT}/${FFTW_EXT_INSTALL}/${FFTW_EXT_VER}/include"
+export RESOLVE_CPATH="${RESOLVE_CPATH_FORGE} ${RESOLVE_CPATH_GUIX} ${RESOLVE_CPATH_HADI} ${RESOLVE_CPATH_FFTW}"
+
+export RESOLVE_LD_GUIX="-L$GUIX_ENVIRONMENT/lib -lopenblas -lpthread -lm"
+export RESOLVE_LD_HADI="-L${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib -lfwht"
+export RESOLVE_LD_FFTW="-L${EXT_ROOT}/${FFTW_EXT_INSTALL}/${FFTW_EXT_VER}/lib -lfftw3 -lfftw3_omp"
+export RESOLVE_LD="${RESOLVE_LD_GUIX} ${RESOLVE_LD_HADI} ${RESOLVE_LD_FFTW}"
 
 mkdir -p bin/ logs/ output/
 rm -f bin/* logs/* output/*
@@ -36,8 +55,13 @@ rm -f bin/* logs/* output/*
 LOG_FILE=logs/bench.log
 BENCH_OUT_FILE=output/bench_base_rotatedata_mat.csv
 
+run_jube && run_R
+run_jube_fwht && run_R_fwht
+
 #run_jube && guix shell r r-tidyverse -- Rscript gen_bench.R output/rotatedata_mat_benchmark.csv
-run_jube_fwht && guix shell r r-tidyverse r-plotly -- Rscript gen_bench_fwht.R output/fwht_mat_benchmark.csv
+#run_jube_fwht && guix shell r r-tidyverse r-plotly -- Rscript gen_bench_fwht.R output/fwht_mat_benchmark.csv
+
+
 # this one is a dummy one testing fixture ubench
 # $comp -O2 -Wall -o bin/bench_base_fixture_rotatedata_mat \
 # $FORGE_ROOT/fwht_utils/hada.c \

@@ -34,10 +34,12 @@ EXT_ROOT=/mnt/e/WSL-WORK/forge/ext
 
 export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:${EXT_ROOT}/${HADI_FWHT_INSTALL}/include:$GUIX_ENVIRONMENT/include
 export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib:$LD_LIBRARY_PATH
+
 export RESOLVE_CPATH_FORGE="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht"
 export RESOLVE_CPATH_GUIX="-I$GUIX_ENVIRONMENT/include"
 export RESOLVE_CPATH_HADI="-I${EXT_ROOT}/${HADI_FWHT_INSTALL}/include"
 export RESOLVE_CPATH="${RESOLVE_CPATH_FORGE} ${RESOLVE_CPATH_GUIX} ${RESOLVE_CPATH_HADI}"
+
 export RESOLVE_LD_GUIX="-L$GUIX_ENVIRONMENT/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm"
 export RESOLVE_LD_HADI="-L${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib -lfwht"
 export RESOLVE_LD="${RESOLVE_LD_GUIX} ${RESOLVE_LD_HADI}"
@@ -48,7 +50,7 @@ rm -f bin/* logs/* output/*
 LOG_FILE=logs/bench.log
 BENCH_OUT_FILE=output/bench_base_rotatedata_mat.csv
 
-export EXT_ROOT=/mnt/e/WSL-WORK/forge/ext
+#export EXT_ROOT=/mnt/e/WSL-WORK/forge/ext
 run_jube && run_R
 run_jube_fwht && run_R_fwht
 
