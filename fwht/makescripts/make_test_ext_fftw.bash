@@ -3,16 +3,9 @@
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
 echo "SCRIPT DIR IS $SCRIPT_DIR"
-cd $SCRIPT_DIR
+cd $SCRIPT_DIR/..
 
-if command -v guix >/dev/null 2>&1; then
-    echo "Guix is installed."
-    #comp="guix shell gcc-toolchain@14.2.0 openblas -- gcc "
-    comp="guix time-machine -C ../forge-channels.scm -- shell -m fwht_manifest.scm -- gcc"
-else
-    echo "Guix is not installed."
-    comp=gcc
-fi
+comp="guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_manifest.scm -- gcc"
 
 HADI_FWHT_INSTALL=hadi-fwht-master
 FFTW_EXT_INSTALL=fftw-seq-double

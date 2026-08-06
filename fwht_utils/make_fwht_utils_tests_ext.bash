@@ -5,21 +5,18 @@ SCRIPT_DIR=$(dirname "$(realpath "$0")")
 echo "SCRIPT DIR IS $SCRIPT_DIR"
 cd $SCRIPT_DIR
 
-if command -v guix >/dev/null 2>&1; then
-    echo "Guix is installed."
-    comp="guix time-machine -C ../forge-channels.scm -- shell -m fwht_utils_manifest.scm -- gcc"
-    #comp_julia="guix time-machine -C ../forge-channels.scm -- shell -m fwht_utils_manifest.scm -- julia "
-else
-    echo "Guix is not installed."
-    comp=gcc
-fi
+comp=gcc
 
+EXT_ROOT=/home/vlederer/Bureau/DEV/ext
+OPENBLAS=$EXT_ROOT/openblas-0.3.34
+FFTW=$EXT_ROOT/fftw-3.3.11
 FORGE_ROOT=$PWD/..
-export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils
-RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils"
+export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:OPENBLAS/include:$FFTW/include
+RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$OPENBLAS/include -I$FFTW/include"
 
 mkdir -p bin/
 rm -f bin/*
+
 
 # showcase hada
 $comp -DHADA_SHOWCASE_ROW_M=16 -O2 -Wall $RESOLVE_CPATH -o bin/showcase_hada hada.c test/hada_showcase.c 2>&1 | tee bin/tests-logs.log

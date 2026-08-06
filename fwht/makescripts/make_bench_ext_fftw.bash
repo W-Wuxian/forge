@@ -3,30 +3,22 @@
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
 echo "SCRIPT DIR IS $SCRIPT_DIR"
-cd $SCRIPT_DIR
+cd $SCRIPT_DIR/..
 
-if command -v guix >/dev/null 2>&1; then
-    echo "Guix is installed."
-    comp="guix shell gcc-toolchain@14.2.0 openblas jube -- gcc "
-    run_jube() {
-        guix time-machine -C ../forge-channels.scm -- shell -m fwht_manifest.scm --  bash -c "jube run benchmark.xml"
-    }
-    run_R() {
-        guix time-machine -C ../forge-channels.scm -- shell -m fwht_R_manifest.scm -- bash -c "Rscript gen_bench.R output/rotatedata_mat_benchmark.csv"
-    }
-    run_jube_fwht() {
-        guix time-machine -C ../forge-channels.scm -- shell -m fwht_manifest.scm -- bash -c "jube run benchmark_fwht_ext.xml"
-    }
-    run_R_fwht() {
-        guix time-machine -C ../forge-channels.scm -- shell -m fwht_R_manifest.scm -- bash -c "Rscript gen_bench_fwht.R output/fwht_mat_benchmark.csv"
-    }
-else
-    echo "Guix is not installed."
-    comp=gcc
-    run_jube() {
-        jube run benchmark.xml
-    }
-fi
+comp="guix shell gcc-toolchain@14.2.0 openblas jube -- gcc "
+run_jube() {
+    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_manifest.scm --  bash -c "jube run jubescripts/benchmark.xml"
+}
+run_R() {
+    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_R_manifest.scm -- bash -c "Rscript rscripts/gen_bench.R output/rotatedata_mat_benchmark.csv"
+}
+run_jube_fwht() {
+    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_manifest.scm -- bash -c "jube run jubescripts/benchmark_fwht_ext.xml"
+}
+run_R_fwht() {
+    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_R_manifest.scm -- bash -c "Rscript rscripts/gen_bench_fwht.R output/fwht_mat_benchmark.csv"
+}
+
 
 HADI_FWHT_INSTALL=hadi-fwht-master
 FFTW_EXT_INSTALL=fftw-omp-double
@@ -49,14 +41,16 @@ export RESOLVE_LD_HADI="-L${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib -lfwht"
 export RESOLVE_LD_FFTW="-L${EXT_ROOT}/${FFTW_EXT_INSTALL}/${FFTW_EXT_VER}/lib -lfftw3 -lfftw3_omp"
 export RESOLVE_LD="${RESOLVE_LD_GUIX} ${RESOLVE_LD_HADI} ${RESOLVE_LD_FFTW}"
 
-mkdir -p bin/ logs/ output/
-rm -f bin/* logs/* output/*
+mkdir -p bin/ logs/ output/ gen/
+rm -f bin/* logs/* output/* gen/*
 
 LOG_FILE=logs/bench.log
 BENCH_OUT_FILE=output/bench_base_rotatedata_mat.csv
 
 run_jube && run_R
 run_jube_fwht && run_R_fwht
+
+mv *.pdf *.png *.html gen/
 
 #run_jube && guix shell r r-tidyverse -- Rscript gen_bench.R output/rotatedata_mat_benchmark.csv
 #run_jube_fwht && guix shell r r-tidyverse r-plotly -- Rscript gen_bench_fwht.R output/fwht_mat_benchmark.csv
