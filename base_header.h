@@ -53,6 +53,13 @@
 #define PRINT_COLMAJ_MAT( macro_mat, macro_nr, macro_nc, msg ) ( (void)0 )
 #define PRINT_ROWMAJ_MAT( macro_mat, macro_nr, macro_nc, msg ) ( (void)0 )
 #else
+#define PRINT_ARRAY( macro_array, macro_array_fmt, macro_array_len, msg )                                                                                                                              \
+    do {                                                                                                                                                                                               \
+        printf( "%s\n", msg );                                                                                                                                                                         \
+        for ( base_int_t macro_i = 0; macro_i < ( macro_array_len ); ++macro_i ) {                                                                                                                     \
+            printf( macro_array_fmt, macro_array[macro_i] );                                                                                                                                           \
+        }                                                                                                                                                                                              \
+    } while ( 0 )
 #define PRINT_COLMAJ_MAT( macro_mat, macro_nr, macro_nc, msg )                                                                                                                                         \
     do {                                                                                                                                                                                               \
         printf( "%s\n", msg );                                                                                                                                                                         \

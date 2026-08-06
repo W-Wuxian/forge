@@ -39,7 +39,13 @@ def main(paths: list[Path]):
 if __name__ == "__main__":
     # Par défaut: cherche dans "../"
     if len(sys.argv) < 2:
-        paths = [Path("../fwht_utils"), Path("../fwht"), Path("../base_datatype.h"), Path("../base_header.h")]
+        paths = [
+            Path("../sketch"),
+            Path("../fwht_utils"),
+            Path("../fwht"),
+            Path("../base_datatype.h"),
+            Path("../base_header.h")
+        ]
         print("📁 Pas de chemin spécifié → utilisation de '../' par défaut")
     else:
         paths = [Path(arg) for arg in sys.argv[1:]]
