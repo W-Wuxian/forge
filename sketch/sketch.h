@@ -49,31 +49,31 @@ void _base_create_random_permutation( base_int_t input_len, base_int_t *data_out
 
 /**
  * @brief Set internal flags based on user parameters
- * and initialize memory for permutation, rademacher arrays  
- * 
+ * and initialize memory for permutation, rademacher arrays
+ *
  * @param sketch_data  - pointer to base_sketch_t data structure
  * @param iparam - pointer to sketch parameters
  * @param rank - MPI process ID
  * @param size - MPI communicator size
  */
-void base_init_sketch_data(base_sketch_t* sketch_data, base_int_t* iparam, int rank, int size);
+void base_init_sketch_data( base_sketch_t *sketch_data, base_int_t *iparam, int rank, int size );
 
 /**
  * \fn base_set_sketch_data
  * \brief Memory allocation and initialization for swork array (sketch)
- * 
+ *
  * \param[in, out] sketch_data - pointer base_sketch_t struct
  * \param[in] rank - MPI procs rank
  * \param[in] size - number of MPI process
-*/
-void base_set_sketch_data(base_sketch_t* sketch_data, int rank, int size);
+ */
+void base_set_sketch_data( base_sketch_t *sketch_data, int rank, int size );
 
 /**
  * \fn base_free_sketch_data
  * \brief Free memory allocated by base_Set_d_SKETCH.
  * \param[in, out] sketch_data - pointer to base_sketch_t struct
-*/
-void base_free_sketch_data(base_sketch_t* sketch_data);
+ */
+void base_free_sketch_data( base_sketch_t *sketch_data );
 
 /**
  * \fn base_getdata_sketch_data
@@ -83,8 +83,8 @@ void base_free_sketch_data(base_sketch_t* sketch_data);
  * \param[in] ncols_data_in - number of columns of data_in
  * \param[in] data_in - pointer to the input data
  * \param[in] data_out - pointer to the output data
-*/
-void base_getdata_sketch_data(base_sketch_t* sketch_data, const base_int_t ncols_data_in, double* data_in, double* data_out);
+ */
+void base_getdata_sketch_data( base_sketch_t *sketch_data, const base_int_t ncols_data_in, double *data_in, double *data_out );
 
 /**
  * \fn base_compute_sketch
@@ -100,7 +100,7 @@ void base_getdata_sketch_data(base_sketch_t* sketch_data, const base_int_t ncols
  * nswork length of swork
  * scale factor (1 / sqrt(Kproj))
  * \param[in,out] sketch_data - pointer to base_sketch_t struct
-*/
-void base_compute_sketch(base_sketch_t* sketch_data);
+ */
+void base_compute_sketch( base_sketch_t *sketch_data );
 
 #endif  //__SKETCH_H__
