@@ -3,6 +3,15 @@
 
 #include "base_fwht.h"
 
+// iparam
+#define IDX_NROWS_DATA_IN     0 /**< Index for the number of rows */
+#define IDX_NCOLS_DATA_IN   1 /**< Index for the number of columns */
+#define IDX_SKETCH_DIM   2 /**< Index for the sketch dimension (row) */
+#define IDX_NDR     3 /**< Index for the right rademarcher flag */
+#define IDX_NDL     4 /**< Index for the left rademarcher flag */
+#define IDX_SKETCH_ALG 5 /**< Index for the sketching flag */
+#define IDX_SKETCH_IPARAM_LEN 6 /**< Length of sketch iparam array */
+
 typedef enum { SRHT_CFWHT, SRHT_FFTW, SRHT_HADI_FWHT, GAUSS } base_sketch_alg_e;
 
 /**

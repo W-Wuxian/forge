@@ -44,6 +44,8 @@ debug_option="-O0 -g3 -pg -fopenmp -Wall -Wno-unknown-pragmas -DPRINTMAT"
 # showcase fwht
 $comp $debug_option -o bin/tester_create_random_permutation \
 $FORGE_ROOT/sketch/sketch.c \
+$FORGE_ROOT/fwht_utils/hada.c \
+$FORGE_ROOT/fwht/base_fwht.c \
 test/sketch_tester_create_random_permutation.c \
 ${RESOLVE_LD} \
 ${RESOLVE_CPATH} \
@@ -51,3 +53,16 @@ ${RESOLVE_CPATH} \
 bin/tester_create_random_permutation |& tee -a build.log
 mv gmon.out prof/gmon-tester_create_random_permutation.out
 gprof bin/tester_create_random_permutation prof/gmon-tester_create_random_permutation.out > prof/grof-tester_create_random_permutation.out
+
+
+$comp $debug_option -o bin/tester_sketch_1D \
+$FORGE_ROOT/sketch/sketch.c \
+$FORGE_ROOT/fwht_utils/hada.c \
+$FORGE_ROOT/fwht/base_fwht.c \
+test/sketch_tester_sketch_1D.c \
+${RESOLVE_LD} \
+${RESOLVE_CPATH} \
+2>&1 | tee build.log
+bin/tester_sketch_1D |& tee -a build.log
+mv gmon.out prof/gmon-tester_sketch_1D.out
+gprof bin/tester_sketch_1D prof/gmon-tester_sketch_1D.out > prof/grof-tester_sketch_1D.out
