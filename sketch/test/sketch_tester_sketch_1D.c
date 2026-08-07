@@ -19,6 +19,7 @@ main()
     sketch_iparam[IDX_NDL] = 1;
     sketch_iparam[IDX_NDR] = 1;
     sketch_iparam[IDX_SKETCH_ALG] = SRHT_FFTW;
+    //sketch_iparam[IDX_SKETCH_ALG] = SRHT_HADI_FWHT;
 
     len_In = sketch_iparam[IDX_NROWS_DATA_IN] * sketch_iparam[IDX_NCOLS_DATA_IN];
     len_Out = sketch_iparam[IDX_SKETCH_DIM] * sketch_iparam[IDX_NCOLS_DATA_IN];

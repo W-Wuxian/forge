@@ -11,6 +11,7 @@
 #include <inttypes.h>
 #include <cblas.h>
 #include "fftw3.h"
+#include "fwht.h"
 // #include "mkl.h"
 #include "base_datatype.h"
 

@@ -43,6 +43,7 @@ base_init_sketch_data( base_sketch_t *sketch_data, base_int_t *iparam, int rank,
                 sketch_data->nrows_data_work = iparam[IDX_NROWS_DATA_IN];
                 sketch_data->scale  = base_d_p1 / sqrt((double) iparam[IDX_SKETCH_DIM]);
                 break; */
+        case SRHT_HADI_FWHT:
         case SRHT_CFWHT:
         case SRHT_FFTW:
         default:
@@ -126,6 +127,7 @@ base_set_sketch_data( base_sketch_t *sketch_data, int rank, int size )
                 base_memMB_SKETCH_d(&sketch_data->memMB, size_data_work);
                 base_flops_SKETCH_d(sketch_data, size);
                 break; */
+        case SRHT_HADI_FWHT:
         case SRHT_CFWHT:
         case SRHT_FFTW:
         default:
@@ -196,6 +198,7 @@ base_compute_sketch( base_sketch_t *sketch_data )
                 cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, sketch_dim, 1, sketch_data->nrows_data_work, dbase_alpha_p1,
                  sketch_data->data_work, sketch_dim, sketch_data->data_in, sketch_data->nrows_data_work, dbase_beta_ze, data_out, sketch_dim);
                 break; */
+        case SRHT_HADI_FWHT:
         case SRHT_CFWHT:
         case SRHT_FFTW:
         default:
@@ -207,6 +210,12 @@ base_compute_sketch( base_sketch_t *sketch_data )
                 data_work[rademacher_array[i]] *= -1;
             // FWHT computation
             switch ( sketch_data->sketch_alg ) {
+                case SRHT_HADI_FWHT:
+                    fwht_status_t status = fwht_batch_f64( NULL, (double **)&data_work, nrows_data_work, 1 );
+                    if ( status != FWHT_SUCCESS ) {
+                        fprintf( stderr, "%s\n", fwht_error_string( status ) );
+                    }
+                    break;
                 case SRHT_FFTW:
                     fftw_execute_r2r( sketch_data->Hadaplan, data_work, data_work );
                     break;
