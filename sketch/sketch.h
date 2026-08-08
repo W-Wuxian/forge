@@ -12,7 +12,9 @@
 #define IDX_SKETCH_ALG 5 /**< Index for the sketching flag */
 #define IDX_SKETCH_IPARAM_LEN 6 /**< Length of sketch iparam array */
 
-typedef enum { SRHT_CFWHT, SRHT_FFTW, SRHT_HADI_FWHT, GAUSS } base_sketch_alg_e;
+typedef enum { SRHT_CFWHT, SRHT_FFTW, SRHT_HADI_FWHT, GAUSS, NUMBER_OF_SKETCH_ALG } base_sketch_alg_e;
+
+static const char* const string_sketch_alg[NUMBER_OF_SKETCH_ALG] = {"SRHT_CFWHT", "SRHT_FFTW", "SRHT_HADI_FWHT", "GAUSS"};
 
 /**
  * \struct base_sketch_t

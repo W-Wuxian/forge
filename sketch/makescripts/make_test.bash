@@ -53,9 +53,10 @@ ${RESOLVE_CPATH} \
 bin/tester_create_random_permutation |& tee -a build.log
 mv gmon.out prof/gmon-tester_create_random_permutation.out
 gprof bin/tester_create_random_permutation prof/gmon-tester_create_random_permutation.out > prof/grof-tester_create_random_permutation.out
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_create_random_permutation 2>&1 |& tee valgrind.log
 
-
-$comp $debug_option -o bin/tester_sketch_1D \
+# Using sketch algo SRHT_FFTW
+$comp $debug_option -DWHICH_SKETCH_ALG=SRHT_FFTW -o bin/tester_sketch_1D_SRHT_FFTW \
 $FORGE_ROOT/sketch/sketch.c \
 $FORGE_ROOT/fwht_utils/hada.c \
 $FORGE_ROOT/fwht/base_fwht.c \
@@ -63,6 +64,21 @@ test/sketch_tester_sketch_1D.c \
 ${RESOLVE_LD} \
 ${RESOLVE_CPATH} \
 2>&1 | tee build.log
-bin/tester_sketch_1D |& tee -a build.log
-mv gmon.out prof/gmon-tester_sketch_1D.out
-gprof bin/tester_sketch_1D prof/gmon-tester_sketch_1D.out > prof/grof-tester_sketch_1D.out
+bin/tester_sketch_1D_SRHT_FFTW |& tee -a build.log
+mv gmon.out prof/gmon-tester_sketch_1D_SRHT_FFTW.out
+gprof bin/tester_sketch_1D_SRHT_FFTW prof/gmon-tester_sketch_1D_SRHT_FFTW.out > prof/grof-tester_sketch_1D_SRHT_FFTW.out
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_SRHT_FFTW 2>&1 |& tee -a valgrind.log
+
+# Using sketch algo SRHT_HADI_FWHT
+$comp $debug_option -DWHICH_SKETCH_ALG=SRHT_HADI_FWHT -o bin/tester_sketch_1D_SRHT_HADI_FWHT \
+$FORGE_ROOT/sketch/sketch.c \
+$FORGE_ROOT/fwht_utils/hada.c \
+$FORGE_ROOT/fwht/base_fwht.c \
+test/sketch_tester_sketch_1D.c \
+${RESOLVE_LD} \
+${RESOLVE_CPATH} \
+2>&1 | tee build.log
+bin/tester_sketch_1D_SRHT_HADI_FWHT |& tee -a build.log
+mv gmon.out prof/gmon-tester_sketch_1D_SRHT_HADI_FWHT.out
+gprof bin/tester_sketch_1D_SRHT_HADI_FWHT prof/gmon-tester_sketch_1D_SRHT_HADI_FWHT.out > prof/grof-tester_sketch_1D_SRHT_HADI_FWHT.out
+valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_SRHT_HADI_FWHT 2>&1 |& tee -a valgrind.log
