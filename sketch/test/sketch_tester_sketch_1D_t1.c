@@ -19,9 +19,9 @@ main()
 
     sketch_iparam[IDX_NCOLS_DATA_IN] = 1;
     sketch_iparam[IDX_NROWS_DATA_IN] = 8;
-    sketch_iparam[IDX_SKETCH_DIM]    = 4;
-    sketch_iparam[IDX_NDL]           = 1;
-    sketch_iparam[IDX_NDR]           = 1;
+    sketch_iparam[IDX_SKETCH_DIM]    = 8;
+    sketch_iparam[IDX_NDL]           = 0;
+    sketch_iparam[IDX_NDR]           = 0;
     sketch_iparam[IDX_SKETCH_ALG]    = WHICH_SKETCH_ALG;
 
     printf( "Using sketch algo: %s\n", string_sketch_alg[WHICH_SKETCH_ALG] );
@@ -43,8 +43,16 @@ main()
     base_init_sketch_data( &sketch_data, &sketch_iparam[0], 0, 1 );
     base_set_sketch_data( &sketch_data, 0, 1 );
 
-    for ( base_int_t i = 0; i < len_In; ++i )
-        In[i] = (double)i;
+    // Data Initialization
+    In[0] = 1;
+    In[2] = 1;
+    In[5] = 1;
+    In[6] = 1;
+    // Identity Perm
+    for ( size_t i = 0; i < sketch_iparam[IDX_SKETCH_DIM]; ++i )
+        sketch_data.permutation_array[i] = i;
+    // Identity scaling
+    sketch_data.scale = 1;
 
     PRINT_ARRAY( In, "%lf\n", len_In, "In Init" );
     PRINT_ARRAY( Out, "%lf\n", len_Out, "Out Init" );

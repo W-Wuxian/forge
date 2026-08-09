@@ -4,17 +4,17 @@
 #include "base_fwht.h"
 
 // iparam
-#define IDX_NROWS_DATA_IN     0 /**< Index for the number of rows */
-#define IDX_NCOLS_DATA_IN   1 /**< Index for the number of columns */
-#define IDX_SKETCH_DIM   2 /**< Index for the sketch dimension (row) */
-#define IDX_NDR     3 /**< Index for the right rademarcher flag */
-#define IDX_NDL     4 /**< Index for the left rademarcher flag */
-#define IDX_SKETCH_ALG 5 /**< Index for the sketching flag */
+#define IDX_NROWS_DATA_IN 0     /**< Index for the number of rows */
+#define IDX_NCOLS_DATA_IN 1     /**< Index for the number of columns */
+#define IDX_SKETCH_DIM 2        /**< Index for the sketch dimension (row) */
+#define IDX_NDR 3               /**< Index for the right rademarcher flag */
+#define IDX_NDL 4               /**< Index for the left rademarcher flag */
+#define IDX_SKETCH_ALG 5        /**< Index for the sketching flag */
 #define IDX_SKETCH_IPARAM_LEN 6 /**< Length of sketch iparam array */
 
 typedef enum { SRHT_CFWHT, SRHT_FFTW, SRHT_HADI_FWHT, GAUSS, NUMBER_OF_SKETCH_ALG } base_sketch_alg_e;
-
-static const char* const string_sketch_alg[NUMBER_OF_SKETCH_ALG] = {"SRHT_CFWHT", "SRHT_FFTW", "SRHT_HADI_FWHT", "GAUSS"};
+typedef enum { SKETCH_1D, SKETCH_2D, NUMBER_OF_SKETCH_TYPE } base_sketch_type_e;
+static const char *const string_sketch_alg[NUMBER_OF_SKETCH_ALG] = { "SRHT_CFWHT", "SRHT_FFTW", "SRHT_HADI_FWHT", "GAUSS" };
 
 /**
  * \struct base_sketch_t
@@ -81,7 +81,7 @@ void base_set_sketch_data( base_sketch_t *sketch_data, int rank, int size );
 
 /**
  * \fn base_free_sketch_data
- * \brief Free memory allocated by base_Set_d_SKETCH.
+ * \brief Free memory allocated by base_Set_sketch_data.
  * \param[in, out] sketch_data - pointer to base_sketch_t struct
  */
 void base_free_sketch_data( base_sketch_t *sketch_data );
@@ -113,5 +113,24 @@ void base_getdata_sketch_data( base_sketch_t *sketch_data, const base_int_t ncol
  * \param[in,out] sketch_data - pointer to base_sketch_t struct
  */
 void base_compute_sketch( base_sketch_t *sketch_data );
+
+/**
+ * \enum base_compute_sketch_mat
+ * \brief double precision version of the srth with a 2D inout data, public function
+ * \details Computes the block fwht on the input data using a 1D-FWHT on the block data via cblas_drotm(), fftw or Gaussian matrix
+ * In Block Vector to be Sketch, In is nIn x ncols
+ * nIn number of rows of In, nIn as to be a power of 2 if not try zero-padding before calling this function
+ * ncols number of cols of nIn
+ * Out the block skecth of In
+ * Kproj dimension of the sketch, with Kproj <= nIn
+ * D rademacher array
+ * nD length of Dr (D[0:nDr-1]==Dr)
+ * Perm permutation array
+ * swork working array for fwht()
+ * nswork length of swork
+ * scale factor (1 / sqrt(Kproj))
+ * \param[in,out] sketch_data - pointer to sketch_data_t struct
+ */
+void base_compute_sketch_mat( sketch_data_t *sketch_data );
 
 #endif  //__SKETCH_H__

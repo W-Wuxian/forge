@@ -5,8 +5,8 @@ _base_create_random_permutation( base_int_t input_len, base_int_t *data_out, bas
 {
     base_int_t  i, j, sw;
     base_int_t *rand_tmp = NULL;
-    //rand_tmp             = (base_int_t *)malloc( sizeof( base_int_t ) * input_len );
-    SPEALLOC(rand_tmp, base_ialign, sizeof( base_int_t ) * input_len);
+    // rand_tmp             = (base_int_t *)malloc( sizeof( base_int_t ) * input_len );
+    SPEALLOC( rand_tmp, base_ialign, sizeof( base_int_t ) * input_len );
     BASE_ASSERT_ISNOTNULL( rand_tmp );
     memset( rand_tmp, 0, sizeof( base_int_t ) * input_len );
     for ( i = 0; i < input_len; i++ )
@@ -33,7 +33,7 @@ base_init_sketch_data( base_sketch_t *sketch_data, base_int_t *iparam, int rank,
     sketch_data->nDl           = iparam[IDX_NDL];
     sketch_data->sketch_alg    = iparam[IDX_SKETCH_ALG];
     sketch_data->Hadaplan      = NULL;
-    size_t      size_rademacher_array, size_permutation_array, size_data_work;
+    size_t      size_rademacher_array, size_permutation_array;  //, size_data_work;
     base_uint_t Rseed;
     base_int_t  i;
     switch ( sketch_data->sketch_alg ) {
@@ -52,8 +52,8 @@ base_init_sketch_data( base_sketch_t *sketch_data, base_int_t *iparam, int rank,
             assert( base_ispow2( sketch_data->nrows_data_work ) );
             // Rademacher Vector
             if ( iparam[IDX_NDR] == 0 && iparam[IDX_NDL] == 0 ) { /**< .EQV. to identity vector */
-                //sketch_data->rademacher_array = (base_int_t *)mkl_malloc( 0, base_ialign );
-                SPEALLOC(sketch_data->rademacher_array, base_ialign, 0);
+                // sketch_data->rademacher_array = (base_int_t *)mkl_malloc( 0, base_ialign );
+                SPEALLOC( sketch_data->rademacher_array, base_ialign, 0 );
                 memset( sketch_data->rademacher_array, 0, 0 );
             }
             else { /**< Rademacher vector */
@@ -66,9 +66,9 @@ base_init_sketch_data( base_sketch_t *sketch_data, base_int_t *iparam, int rank,
                 if ( iparam[IDX_NDL] > 0 )
                     for ( i = 0; i < sketch_data->sketch_dim; ++i )
                         sketch_data->nDl += ( rand() % 2 == 0 ) ? 1 : 0; /**< Length of Rademacher left vector */
-                size_rademacher_array         = ( sketch_data->nDr + sketch_data->nDl ) * sizeof( base_int_t );
-                //sketch_data->rademacher_array = (base_int_t *)mkl_malloc( size_rademacher_array, base_ialign );
-                SPEALLOC(sketch_data->rademacher_array, base_ialign, size_rademacher_array);
+                size_rademacher_array = ( sketch_data->nDr + sketch_data->nDl ) * sizeof( base_int_t );
+                // sketch_data->rademacher_array = (base_int_t *)mkl_malloc( size_rademacher_array, base_ialign );
+                SPEALLOC( sketch_data->rademacher_array, base_ialign, size_rademacher_array );
                 BASE_ASSERT_ISNOTNULL( ( sketch_data->rademacher_array ) );
                 memset( sketch_data->rademacher_array, 0, size_rademacher_array );
                 srand( Rseed );
@@ -91,9 +91,9 @@ base_init_sketch_data( base_sketch_t *sketch_data, base_int_t *iparam, int rank,
                 }
             }
             // Permutation Vector
-            size_permutation_array         = sketch_data->sketch_dim * sizeof( base_int_t );
-            //sketch_data->permutation_array = (base_int_t *)mkl_malloc( size_permutation_array, base_ialign );
-            SPEALLOC(sketch_data->permutation_array, base_ialign, size_permutation_array);
+            size_permutation_array = sketch_data->sketch_dim * sizeof( base_int_t );
+            // sketch_data->permutation_array = (base_int_t *)mkl_malloc( size_permutation_array, base_ialign );
+            SPEALLOC( sketch_data->permutation_array, base_ialign, size_permutation_array );
             BASE_ASSERT_ISNOTNULL( ( sketch_data->permutation_array ) );
             memset( sketch_data->permutation_array, 0, size_permutation_array );
             _base_create_random_permutation( sketch_data->nrows_data_in, sketch_data->permutation_array, sketch_data->sketch_dim );
@@ -104,14 +104,15 @@ base_init_sketch_data( base_sketch_t *sketch_data, base_int_t *iparam, int rank,
 void
 base_set_sketch_data( base_sketch_t *sketch_data, int rank, int size )
 {
-    int         ierr = 0;
-    size_t      size_rademacher_array, size_permutation_array, size_data_work;
-    base_uint_t Rseed;
-    base_int_t  i;
+    // int         ierr = 0;
+    // size_t      size_rademacher_array, size_permutation_array, size_data_work;
+    // base_uint_t Rseed;
+    // base_int_t  i;
     switch ( sketch_data->sketch_alg ) {
             /*   case GAUSS:
+                int         ierr = 0;
                 // Allocate Local Gaussian Matrix
-                size_data_work = sketch_data->sketch_dim * sketch_data->nrows_data_work * sizeof(double);
+                size_t size_data_work = sketch_data->sketch_dim * sketch_data->nrows_data_work * sizeof(double);
                 //sketch_data->data_work  = (double*) mkl_malloc(size_data_work, d_align);
                 SPEALLOC(sketch_data->data_work, base_dalign, size_data_work);
                 BASE_ASSERT_ISNOTNULL((sketch_data->data_work));
@@ -132,9 +133,9 @@ base_set_sketch_data( base_sketch_t *sketch_data, int rank, int size )
         case SRHT_FFTW:
         default:
             // Local srht buffer
-            size_data_work         = sketch_data->nrows_data_work * sketch_data->ncols_data_in * sizeof( double );
-            //sketch_data->data_work = (double *)mkl_malloc( size_data_work, d_align );
-            SPEALLOC(sketch_data->data_work, base_dalign, size_data_work);
+            size_t size_data_work = sketch_data->nrows_data_work * sketch_data->ncols_data_in * sizeof( double );
+            // sketch_data->data_work = (double *)mkl_malloc( size_data_work, d_align );
+            SPEALLOC( sketch_data->data_work, base_dalign, size_data_work );
             BASE_ASSERT_ISNOTNULL( ( sketch_data->data_work ) );
             if ( sketch_data->sketch_alg == SRHT_FFTW ) {
                 view_t vIn;
@@ -147,9 +148,9 @@ base_set_sketch_data( base_sketch_t *sketch_data, int rank, int size )
                 // if (rank==0)fftw_print_plan(sketch_data->Hadaplan);
             }
             memset( sketch_data->data_work, 0, size_data_work );
-            size_rademacher_array  = ( sketch_data->nDr + sketch_data->nDl ) * sizeof( base_int_t );
-            size_permutation_array = sketch_data->sketch_dim * sizeof( base_int_t );
-            /* base_memMB_SKETCH_d( &sketch_data->memMB, size_rademacher_array + size_permutation_array + size_data_work );
+            /* size_t size_rademacher_array  = ( sketch_data->nDr + sketch_data->nDl ) * sizeof( base_int_t );
+            size_t size_permutation_array = sketch_data->sketch_dim * sizeof( base_int_t );
+            base_memMB_SKETCH_d( &sketch_data->memMB, size_rademacher_array + size_permutation_array + size_data_work );
             base_flops_SKETCH_d( sketch_data, size ); */
             break;
     }
@@ -232,3 +233,7 @@ base_compute_sketch( base_sketch_t *sketch_data )
             break;
     }
 }
+
+void
+base_compute_sketch_mat( sketch_data_t *sketch_data )
+{}
