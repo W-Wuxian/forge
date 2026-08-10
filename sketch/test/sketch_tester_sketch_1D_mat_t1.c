@@ -1,0 +1,76 @@
+#include "sketch.h"
+
+#ifndef WHICH_SKETCH_ALG
+#define WHICH_SKETCH_ALG SRHT_FFTW
+#endif
+
+int
+main()
+{
+    int           ierr = 0;
+    base_int_t    sketch_iparam[IDX_SKETCH_IPARAM_LEN];
+    base_int_t    len_In  = 0;
+    base_int_t    len_Out = 0;
+    base_sketch_t sketch_data;
+    // Data to be transformed (Out-of-place)
+    double *In = NULL;
+    // The transformed transformed
+    double *Out = NULL;
+
+    sketch_iparam[IDX_NCOLS_DATA_IN] = 4;
+    sketch_iparam[IDX_NROWS_DATA_IN] = 8;
+    sketch_iparam[IDX_SKETCH_DIM]    = 8;
+    sketch_iparam[IDX_NDL]           = 0;
+    sketch_iparam[IDX_NDR]           = 0;
+    sketch_iparam[IDX_SKETCH_ALG]    = WHICH_SKETCH_ALG;
+
+    printf( "Using sketch algo: %s\n", string_sketch_alg[WHICH_SKETCH_ALG] );
+
+    len_In  = sketch_iparam[IDX_NROWS_DATA_IN] * sketch_iparam[IDX_NCOLS_DATA_IN];
+    len_Out = sketch_iparam[IDX_SKETCH_DIM] * sketch_iparam[IDX_NCOLS_DATA_IN];
+
+    size_t size_In = len_In * sizeof( double );
+    // In = (double*) mkl_malloc(size_In, d_align);
+    SPEALLOC( In, base_dalign, size_In );
+    assert( In != NULL );
+    memset( In, 0, size_In );
+    size_t size_Out = len_Out * sizeof( double );
+    // Out = (double*) mkl_malloc(size_Out, d_align);
+    SPEALLOC( Out, base_dalign, size_Out );
+    assert( Out != NULL );
+    memset( In, 0, size_In );
+
+    base_init_sketch_data( &sketch_data, &sketch_iparam[0], 0, 1 );
+    base_set_sketch_data( &sketch_data, 0, 1 );
+
+    // Data Initialization
+    for ( base_int_t i = 0; i < sketch_iparam[IDX_NCOLS_DATA_IN]; ++i ) {
+        In[0 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1;
+        In[2 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1;
+        In[5 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1;
+        In[6 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1;
+    }
+    // Identity Perm
+    for ( size_t i = 0; i < sketch_iparam[IDX_SKETCH_DIM]; ++i )
+        sketch_data.permutation_array[i] = i;
+    // Identity scaling
+    sketch_data.scale = 1;
+
+    PRINT_COLMAJ_MAT( In, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "In Init" );
+    PRINT_COLMAJ_MAT( Out, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "Out Init" );
+
+    base_getdata_sketch_data( &sketch_data, sketch_iparam[IDX_NCOLS_DATA_IN], In, Out );
+
+    base_compute_sketch_mat( &sketch_data );
+
+    PRINT_COLMAJ_MAT( In, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "In" );
+    PRINT_COLMAJ_MAT( Out, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "Out Computed" );
+
+    base_free_sketch_data( &sketch_data );
+    free( In );
+    In = NULL;
+    free( Out );
+    Out = NULL;
+
+    return ierr;
+}

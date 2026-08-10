@@ -235,5 +235,81 @@ base_compute_sketch( base_sketch_t *sketch_data )
 }
 
 void
-base_compute_sketch_mat( sketch_data_t *sketch_data )
-{}
+base_compute_sketch_mat( base_sketch_t *sketch_data )
+{
+    int        ierr = 0;
+    base_int_t i    = 0;
+    base_int_t j    = 0;
+    // Renaming
+    base_int_t  nrows_data_in     = sketch_data->nrows_data_in;
+    base_int_t  ncols_data_in     = sketch_data->ncols_data_in;
+    base_int_t  sketch_dim        = sketch_data->sketch_dim;
+    base_int_t  nD                = sketch_data->nDr;
+    base_int_t  nrows_data_work   = sketch_data->nrows_data_work;
+    base_int_t *rademacher_array  = sketch_data->rademacher_array;
+    base_int_t *permutation_array = sketch_data->permutation_array;
+    double      scale             = sketch_data->scale;
+    double     *data_in           = sketch_data->data_in;
+    double     *data_out          = sketch_data->data_out;
+    double     *data_work         = sketch_data->data_work;
+    switch ( sketch_data->sketch_alg ) {
+        /* case GAUSS:
+            cblas_dgemm( CblasColMajor,
+                         CblasNoTrans,
+                         CblasNoTrans,
+                         sketch_dim,
+                         ncols_data_in,
+                         sketch_data->nrows_data_work,
+                         dbase_alpha_p1,
+                         sketch_data->data_work,
+                         sketch_dim,
+                         sketch_data->data_in,
+                         sketch_data->nrows_data_work,
+                         dbase_beta_ze,
+                         data_out,
+                         sketch_dim );
+            break; */
+        case SRHT_CFWHT:
+        case SRHT_FFTW:
+        default:
+            // Prepare Data
+            for ( j = 0; j < ncols_data_in; ++j ) {
+                memset( data_work + ( j * nrows_data_work + nrows_data_in ), 0, sizeof( double ) * ( nrows_data_work - nrows_data_in ) );
+            }
+            // memset(data_work, 0, sizeof(double)*nrows_data_work*ncols_data_in);
+            ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', nrows_data_in, ncols_data_in, data_in, nrows_data_in, data_work, nrows_data_work );
+            if ( ierr != 0 ) {
+                printf( "base_SKETCHMAT_d::LAPACKE_dlacpy::ierr != 0\n" );
+                abort();
+            }
+            // Rademacher multiplication (Optim:: Maybe try search for blas function to do it)
+            for ( j = 0; j < ncols_data_in; ++j ) {
+                for ( i = 0; i < nD; ++i )
+                    data_work[j * nrows_data_work + rademacher_array[i]] *= -1;
+            }
+            // FWHT computation
+            switch ( sketch_data->sketch_alg ) {
+                case SRHT_HADI_FWHT:
+                    fwht_status_t status = fwht_batch_f64_contiguous( NULL, data_work, nrows_data_work, ncols_data_in );
+                    if ( status != FWHT_SUCCESS ) {
+                        fprintf( stderr, "%s\n", fwht_error_string( status ) );
+                    }
+                    break;
+                case SRHT_FFTW:
+                    fftw_execute_r2r( sketch_data->Hadaplan, data_work, data_work );
+                    break;
+                case SRHT_CFWHT:
+                default:
+                    base_fwht_mat( data_work, nrows_data_work, ncols_data_in );
+                    break;
+            }
+            // Random sampling
+            for ( j = 0; j < ncols_data_in; ++j ) {
+                for ( i = 0; i < sketch_dim; ++i )
+                    cblas_dcopy( 1, &data_work[j * nrows_data_work + permutation_array[i]], 1, &data_out[j * sketch_dim + i], 1 );
+            }
+            // Scaling (Optim:: Maybe put this step in base_BLOCK_SKETCH_d after MPI_Allreduce)
+            cblas_dscal( sketch_dim * ncols_data_in, scale, data_out, 1 );
+            break;
+    }
+}

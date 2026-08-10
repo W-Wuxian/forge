@@ -131,6 +131,6 @@ void base_compute_sketch( base_sketch_t *sketch_data );
  * scale factor (1 / sqrt(Kproj))
  * \param[in,out] sketch_data - pointer to sketch_data_t struct
  */
-void base_compute_sketch_mat( sketch_data_t *sketch_data );
+void base_compute_sketch_mat( base_sketch_t *sketch_data );
 
 #endif  //__SKETCH_H__
