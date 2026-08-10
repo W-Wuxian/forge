@@ -1,7 +1,9 @@
 # forge
 
-- [] install latest version of fftw form sources
-- [] install latest version of hadi/fwht
+- [X] install latest version of fftw form sources
+- [X] install latest version of hadi/fwht
+- [] choose optim functions from hadi fwht
+- [] split GAUSS sketch from CFWHT FFTW and HADI_FWHT sketch functions
 
 I need to looks for:
 

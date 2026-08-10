@@ -1,6 +1,37 @@
 #include "sketch.h"
 
 void
+_base_mat_larnv( double *mat, int rank, base_int_t localsize, base_int_t ncols, base_int_t nb, int cite )
+{
+    int        ierr      = 0;
+    base_int_t remainder = ncols % nb;
+    base_int_t coef      = ( ncols - remainder ) / nb;
+    if ( remainder > 0 )
+        coef += 1;
+    base_uint_t Rseed = 1234567;
+    base_int_t  cur   = ( remainder == 0 ) ? nb : ( ( cite < coef - 1 ) ? nb : remainder );
+    base_int_t *iseed = NULL;
+    // iseed = (base_int_t*) mkl_malloc(sizeof(base_int_t)*4, base_ialign);
+    SPEALLOC( iseed, base_ialign, sizeof( base_int_t ) * 4 );
+    if ( iseed == NULL ) {
+        printf( "base_mat_larnv::iseed couldn't be allocated (is NULL)\n" );
+        abort();
+    }
+    srand( rank * Rseed + cite * Rseed );
+    *( iseed + 0 ) = rand() % 4095;
+    *( iseed + 1 ) = rand() % 4095;
+    *( iseed + 2 ) = rand() % 4095;
+    *( iseed + 3 ) = 5;
+    ierr           = LAPACKE_dlarnv( 3, (int *)iseed, localsize * cur, mat );
+    if ( ierr != 0 ) {
+        printf( "_base_mat_larnv::LAPACKE_dlarnv::ierr::\n" );
+        abort();
+    }
+    free( iseed );
+    iseed = NULL;
+}
+
+void
 _base_create_random_permutation( base_int_t input_len, base_int_t *data_out, base_int_t len_data_out )
 {
     base_int_t  i, j, sw;
@@ -37,12 +68,12 @@ base_init_sketch_data( base_sketch_t *sketch_data, base_int_t *iparam, int rank,
     base_uint_t Rseed;
     base_int_t  i;
     switch ( sketch_data->sketch_alg ) {
-            /*   case GAUSS:
-                sketch_data->rademacher_array      = NULL;
-                sketch_data->permutation_array   = NULL;
-                sketch_data->nrows_data_work = iparam[IDX_NROWS_DATA_IN];
-                sketch_data->scale  = base_d_p1 / sqrt((double) iparam[IDX_SKETCH_DIM]);
-                break; */
+        case GAUSS:
+            sketch_data->rademacher_array  = NULL;
+            sketch_data->permutation_array = NULL;
+            sketch_data->nrows_data_work   = iparam[IDX_NROWS_DATA_IN];
+            sketch_data->scale             = base_d_p1 / sqrt( (double)iparam[IDX_SKETCH_DIM] );
+            break;
         case SRHT_HADI_FWHT:
         case SRHT_CFWHT:
         case SRHT_FFTW:
@@ -108,32 +139,36 @@ base_set_sketch_data( base_sketch_t *sketch_data, int rank, int size )
     // size_t      size_rademacher_array, size_permutation_array, size_data_work;
     // base_uint_t Rseed;
     // base_int_t  i;
+    size_t size_data_work = 0;
     switch ( sketch_data->sketch_alg ) {
-            /*   case GAUSS:
-                int         ierr = 0;
-                // Allocate Local Gaussian Matrix
-                size_t size_data_work = sketch_data->sketch_dim * sketch_data->nrows_data_work * sizeof(double);
-                //sketch_data->data_work  = (double*) mkl_malloc(size_data_work, d_align);
-                SPEALLOC(sketch_data->data_work, base_dalign, size_data_work);
-                BASE_ASSERT_ISNOTNULL((sketch_data->data_work));
-                memset(sketch_data->data_work, 0, size_data_work);
-                // Create Local Gaussian Matrix
-                //_base_MATgauss(sketch_data->data_work, rank, sketch_data->sketch_dim, sketch_data->nrows_data_work, sketch_data->nrows_data_work, 0);
-                _base_MATlarnv_d(sketch_data->data_work, rank, sketch_data->sketch_dim, sketch_data->nrows_data_work, sketch_data->nrows_data_work, 0);
-                // Scale Local Gaussian Matrix
-                ierr = LAPACKE_dlascl(LAPACK_COL_MAJOR,'G',0,0,sqrt((double)
-               sketch_data->sketch_dim),1.0,sketch_data->sketch_dim,sketch_data->nrows_data_work,sketch_data->data_work,sketch_data->sketch_dim); if (ierr != 0){ if (!rank) printf("ierr = %d\n",
-               ierr); CPLM_Abort("base_Set_dSKETCH::LAPACKE_dlascl::ierr");
-                }
-                base_memMB_SKETCH_d(&sketch_data->memMB, size_data_work);
-                base_flops_SKETCH_d(sketch_data, size);
-                break; */
+        case GAUSS:
+            int ierr = 0;
+            // Allocate Local Gaussian Matrix
+            size_data_work = sketch_data->sketch_dim * sketch_data->nrows_data_work * sizeof( double );
+            // sketch_data->data_work  = (double*) mkl_malloc(size_data_work, d_align);
+            SPEALLOC( sketch_data->data_work, base_dalign, size_data_work );
+            BASE_ASSERT_ISNOTNULL( ( sketch_data->data_work ) );
+            memset( sketch_data->data_work, 0, size_data_work );
+            // Create Local Gaussian Matrix
+            //_base_MATgauss(sketch_data->data_work, rank, sketch_data->sketch_dim, sketch_data->nrows_data_work, sketch_data->nrows_data_work, 0);
+            _base_mat_larnv( sketch_data->data_work, rank, sketch_data->sketch_dim, sketch_data->nrows_data_work, sketch_data->nrows_data_work, 0 );
+            // Scale Local Gaussian Matrix
+            ierr = LAPACKE_dlascl(
+                LAPACK_COL_MAJOR, 'G', 0, 0, sqrt( (double)sketch_data->sketch_dim ), 1.0, sketch_data->sketch_dim, sketch_data->nrows_data_work, sketch_data->data_work, sketch_data->sketch_dim );
+            if ( ierr != 0 ) {
+                if ( !rank )
+                    printf( "ierr = %d %s\n", ierr, "base_Set_dSKETCH::LAPACKE_dlascl::ierr" );
+                abort();
+            }
+            /* base_memMB_SKETCH_d(&sketch_data->memMB, size_data_work);
+            base_flops_SKETCH_d(sketch_data, size); */
+            break;
         case SRHT_HADI_FWHT:
         case SRHT_CFWHT:
         case SRHT_FFTW:
         default:
             // Local srht buffer
-            size_t size_data_work = sketch_data->nrows_data_work * sketch_data->ncols_data_in * sizeof( double );
+            size_data_work = sketch_data->nrows_data_work * sketch_data->ncols_data_in * sizeof( double );
             // sketch_data->data_work = (double *)mkl_malloc( size_data_work, d_align );
             SPEALLOC( sketch_data->data_work, base_dalign, size_data_work );
             BASE_ASSERT_ISNOTNULL( ( sketch_data->data_work ) );
@@ -195,10 +230,22 @@ base_compute_sketch( base_sketch_t *sketch_data )
     double     *data_out          = sketch_data->data_out;
     double     *data_work         = sketch_data->data_work;
     switch ( sketch_data->sketch_alg ) {
-            /*   case GAUSS:
-                cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, sketch_dim, 1, sketch_data->nrows_data_work, dbase_alpha_p1,
-                 sketch_data->data_work, sketch_dim, sketch_data->data_in, sketch_data->nrows_data_work, dbase_beta_ze, data_out, sketch_dim);
-                break; */
+        case GAUSS:
+            cblas_dgemm( CblasColMajor,
+                         CblasNoTrans,
+                         CblasNoTrans,
+                         sketch_dim,
+                         1,
+                         sketch_data->nrows_data_work,
+                         base_d_alpha_p1,
+                         sketch_data->data_work,
+                         sketch_dim,
+                         sketch_data->data_in,
+                         sketch_data->nrows_data_work,
+                         base_d_beta_ze,
+                         data_out,
+                         sketch_dim );
+            break;
         case SRHT_HADI_FWHT:
         case SRHT_CFWHT:
         case SRHT_FFTW:
@@ -253,22 +300,22 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
     double     *data_out          = sketch_data->data_out;
     double     *data_work         = sketch_data->data_work;
     switch ( sketch_data->sketch_alg ) {
-        /* case GAUSS:
+        case GAUSS:
             cblas_dgemm( CblasColMajor,
                          CblasNoTrans,
                          CblasNoTrans,
                          sketch_dim,
                          ncols_data_in,
                          sketch_data->nrows_data_work,
-                         dbase_alpha_p1,
+                         base_d_alpha_p1,
                          sketch_data->data_work,
                          sketch_dim,
                          sketch_data->data_in,
                          sketch_data->nrows_data_work,
-                         dbase_beta_ze,
+                         base_d_beta_ze,
                          data_out,
                          sketch_dim );
-            break; */
+            break;
         case SRHT_CFWHT:
         case SRHT_FFTW:
         default:
@@ -279,7 +326,7 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
             // memset(data_work, 0, sizeof(double)*nrows_data_work*ncols_data_in);
             ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', nrows_data_in, ncols_data_in, data_in, nrows_data_in, data_work, nrows_data_work );
             if ( ierr != 0 ) {
-                printf( "base_SKETCHMAT_d::LAPACKE_dlacpy::ierr != 0\n" );
+                printf( "base_compute_sketch_mat::LAPACKE_dlacpy::ierr != 0\n" );
                 abort();
             }
             // Rademacher multiplication (Optim:: Maybe try search for blas function to do it)

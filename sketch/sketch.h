@@ -47,6 +47,19 @@ typedef struct {
 } base_sketch_t;
 
 /**
+ * @brief Private function
+ * @details random matrix using ?larnv
+ *
+ * @param[in, out] mat - mat matrix-object like pointer
+ * @param[in] rank rank MPI rank
+ * @param localsize The local number of rows based on the rank
+ * @param ncols The global number of columns
+ * @param nb The number of column to compute
+ * @param cite The current iteration
+ */
+void _base_mat_larnv( double *mat, int rank, base_int_t localsize, base_int_t ncols, base_int_t nb, int cite );
+
+/**
  * \fn _base_create_random_permutation
  * \brief Private function
  * \details With a fixed seed, from an input size input_len, it creates a random permutation array data_out

@@ -48,11 +48,15 @@ main()
     In[2] = 1;
     In[5] = 1;
     In[6] = 1;
-    // Identity Perm
-    for ( size_t i = 0; i < sketch_iparam[IDX_SKETCH_DIM]; ++i )
-        sketch_data.permutation_array[i] = i;
-    // Identity scaling
-    sketch_data.scale = 1;
+
+    if ( sketch_iparam[IDX_SKETCH_ALG] != GAUSS ) {
+        printf( "Identity Perm\n" );
+        // Identity Perm
+        for ( size_t i = 0; i < sketch_iparam[IDX_SKETCH_DIM]; ++i )
+            sketch_data.permutation_array[i] = i;
+        // Identity scaling
+        sketch_data.scale = 1;
+    }
 
     PRINT_ARRAY( In, "%lf\n", len_In, "In Init" );
     PRINT_ARRAY( Out, "%lf\n", len_Out, "Out Init" );
