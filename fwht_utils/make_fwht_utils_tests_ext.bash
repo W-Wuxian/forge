@@ -7,11 +7,12 @@ cd $SCRIPT_DIR
 
 comp=gcc
 
-EXT_ROOT=/home/vlederer/Bureau/DEV/ext
+FORGE_ROOT=$PWD/..
+source $FORGE_ROOT/tools/export_path.bash
 OPENBLAS=$EXT_ROOT/openblas-0.3.34
 FFTW=$EXT_ROOT/fftw-3.3.11
-FORGE_ROOT=$PWD/..
-export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:OPENBLAS/include:$FFTW/include
+
+export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$OPENBLAS/include:$FFTW/include
 RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$OPENBLAS/include -I$FFTW/include"
 
 mkdir -p bin/

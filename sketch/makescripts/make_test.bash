@@ -9,9 +9,9 @@ cd $SCRIPT_DIR/..
 comp="guix time-machine -C ../forge-channels.scm -- shell -m ../fwht/guixmanifests/fwht_fftw_manifest.scm -- gcc"
 
 
-HADI_FWHT_INSTALL=hadi-fwht-master
-EXT_ROOT=/home/vlederer/Bureau/DEV/ext
 FORGE_ROOT=$PWD/..
+source $FORGE_ROOT/tools/export_path.bash
+HADI_FWHT_INSTALL=hadi-fwht-master
 
 echo $PWD
 
