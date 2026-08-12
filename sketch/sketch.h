@@ -4,18 +4,20 @@
 #include "base_fwht.h"
 
 // iparam
-#define IDX_NROWS_DATA_IN 0     /**< Index for the number of rows */
-#define IDX_NCOLS_DATA_IN 1     /**< Index for the number of columns */
-#define IDX_SKETCH_DIM 2        /**< Index for the sketch dimension (row) */
-#define IDX_NDR 3               /**< Index for the right rademarcher flag */
-#define IDX_NDL 4               /**< Index for the left rademarcher flag */
-#define IDX_SKETCH_ALG 5        /**< Index for the sketching algo flag */
-#define IDX_SKETCH_TYPE 6       /**< Index for the sketching type flag */
-#define IDX_SKETCH_IPARAM_LEN 7 /**< Length of sketch iparam array */
+#define IDX_NROWS_DATA_IN 0      /**< Index for the number of rows */
+#define IDX_NCOLS_DATA_IN 1      /**< Index for the number of columns */
+#define IDX_SKETCH_DIM 2         /**< Index for the sketch dimension (row) */
+#define IDX_NDR 3                /**< Index for the right rademarcher flag */
+#define IDX_NDL 4                /**< Index for the left rademarcher flag */
+#define IDX_SKETCH_ALG 5         /**< Index for the sketching algo flag */
+#define IDX_SKETCH_TYPE 6        /**< Index for the sketching type flag */
+#define IDX_SKETCH_NUM_THREADS 7 /**< Index for the number of threads */
+#define IDX_SKETCH_NUM_GPU 9     /**< Index for the number of gpu */
+#define IDX_SKETCH_IPARAM_LEN 9  /**< Length of sketch iparam array */
 
-typedef enum { SRHT_CFWHT, SRHT_FFTW, SRHT_HADI_FWHT, GAUSS, NUMBER_OF_SKETCH_ALG } base_sketch_alg_e;
+typedef enum { SRHT_CFWHT, SRHT_FFTW, SRHT_HADI_FWHT, SRHT_HADI_FWHT_OPENMP, SRHT_HADI_FWHT_GPU, GAUSS, NUMBER_OF_SKETCH_ALG } base_sketch_alg_e;
 typedef enum { SKETCH_1D, SKETCH_2D, NUMBER_OF_SKETCH_TYPE } base_sketch_type_e;
-static const char *const string_sketch_alg[NUMBER_OF_SKETCH_ALG] = { "SRHT_CFWHT", "SRHT_FFTW", "SRHT_HADI_FWHT", "GAUSS" };
+static const char *const string_sketch_alg[NUMBER_OF_SKETCH_ALG]   = { "SRHT_CFWHT", "SRHT_FFTW", "SRHT_HADI_FWHT", "SRHT_HADI_FWHT_OPENMP", "SRHT_HADI_FWHT_GPU", "GAUSS" };
 static const char *const string_sketch_type[NUMBER_OF_SKETCH_TYPE] = { "SKETCH_1D", "SKETCH_2D" };
 /**
  * \struct base_sketch_t
@@ -29,23 +31,27 @@ static const char *const string_sketch_type[NUMBER_OF_SKETCH_TYPE] = { "SKETCH_1
  * SRHT uses FWHT algo
  */
 typedef struct {
-    fftw_plan          Hadaplan;          /**< FFTW Hadamard plan */
-    double             scale;             /**< scaling  factor needed by SKETCH algo, computed with base_set_sketch */
-    double            *data_in;           /**< Pointer (double prec) to the user memory for the data to be Sketch */
-    double            *data_out;          /**< Pointer (double prec) to the user memory for the Sketch of data_in */
-    double            *data_work;         /**< Dynamic array (nswork x ncols_data_in) used to resize data_in at a power of two with zero-padding */
-    size_t             memMB;             /**< memory allocated by SKETCH in MB */
-    size_t             flops;             /**< SKETCH flops */
-    base_int_t        *rademacher_array;  /**< Dynamic array used to store the Rademacher array needed by SRHT algo */
-    base_int_t        *permutation_array; /**< Dynamic array used to store the Permutation array needed by SRHT algo */
-    base_sketch_alg_e  sketch_alg;        /**< SRHT_CFWHT or SRHT_FFTW or SRHT_HADI_FWHT or GAUSS */
-    base_sketch_type_e sketch_type;       /**< SKETCH_1D, SKETCH_2D */
-    base_int_t         nrows_data_in;     /**< (local) size(data_in)[1]  */
-    base_int_t         ncols_data_in;     /**< size(data_in)[2] */
-    base_int_t         sketch_dim;        /**< Sketch  dimension*/
-    base_int_t         nDr;               /**<  length of the rademacher right array, computed internally */
-    base_int_t         nDl;               /**<  length of the rademacher left array, computed internally */
-    base_int_t         nrows_data_work;   /**< size(data_work)[1] = nswork, and nswork is the next power of 2 from nrows_data_in if wsketch != GAUSS else nrows_data_in, computed internally */
+    fftw_plan          Hadaplan;           /**< FFTW Hadamard plan */
+    double             scale;              /**< scaling  factor needed by SKETCH algo, computed with base_set_sketch */
+    double            *data_in;            /**< Pointer (double prec) to the user memory for the data to be Sketch */
+    double            *data_out;           /**< Pointer (double prec) to the user memory for the Sketch of data_in */
+    double            *data_work;          /**< Dynamic array (nswork x ncols_data_in) used to resize data_in at a power of two with zero-padding */
+    size_t             memMB;              /**< memory allocated by SKETCH in MB */
+    size_t             flops;              /**< SKETCH flops */
+    base_int_t        *rademacher_array;   /**< Dynamic array used to store the Rademacher array needed by SRHT algo */
+    base_int_t        *permutation_array;  /**< Dynamic array used to store the Permutation array needed by SRHT algo */
+    base_sketch_alg_e  sketch_alg;         /**< SRHT_CFWHT or SRHT_FFTW or SRHT_HADI_FWHT or GAUSS */
+    base_sketch_type_e sketch_type;        /**< SKETCH_1D, SKETCH_2D */
+    base_int_t         nrows_data_in;      /**< (local) size(data_in)[1]  */
+    base_int_t         ncols_data_in;      /**< size(data_in)[2] */
+    base_int_t         sketch_dim;         /**< Sketch  dimension*/
+    base_int_t         nDr;                /**<  length of the rademacher right array, computed internally */
+    base_int_t         nDl;                /**<  length of the rademacher left array, computed internally */
+    base_int_t         nrows_data_work;    /**< size(data_work)[1] = nswork, and nswork is the next power of 2 from nrows_data_in if wsketch != GAUSS else nrows_data_in, computed internally */
+    base_int_t         sketch_num_threads; /**< number of omp or mkl threads to be used for fwht or gauss */
+    base_int_t         sketch_num_gpu;     /**< number of gpu to be used for fwht or gauss */
+    // fwht_config_t
+    fwht_context_t *sketch_hadi_fwht_ctx;
 } base_sketch_t;
 
 /**

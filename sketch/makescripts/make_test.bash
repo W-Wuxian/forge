@@ -24,7 +24,7 @@ RESOLVE_CPATH_GUIX="-I${GUIX_ENVIRONMENT}/include"
 RESOLVE_CPATH_HADI="-I${EXT_ROOT}/${HADI_FWHT_INSTALL}/include"
 RESOLVE_CPATH="${RESOLVE_CPATH_FORGE} ${RESOLVE_CPATH_GUIX} ${RESOLVE_CPATH_HADI}"
 
-RESOLVE_LD_GUIX="-L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lpthread -lm"
+RESOLVE_LD_GUIX="-L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm"
 RESOLVE_LD_HADI="-L${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib -lfwht"
 RESOLVE_LD="${RESOLVE_LD_GUIX} ${RESOLVE_LD_HADI}"
 
@@ -43,7 +43,7 @@ debug_option="-O0 -g3 -pg -fopenmp -Wall -Wno-unknown-pragmas -DPRINTMAT"
 
 # Create Random Permutation
 echo "Create Random Permutation"
-$comp $debug_option -o bin/tester_create_random_permutation \
+$comp $debug_option -DFFTW_WITH_OMP -o bin/tester_create_random_permutation \
 $FORGE_ROOT/sketch/sketch.c \
 $FORGE_ROOT/fwht_utils/hada.c \
 $FORGE_ROOT/fwht/base_fwht.c \
@@ -63,7 +63,7 @@ do
     for SK_TYPE in SKETCH_1D
     do
         echo "Sketch 1D Using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
-        $comp $debug_option -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE} \
+        $comp $debug_option -DFFTW_WITH_OMP -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE} \
         $FORGE_ROOT/sketch/sketch.c \
         $FORGE_ROOT/fwht_utils/hada.c \
         $FORGE_ROOT/fwht/base_fwht.c \
@@ -85,7 +85,7 @@ do
     for SK_TYPE in SKETCH_1D
     do
         echo "Sketch 1D test t1 Using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
-        $comp $debug_option -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1 \
+        $comp $debug_option -DFFTW_WITH_OMP -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1 \
         $FORGE_ROOT/sketch/sketch.c \
         $FORGE_ROOT/fwht_utils/hada.c \
         $FORGE_ROOT/fwht/base_fwht.c \
@@ -107,7 +107,7 @@ do
     for SK_TYPE in SKETCH_2D
     do
         echo "Sketch 1D mat test t1 Using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
-        $comp $debug_option -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1 \
+        $comp $debug_option -DFFTW_WITH_OMP -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1 \
         $FORGE_ROOT/sketch/sketch.c \
         $FORGE_ROOT/fwht_utils/hada.c \
         $FORGE_ROOT/fwht/base_fwht.c \
@@ -124,12 +124,12 @@ done
 
 ###########################################################################################################################################
 # Sketch 1D block test t1
-for SK_ALGO in SRHT_CFWHT SRHT_FFTW SRHT_HADI_FWHT GAUSS
+for SK_ALGO in SRHT_CFWHT SRHT_FFTW SRHT_HADI_FWHT SRHT_HADI_FWHT_OPENMP GAUSS
 do
     for SK_TYPE in SKETCH_1D SKETCH_2D
     do
         echo "Sketch 1D block nocomm test t1 Using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
-        $comp $debug_option -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1 \
+        $comp $debug_option -DSKETCH_NUM_THREADS=2 -DFFTW_WITH_OMP -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1 \
         $FORGE_ROOT/sketch/sketch.c \
         $FORGE_ROOT/fwht_utils/hada.c \
         $FORGE_ROOT/fwht/base_fwht.c \

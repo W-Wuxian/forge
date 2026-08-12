@@ -8,6 +8,10 @@
 #define WHICH_SKETCH_TYPE SKETCH_2D
 #endif
 
+#ifndef SKETCH_NUM_THREADS
+#define SKETCH_NUM_THREADS 1
+#endif
+
 int
 main()
 {
@@ -21,15 +25,17 @@ main()
     // The transformed transformed
     double *Out = NULL;
 
-    sketch_iparam[IDX_NCOLS_DATA_IN] = 4;
-    sketch_iparam[IDX_NROWS_DATA_IN] = 8;
-    sketch_iparam[IDX_SKETCH_DIM]    = 8;
-    sketch_iparam[IDX_NDL]           = 0;
-    sketch_iparam[IDX_NDR]           = 0;
-    sketch_iparam[IDX_SKETCH_TYPE]   = WHICH_SKETCH_TYPE;
-    sketch_iparam[IDX_SKETCH_ALG]    = WHICH_SKETCH_ALG;
+    sketch_iparam[IDX_NCOLS_DATA_IN]      = 4;
+    sketch_iparam[IDX_NROWS_DATA_IN]      = 8;
+    sketch_iparam[IDX_SKETCH_DIM]         = 8;
+    sketch_iparam[IDX_NDL]                = 0;
+    sketch_iparam[IDX_NDR]                = 0;
+    sketch_iparam[IDX_SKETCH_TYPE]        = WHICH_SKETCH_TYPE;
+    sketch_iparam[IDX_SKETCH_ALG]         = WHICH_SKETCH_ALG;
+    sketch_iparam[IDX_SKETCH_NUM_THREADS] = SKETCH_NUM_THREADS;
+    sketch_iparam[IDX_SKETCH_NUM_GPU]     = 0;
 
-    printf( "Using sketch algo: %s with sketch type %s\n", string_sketch_alg[WHICH_SKETCH_ALG],  string_sketch_type[WHICH_SKETCH_TYPE] );
+    printf( "Using sketch algo: %s with sketch type %s\n", string_sketch_alg[WHICH_SKETCH_ALG], string_sketch_type[WHICH_SKETCH_TYPE] );
 
     len_In  = sketch_iparam[IDX_NROWS_DATA_IN] * sketch_iparam[IDX_NCOLS_DATA_IN];
     len_Out = sketch_iparam[IDX_SKETCH_DIM] * sketch_iparam[IDX_NCOLS_DATA_IN];

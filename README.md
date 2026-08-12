@@ -2,6 +2,7 @@
 
 - [X] install latest version of fftw form sources
 - [X] install latest version of hadi/fwht
+- [] manage OMP version for sketch CFWHT FFTW HADI_FWHT and GAUSS
 - [] choose optim functions from hadi fwht
 - [] split GAUSS sketch from CFWHT FFTW and HADI_FWHT sketch functions
 

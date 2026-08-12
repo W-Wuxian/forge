@@ -57,18 +57,21 @@ _base_create_random_permutation( base_int_t input_len, base_int_t *data_out, bas
 void
 base_init_sketch_data( base_sketch_t *sketch_data, base_int_t *iparam, int rank, int size )
 {
-    sketch_data->nrows_data_in = iparam[IDX_NROWS_DATA_IN];
-    sketch_data->ncols_data_in = iparam[IDX_NCOLS_DATA_IN];
-    sketch_data->sketch_dim    = iparam[IDX_SKETCH_DIM];
-    sketch_data->nDr           = iparam[IDX_NDR];
-    sketch_data->nDl           = iparam[IDX_NDL];
-    sketch_data->sketch_alg    = iparam[IDX_SKETCH_ALG];
-    sketch_data->Hadaplan      = NULL;
+    sketch_data->nrows_data_in      = iparam[IDX_NROWS_DATA_IN];
+    sketch_data->ncols_data_in      = iparam[IDX_NCOLS_DATA_IN];
+    sketch_data->sketch_dim         = iparam[IDX_SKETCH_DIM];
+    sketch_data->nDr                = iparam[IDX_NDR];
+    sketch_data->nDl                = iparam[IDX_NDL];
+    sketch_data->sketch_alg         = iparam[IDX_SKETCH_ALG];
+    sketch_data->sketch_num_threads = iparam[IDX_SKETCH_NUM_THREADS];
+    sketch_data->sketch_num_gpu     = iparam[IDX_SKETCH_NUM_GPU];
+    sketch_data->Hadaplan           = NULL;
     size_t      size_rademacher_array, size_permutation_array;  //, size_data_work;
     base_uint_t Rseed;
     base_int_t  i;
     switch ( sketch_data->sketch_alg ) {
         case GAUSS:
+            sketch_data->sketch_type       = iparam[IDX_SKETCH_TYPE];  // not really used by GAUSS sketch
             sketch_data->rademacher_array  = NULL;
             sketch_data->permutation_array = NULL;
             sketch_data->nrows_data_work   = iparam[IDX_NROWS_DATA_IN];
@@ -173,13 +176,30 @@ base_set_sketch_data( base_sketch_t *sketch_data, int rank, int size )
             // sketch_data->data_work = (double *)mkl_malloc( size_data_work, d_align );
             SPEALLOC( sketch_data->data_work, base_dalign, size_data_work );
             BASE_ASSERT_ISNOTNULL( ( sketch_data->data_work ) );
-            if ( sketch_data->sketch_alg == SRHT_FFTW ) {
+            if ( sketch_data->sketch_alg == SRHT_HADI_FWHT ) {
+                fwht_config_t config              = { .backend = FWHT_BACKEND_CPU, .num_threads = 1, .gpu_device = 0, .normalize = true };
+                sketch_data->sketch_hadi_fwht_ctx = fwht_create_context( &config );
+            }
+            else if ( sketch_data->sketch_alg == SRHT_HADI_FWHT_OPENMP ) {
+                fwht_config_t config              = { .backend = FWHT_BACKEND_OPENMP, .num_threads = sketch_data->sketch_num_threads, .gpu_device = 0, .normalize = true };
+                sketch_data->sketch_hadi_fwht_ctx = fwht_create_context( &config );
+            }
+            else if ( sketch_data->sketch_alg == SRHT_HADI_FWHT_GPU ) {
+                fwht_config_t config              = { .backend = FWHT_BACKEND_GPU, .num_threads = 0, .gpu_device = sketch_data->sketch_num_gpu, .normalize = true };
+                sketch_data->sketch_hadi_fwht_ctx = fwht_create_context( &config );
+            }
+            else if ( sketch_data->sketch_alg == SRHT_FFTW ) {
                 view_t vIn;
                 vIn.m   = sketch_data->nrows_data_work;
                 vIn.n   = sketch_data->ncols_data_in;
                 vIn.st1 = 1;
                 vIn.st2 = sketch_data->nrows_data_work;
-                base_SetFFTW( &sketch_data->Hadaplan, &vIn, 1, sketch_data->data_work, sketch_data->data_work );
+                if ( sketch_data->sketch_num_threads >= 1 ) {
+                    base_SetFFTW_OMP( &sketch_data->Hadaplan, &vIn, sketch_data->sketch_num_threads, 1, sketch_data->data_work, sketch_data->data_work );
+                }
+                else {
+                    base_SetFFTW( &sketch_data->Hadaplan, &vIn, 1, sketch_data->data_work, sketch_data->data_work );
+                }
                 BASE_ASSERT_ISNOTNULL( ( sketch_data->Hadaplan ) );
                 // if (rank==0)fftw_print_plan(sketch_data->Hadaplan);
             }
@@ -201,8 +221,17 @@ base_free_sketch_data( base_sketch_t *sketch_data )
     sketch_data->permutation_array = NULL;
     free( sketch_data->data_work );
     sketch_data->data_work = NULL;
-    if ( sketch_data->sketch_alg == SRHT_FFTW )
-        base_FreeFFTW( &sketch_data->Hadaplan );
+    if ( sketch_data->sketch_alg == SRHT_FFTW ) {
+        if ( sketch_data->sketch_num_threads >= 1 ) {
+            base_FreeFFTW_OMP( &sketch_data->Hadaplan );
+        }
+        else {
+            base_FreeFFTW( &sketch_data->Hadaplan );
+        }
+    }
+    else if ( sketch_data->sketch_alg == SRHT_HADI_FWHT || sketch_data->sketch_alg == SRHT_HADI_FWHT_OPENMP || sketch_data->sketch_alg == SRHT_HADI_FWHT_GPU ) {
+        fwht_destroy_context( sketch_data->sketch_hadi_fwht_ctx );
+    }
 }
 
 void
