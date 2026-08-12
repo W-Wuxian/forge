@@ -4,6 +4,10 @@
 #define WHICH_SKETCH_ALG SRHT_FFTW
 #endif
 
+#ifndef WHICH_SKETCH_TYPE
+#define WHICH_SKETCH_TYPE SKETCH_1D
+#endif
+
 int
 main()
 {
@@ -22,9 +26,10 @@ main()
     sketch_iparam[IDX_SKETCH_DIM]    = 8;
     sketch_iparam[IDX_NDL]           = 0;
     sketch_iparam[IDX_NDR]           = 0;
+    sketch_iparam[IDX_SKETCH_TYPE]   = WHICH_SKETCH_TYPE;
     sketch_iparam[IDX_SKETCH_ALG]    = WHICH_SKETCH_ALG;
 
-    printf( "Using sketch algo: %s\n", string_sketch_alg[WHICH_SKETCH_ALG] );
+    printf( "Using sketch algo: %s with sketch type %s\n", string_sketch_alg[WHICH_SKETCH_ALG],  string_sketch_type[WHICH_SKETCH_TYPE] );
 
     len_In  = sketch_iparam[IDX_NROWS_DATA_IN] * sketch_iparam[IDX_NCOLS_DATA_IN];
     len_Out = sketch_iparam[IDX_SKETCH_DIM] * sketch_iparam[IDX_NCOLS_DATA_IN];

@@ -5,7 +5,7 @@
 #endif
 
 #ifndef WHICH_SKETCH_TYPE
-#define WHICH_SKETCH_TYPE SKETCH_1D
+#define WHICH_SKETCH_TYPE SKETCH_2D
 #endif
 
 int
@@ -21,11 +21,11 @@ main()
     // The transformed transformed
     double *Out = NULL;
 
-    sketch_iparam[IDX_NCOLS_DATA_IN] = 1;
+    sketch_iparam[IDX_NCOLS_DATA_IN] = 4;
     sketch_iparam[IDX_NROWS_DATA_IN] = 8;
-    sketch_iparam[IDX_SKETCH_DIM]    = 4;
-    sketch_iparam[IDX_NDL]           = 1;
-    sketch_iparam[IDX_NDR]           = 1;
+    sketch_iparam[IDX_SKETCH_DIM]    = 8;
+    sketch_iparam[IDX_NDL]           = 0;
+    sketch_iparam[IDX_NDR]           = 0;
     sketch_iparam[IDX_SKETCH_TYPE]   = WHICH_SKETCH_TYPE;
     sketch_iparam[IDX_SKETCH_ALG]    = WHICH_SKETCH_ALG;
 
@@ -48,18 +48,31 @@ main()
     base_init_sketch_data( &sketch_data, &sketch_iparam[0], 0, 1 );
     base_set_sketch_data( &sketch_data, 0, 1 );
 
-    for ( base_int_t i = 0; i < len_In; ++i )
-        In[i] = (double)i;
+    // Data Initialization
+    for ( base_int_t i = 0; i < sketch_iparam[IDX_NCOLS_DATA_IN]; ++i ) {
+        In[0 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1;
+        In[2 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1;
+        In[5 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1;
+        In[6 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1;
+    }
 
-    PRINT_ARRAY( In, "%lf\n", len_In, "In Init" );
-    PRINT_ARRAY( Out, "%lf\n", len_Out, "Out Init" );
+    if ( sketch_iparam[IDX_SKETCH_ALG] != GAUSS ) {
+        // Identity Perm
+        for ( size_t i = 0; i < sketch_iparam[IDX_SKETCH_DIM]; ++i )
+            sketch_data.permutation_array[i] = i;
+        // Identity scaling
+        sketch_data.scale = 1;
+    }
+
+    PRINT_COLMAJ_MAT( In, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "In Init" );
+    PRINT_COLMAJ_MAT( Out, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "Out Init" );
 
     base_getdata_sketch_data( &sketch_data, sketch_iparam[IDX_NCOLS_DATA_IN], In, Out );
 
-    base_compute_sketch( &sketch_data );
+    base_compute_block_sketch_nocomm( &sketch_data );
 
-    PRINT_ARRAY( In, "%lf\n", len_In, "In" );
-    PRINT_ARRAY( Out, "%lf\n", len_Out, "Out Computed" );
+    PRINT_COLMAJ_MAT( In, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "In" );
+    PRINT_COLMAJ_MAT( Out, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "Out Computed" );
 
     base_free_sketch_data( &sketch_data );
     free( In );

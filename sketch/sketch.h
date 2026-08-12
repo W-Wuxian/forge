@@ -9,13 +9,14 @@
 #define IDX_SKETCH_DIM 2        /**< Index for the sketch dimension (row) */
 #define IDX_NDR 3               /**< Index for the right rademarcher flag */
 #define IDX_NDL 4               /**< Index for the left rademarcher flag */
-#define IDX_SKETCH_ALG 5        /**< Index for the sketching flag */
-#define IDX_SKETCH_IPARAM_LEN 6 /**< Length of sketch iparam array */
+#define IDX_SKETCH_ALG 5        /**< Index for the sketching algo flag */
+#define IDX_SKETCH_TYPE 6       /**< Index for the sketching type flag */
+#define IDX_SKETCH_IPARAM_LEN 7 /**< Length of sketch iparam array */
 
 typedef enum { SRHT_CFWHT, SRHT_FFTW, SRHT_HADI_FWHT, GAUSS, NUMBER_OF_SKETCH_ALG } base_sketch_alg_e;
 typedef enum { SKETCH_1D, SKETCH_2D, NUMBER_OF_SKETCH_TYPE } base_sketch_type_e;
 static const char *const string_sketch_alg[NUMBER_OF_SKETCH_ALG] = { "SRHT_CFWHT", "SRHT_FFTW", "SRHT_HADI_FWHT", "GAUSS" };
-
+static const char *const string_sketch_type[NUMBER_OF_SKETCH_TYPE] = { "SKETCH_1D", "SKETCH_2D" };
 /**
  * \struct base_sketch_t
  * \brief The SKETCH data structure in double precision
@@ -28,22 +29,23 @@ static const char *const string_sketch_alg[NUMBER_OF_SKETCH_ALG] = { "SRHT_CFWHT
  * SRHT uses FWHT algo
  */
 typedef struct {
-    fftw_plan         Hadaplan;          /**< FFTW Hadamard plan */
-    double            scale;             /**< scaling  factor needed by SKETCH algo, computed with base_set_sketch */
-    double           *data_in;           /**< Pointer (double prec) to the user memory for the data to be Sketch */
-    double           *data_out;          /**< Pointer (double prec) to the user memory for the Sketch of data_in */
-    double           *data_work;         /**< Dynamic array (nswork x ncols_data_in) used to resize data_in at a power of two with zero-padding */
-    size_t            memMB;             /**< memory allocated by SKETCH in MB */
-    size_t            flops;             /**< SKETCH flops */
-    base_int_t       *rademacher_array;  /**< Dynamic array used to store the Rademacher array needed by SRHT algo */
-    base_int_t       *permutation_array; /**< Dynamic array used to store the Permutation array needed by SRHT algo */
-    base_sketch_alg_e sketch_alg;        /**< SRHT_CFWHT or SRHT_FFTW or GAUSS */
-    base_int_t        nrows_data_in;     /**< (local) size(data_in)[1]  */
-    base_int_t        ncols_data_in;     /**< size(data_in)[2] */
-    base_int_t        sketch_dim;        /**< Sketch  dimension*/
-    base_int_t        nDr;               /**<  length of the rademacher right array, computed internally */
-    base_int_t        nDl;               /**<  length of the rademacher left array, computed internally */
-    base_int_t        nrows_data_work;   /**< size(data_work)[1] = nswork, and nswork is the next power of 2 from nrows_data_in if wsketch != GAUSS else nrows_data_in, computed internally */
+    fftw_plan          Hadaplan;          /**< FFTW Hadamard plan */
+    double             scale;             /**< scaling  factor needed by SKETCH algo, computed with base_set_sketch */
+    double            *data_in;           /**< Pointer (double prec) to the user memory for the data to be Sketch */
+    double            *data_out;          /**< Pointer (double prec) to the user memory for the Sketch of data_in */
+    double            *data_work;         /**< Dynamic array (nswork x ncols_data_in) used to resize data_in at a power of two with zero-padding */
+    size_t             memMB;             /**< memory allocated by SKETCH in MB */
+    size_t             flops;             /**< SKETCH flops */
+    base_int_t        *rademacher_array;  /**< Dynamic array used to store the Rademacher array needed by SRHT algo */
+    base_int_t        *permutation_array; /**< Dynamic array used to store the Permutation array needed by SRHT algo */
+    base_sketch_alg_e  sketch_alg;        /**< SRHT_CFWHT or SRHT_FFTW or SRHT_HADI_FWHT or GAUSS */
+    base_sketch_type_e sketch_type;       /**< SKETCH_1D, SKETCH_2D */
+    base_int_t         nrows_data_in;     /**< (local) size(data_in)[1]  */
+    base_int_t         ncols_data_in;     /**< size(data_in)[2] */
+    base_int_t         sketch_dim;        /**< Sketch  dimension*/
+    base_int_t         nDr;               /**<  length of the rademacher right array, computed internally */
+    base_int_t         nDl;               /**<  length of the rademacher left array, computed internally */
+    base_int_t         nrows_data_work;   /**< size(data_work)[1] = nswork, and nswork is the next power of 2 from nrows_data_in if wsketch != GAUSS else nrows_data_in, computed internally */
 } base_sketch_t;
 
 /**
@@ -145,5 +147,26 @@ void base_compute_sketch( base_sketch_t *sketch_data );
  * \param[in,out] sketch_data - pointer to sketch_data_t struct
  */
 void base_compute_sketch_mat( base_sketch_t *sketch_data );
+
+/**
+ * \enum base_compute_block_sketch_nocomm
+ * \brief double precision version of the Block sketch, public function
+ * \details Compute a block sketch on the input block vector In,
+ * using a 1D-FWHT on the block data via cblas_drotm(), fftw or Gaussian matrix. Computes the left Rademacher product
+ * and sum results over all procs
+ * In Block Vector to be Sketch
+ * nIn number of rows of In, nIn as to be a power of 2 if not try zero-padding before calling this function
+ * ncols number of cols of In
+ * Out the block skecth of In of size Kproj x ncols
+ * Kproj dimension of the sketch, Kproj has to be <= nIn
+ * D rademacher array
+ * nDr+nDl length of D (D[0:nDr-1]==Dr & D[nDr:nDr+nDl-1]==Dl)
+ * Perm permutation array
+ * swork working array for fwht()
+ * nswork length of swork
+ * scale factor
+ * \param[in,out] sketch_data - pointer to base_sketch_t struct
+ */
+void base_compute_block_sketch_nocomm( base_sketch_t *sketch_data );
 
 #endif  //__SKETCH_H__

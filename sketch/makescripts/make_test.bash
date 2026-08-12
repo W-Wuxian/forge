@@ -56,185 +56,90 @@ mv gmon.out prof/gmon-tester_create_random_permutation.out
 gprof bin/tester_create_random_permutation prof/gmon-tester_create_random_permutation.out > prof/grof-tester_create_random_permutation.out
 #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_create_random_permutation 2>&1 |& tee valgrind.log
 
-###########################################################################################################################################
-# Sketch 1D using sketch algo GAUSS
-echo "Sketch 1D using sketch algo GAUSS"
-$comp $debug_option -DWHICH_SKETCH_ALG=GAUSS -o bin/tester_sketch_1D_GAUSS \
-$FORGE_ROOT/sketch/sketch.c \
-$FORGE_ROOT/fwht_utils/hada.c \
-$FORGE_ROOT/fwht/base_fwht.c \
-test/sketch_tester_sketch_1D.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
-2>&1 | tee build.log
-bin/tester_sketch_1D_GAUSS |& tee -a build.log
-mv gmon.out prof/gmon-tester_sketch_1D_GAUSS.out
-gprof bin/tester_sketch_1D_GAUSS prof/gmon-tester_sketch_1D_GAUSS.out > prof/grof-tester_sketch_1D_GAUSS.out
-#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_GAUSS 2>&1 |& tee -a valgrind.log
+# ###########################################################################################################################################
+# Sketch 1D
+for SK_ALGO in SRHT_CFWHT SRHT_FFTW SRHT_HADI_FWHT GAUSS
+do
+    for SK_TYPE in SKETCH_1D
+    do
+        echo "Sketch 1D Using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
+        $comp $debug_option -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE} \
+        $FORGE_ROOT/sketch/sketch.c \
+        $FORGE_ROOT/fwht_utils/hada.c \
+        $FORGE_ROOT/fwht/base_fwht.c \
+        test/sketch_tester_sketch_1D.c \
+        ${RESOLVE_LD} \
+        ${RESOLVE_CPATH} \
+        2>&1 | tee build.log
+        bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE} |& tee -a build.log
+        mv gmon.out prof/gmon-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}.out
+        gprof bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE} prof/gmon-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}.out > prof/gprof-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}.out
+        #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE} 2>&1 |& tee -a valgrind.log
+    done
+done
 
-# Sketch 1D using sketch algo SRHT_FFTW
-echo "Sketch 1D using sketch algo SRHT_FFTW"
-$comp $debug_option -DWHICH_SKETCH_ALG=SRHT_FFTW -o bin/tester_sketch_1D_SRHT_FFTW \
-$FORGE_ROOT/sketch/sketch.c \
-$FORGE_ROOT/fwht_utils/hada.c \
-$FORGE_ROOT/fwht/base_fwht.c \
-test/sketch_tester_sketch_1D.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
-2>&1 | tee build.log
-bin/tester_sketch_1D_SRHT_FFTW |& tee -a build.log
-mv gmon.out prof/gmon-tester_sketch_1D_SRHT_FFTW.out
-gprof bin/tester_sketch_1D_SRHT_FFTW prof/gmon-tester_sketch_1D_SRHT_FFTW.out > prof/grof-tester_sketch_1D_SRHT_FFTW.out
-#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_SRHT_FFTW 2>&1 |& tee -a valgrind.log
+# ###########################################################################################################################################
+# # Sketch 1D test t1
+for SK_ALGO in SRHT_CFWHT SRHT_FFTW SRHT_HADI_FWHT GAUSS
+do
+    for SK_TYPE in SKETCH_1D
+    do
+        echo "Sketch 1D test t1 Using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
+        $comp $debug_option -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1 \
+        $FORGE_ROOT/sketch/sketch.c \
+        $FORGE_ROOT/fwht_utils/hada.c \
+        $FORGE_ROOT/fwht/base_fwht.c \
+        test/sketch_tester_sketch_1D_t1.c \
+        ${RESOLVE_LD} \
+        ${RESOLVE_CPATH} \
+        2>&1 | tee build.log
+        bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
+        mv gmon.out prof/gmon-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1.out
+        gprof bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1.out
+        #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.log
+    done
+done
 
-# Sketch 1D using sketch algo SRHT_HADI_FWHT
-echo "Sketch 1D using sketch algo SRHT_HADI_FWHT"
-$comp $debug_option -DWHICH_SKETCH_ALG=SRHT_HADI_FWHT -o bin/tester_sketch_1D_SRHT_HADI_FWHT \
-$FORGE_ROOT/sketch/sketch.c \
-$FORGE_ROOT/fwht_utils/hada.c \
-$FORGE_ROOT/fwht/base_fwht.c \
-test/sketch_tester_sketch_1D.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
-2>&1 | tee build.log
-bin/tester_sketch_1D_SRHT_HADI_FWHT |& tee -a build.log
-mv gmon.out prof/gmon-tester_sketch_1D_SRHT_HADI_FWHT.out
-gprof bin/tester_sketch_1D_SRHT_HADI_FWHT prof/gmon-tester_sketch_1D_SRHT_HADI_FWHT.out > prof/grof-tester_sketch_1D_SRHT_HADI_FWHT.out
-#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_SRHT_HADI_FWHT 2>&1 |& tee -a valgrind.log
-
-# Sketch 1D using sketch algo SRHT_CFWHT
-echo "Sketch 1D using sketch algo SRHT_CFWHT"
-$comp $debug_option -DWHICH_SKETCH_ALG=SRHT_CFWHT -o bin/tester_sketch_1D_SRHT_CFWHT \
-$FORGE_ROOT/sketch/sketch.c \
-$FORGE_ROOT/fwht_utils/hada.c \
-$FORGE_ROOT/fwht/base_fwht.c \
-test/sketch_tester_sketch_1D.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
-2>&1 | tee build.log
-bin/tester_sketch_1D_SRHT_CFWHT |& tee -a build.log
-mv gmon.out prof/gmon-tester_sketch_1D_SRHT_CFWHT.out
-gprof bin/tester_sketch_1D_SRHT_CFWHT prof/gmon-tester_sketch_1D_SRHT_CFWHT.out > prof/grof-tester_sketch_1D_SRHT_CFWHT.out
-#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_SRHT_CFWHT 2>&1 |& tee -a valgrind.log
-
-###########################################################################################################################################
-# Sketch 1D test t1 Using sketch algo GAUSS
-echo "Sketch 1D test t1 Using sketch algo GAUSS"
-$comp $debug_option -DWHICH_SKETCH_ALG=GAUSS -o bin/tester_sketch_1D_GAUSS_t1 \
-$FORGE_ROOT/sketch/sketch.c \
-$FORGE_ROOT/fwht_utils/hada.c \
-$FORGE_ROOT/fwht/base_fwht.c \
-test/sketch_tester_sketch_1D_t1.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
-2>&1 | tee build.log
-bin/tester_sketch_1D_GAUSS_t1 |& tee build.log
-mv gmon.out prof/gmon-tester_sketch_1D_GAUSS_t1.out
-gprof bin/tester_sketch_1D_GAUSS_t1 prof/gmon-tester_sketch_1D_GAUSS_t1.out > prof/grof-tester_sketch_1D_GAUSS_t1.out
-#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_GAUSS_t1 2>&1 |& tee -a valgrind.log
-
-# Sketch 1D test t1 Using sketch algo SRHT_FFTW
-echo "Sketch 1D test t1 Using sketch algo SRHT_FFTW"
-$comp $debug_option -DWHICH_SKETCH_ALG=SRHT_FFTW -o bin/tester_sketch_1D_SRHT_FFTW_t1 \
-$FORGE_ROOT/sketch/sketch.c \
-$FORGE_ROOT/fwht_utils/hada.c \
-$FORGE_ROOT/fwht/base_fwht.c \
-test/sketch_tester_sketch_1D_t1.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
-2>&1 | tee build.log
-bin/tester_sketch_1D_SRHT_FFTW_t1 |& tee -a build.log
-mv gmon.out prof/gmon-tester_sketch_1D_SRHT_FFTW_t1.out
-gprof bin/tester_sketch_1D_SRHT_FFTW_t1 prof/gmon-tester_sketch_1D_SRHT_FFTW_t1.out > prof/grof-tester_sketch_1D_SRHT_FFTW_t1.out
-#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_SRHT_FFTW_t1 2>&1 |& tee -a valgrind.log
-
-# Sketch 1D test t1 Using sketch algo SRHT_HADI_FWHT
-echo "Sketch 1D test t1 Using sketch algo SRHT_HADI_FWHT"
-$comp $debug_option -DWHICH_SKETCH_ALG=SRHT_HADI_FWHT -o bin/tester_sketch_1D_SRHT_HADI_FWHT_t1 \
-$FORGE_ROOT/sketch/sketch.c \
-$FORGE_ROOT/fwht_utils/hada.c \
-$FORGE_ROOT/fwht/base_fwht.c \
-test/sketch_tester_sketch_1D_t1.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
-2>&1 | tee build.log
-bin/tester_sketch_1D_SRHT_HADI_FWHT_t1 |& tee -a build.log
-mv gmon.out prof/gmon-tester_sketch_1D_SRHT_HADI_FWHT_t1.out
-gprof bin/tester_sketch_1D_SRHT_HADI_FWHT_t1 prof/gmon-tester_sketch_1D_SRHT_HADI_FWHT_t1.out > prof/grof-tester_sketch_1D_SRHT_HADI_FWHT_t1.out
-#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_SRHT_HADI_FWHT_t1 2>&1 |& tee -a valgrind.log
-
-# Sketch 1D test t1 Using sketch algo SRHT_CFWHT
-echo "Sketch 1D test t1 Using sketch algo SRHT_CFWHT"
-$comp $debug_option -DWHICH_SKETCH_ALG=SRHT_CFWHT -o bin/tester_sketch_1D_SRHT_CFWHT_t1 \
-$FORGE_ROOT/sketch/sketch.c \
-$FORGE_ROOT/fwht_utils/hada.c \
-$FORGE_ROOT/fwht/base_fwht.c \
-test/sketch_tester_sketch_1D_t1.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
-2>&1 | tee build.log
-bin/tester_sketch_1D_SRHT_CFWHT_t1 |& tee -a build.log
-mv gmon.out prof/gmon-tester_sketch_1D_SRHT_CFWHT_t1.out
-gprof bin/tester_sketch_1D_SRHT_CFWHT_t1 prof/gmon-tester_sketch_1D_SRHT_CFWHT_t1.out > prof/grof-tester_sketch_1D_SRHT_CFWHT_t1.out
-#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_SRHT_CFWHT_t1 2>&1 |& tee -a valgrind.log
+# ###########################################################################################################################################
+# # Sketch 1D mat test t1
+for SK_ALGO in SRHT_CFWHT SRHT_FFTW SRHT_HADI_FWHT GAUSS
+do
+    for SK_TYPE in SKETCH_2D
+    do
+        echo "Sketch 1D mat test t1 Using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
+        $comp $debug_option -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1 \
+        $FORGE_ROOT/sketch/sketch.c \
+        $FORGE_ROOT/fwht_utils/hada.c \
+        $FORGE_ROOT/fwht/base_fwht.c \
+        test/sketch_tester_sketch_1D_mat_t1.c \
+        ${RESOLVE_LD} \
+        ${RESOLVE_CPATH} \
+        2>&1 | tee build.log
+        bin/tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
+        mv gmon.out prof/gmon-tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1.out
+        gprof bin/tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1.out
+        #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.log
+    done
+done
 
 ###########################################################################################################################################
-# Sketch 1D mat test t1 Using sketch algo GAUSS
-echo "Sketch 1D mat test t1 Using sketch algo GAUSS"
-$comp $debug_option -DWHICH_SKETCH_ALG=GAUSS -o bin/tester_sketch_1D_mat_GAUSS_t1 \
-$FORGE_ROOT/sketch/sketch.c \
-$FORGE_ROOT/fwht_utils/hada.c \
-$FORGE_ROOT/fwht/base_fwht.c \
-test/sketch_tester_sketch_1D_mat_t1.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
-2>&1 | tee build.log
-bin/tester_sketch_1D_mat_GAUSS_t1 |& tee -a build.log
-mv gmon.out prof/gmon-tester_sketch_1D_mat_GAUSS_t1.out
-gprof bin/tester_sketch_1D_mat_GAUSS_t1 prof/gmon-tester_sketch_1D_mat_GAUSS_t1.out > prof/grof-tester_sketch_1D_mat_GAUSS_t1.out
-#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_mat_GAUSS_t1 2>&1 |& tee -a valgrind.log
-
-# Sketch 1D mat test t1 Using sketch algo SRHT_FFTW
-echo "Sketch 1D mat test t1 Using sketch algo SRHT_FFTW"
-$comp $debug_option -DWHICH_SKETCH_ALG=SRHT_FFTW -o bin/tester_sketch_1D_mat_SRHT_FFTW_t1 \
-$FORGE_ROOT/sketch/sketch.c \
-$FORGE_ROOT/fwht_utils/hada.c \
-$FORGE_ROOT/fwht/base_fwht.c \
-test/sketch_tester_sketch_1D_mat_t1.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
-2>&1 | tee build.log
-bin/tester_sketch_1D_mat_SRHT_FFTW_t1 |& tee -a build.log
-mv gmon.out prof/gmon-tester_sketch_1D_mat_SRHT_FFTW_t1.out
-gprof bin/tester_sketch_1D_mat_SRHT_FFTW_t1 prof/gmon-tester_sketch_1D_mat_SRHT_FFTW_t1.out > prof/grof-tester_sketch_1D_mat_SRHT_FFTW_t1.out
-#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_mat_SRHT_FFTW_t1 2>&1 |& tee -a valgrind.log
-
-# Sketch 1D mat test t1 Using sketch algo SRHT_HADI_FWHT
-echo "Sketch 1D mat test t1 Using sketch algo SRHT_HADI_FWHT"
-$comp $debug_option -DWHICH_SKETCH_ALG=SRHT_HADI_FWHT -o bin/tester_sketch_1D_mat_SRHT_HADI_FWHT_t1 \
-$FORGE_ROOT/sketch/sketch.c \
-$FORGE_ROOT/fwht_utils/hada.c \
-$FORGE_ROOT/fwht/base_fwht.c \
-test/sketch_tester_sketch_1D_mat_t1.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
-2>&1 | tee build.log
-bin/tester_sketch_1D_mat_SRHT_HADI_FWHT_t1 |& tee -a build.log
-mv gmon.out prof/gmon-tester_sketch_1D_mat_SRHT_HADI_FWHT_t1.out
-gprof bin/tester_sketch_1D_mat_SRHT_HADI_FWHT_t1 prof/gmon-tester_sketch_1D_mat_SRHT_HADI_FWHT_t1.out > prof/grof-tester_sketch_1D_mat_SRHT_HADI_FWHT_t1.out
-#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_mat_SRHT_HADI_FWHT_t1 2>&1 |& tee -a valgrind.log
-
-# Sketch 1D mat test t1 Using sketch algo SRHT_CFWHT
-echo "Sketch 1D mat test t1 Using sketch algo SRHT_CFWHT"
-$comp $debug_option -DWHICH_SKETCH_ALG=SRHT_CFWHT -o bin/tester_sketch_1D_mat_SRHT_CFWHT_t1 \
-$FORGE_ROOT/sketch/sketch.c \
-$FORGE_ROOT/fwht_utils/hada.c \
-$FORGE_ROOT/fwht/base_fwht.c \
-test/sketch_tester_sketch_1D_mat_t1.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
-2>&1 | tee build.log
-bin/tester_sketch_1D_mat_SRHT_CFWHT_t1 |& tee -a build.log
-mv gmon.out prof/gmon-tester_sketch_1D_mat_SRHT_CFWHT_t1.out
-gprof bin/tester_sketch_1D_mat_SRHT_CFWHT_t1 prof/gmon-tester_sketch_1D_mat_SRHT_CFWHT_t1.out > prof/grof-tester_sketch_1D_mat_SRHT_CFWHT_t1.out
-#valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_mat_SRHT_CFWHT_t1 2>&1 |& tee -a valgrind.log
+# Sketch 1D block test t1
+for SK_ALGO in SRHT_CFWHT SRHT_FFTW SRHT_HADI_FWHT GAUSS
+do
+    for SK_TYPE in SKETCH_1D SKETCH_2D
+    do
+        echo "Sketch 1D block nocomm test t1 Using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
+        $comp $debug_option -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1 \
+        $FORGE_ROOT/sketch/sketch.c \
+        $FORGE_ROOT/fwht_utils/hada.c \
+        $FORGE_ROOT/fwht/base_fwht.c \
+        test/sketch_tester_sketch_1D_block_nocomm_t1.c \
+        ${RESOLVE_LD} \
+        ${RESOLVE_CPATH} \
+        2>&1 | tee build.log
+        bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
+        mv gmon.out prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1.out
+        gprof bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1.out
+        #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.log
+    done
+done

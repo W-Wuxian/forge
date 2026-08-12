@@ -78,6 +78,7 @@ base_init_sketch_data( base_sketch_t *sketch_data, base_int_t *iparam, int rank,
         case SRHT_CFWHT:
         case SRHT_FFTW:
         default:
+            sketch_data->sketch_type     = iparam[IDX_SKETCH_TYPE];
             sketch_data->nrows_data_work = base_n2p( iparam[IDX_NROWS_DATA_IN] );
             sketch_data->scale           = base_d_p1 / sqrt( (double)iparam[IDX_SKETCH_DIM] );  //(double) base_n2p(iparam[IDX_NROWS_DATA_IN])
             assert( base_ispow2( sketch_data->nrows_data_work ) );
@@ -357,6 +358,57 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
             }
             // Scaling (Optim:: Maybe put this step in base_BLOCK_SKETCH_d after MPI_Allreduce)
             cblas_dscal( sketch_dim * ncols_data_in, scale, data_out, 1 );
+            break;
+    }
+}
+
+void
+base_compute_block_sketch_nocomm( base_sketch_t *sketch_data )
+{
+    int         ierr = 0;
+    base_int_t  i;
+    base_int_t  j;
+    base_int_t  ncols_data_in    = sketch_data->ncols_data_in;
+    base_int_t  sketch_dim       = sketch_data->sketch_dim;
+    base_int_t  nDr              = sketch_data->nDr;
+    base_int_t  nDl              = sketch_data->nDl;
+    base_int_t *rademacher_array = sketch_data->rademacher_array;
+    double     *data_out         = sketch_data->data_out;
+
+    switch ( sketch_data->sketch_alg ) {
+        case GAUSS:
+            cblas_dgemm( CblasColMajor,
+                         CblasNoTrans,
+                         CblasNoTrans,
+                         sketch_dim,
+                         ncols_data_in,
+                         sketch_data->nrows_data_work,
+                         base_d_alpha_p1,
+                         sketch_data->data_work,
+                         sketch_dim,
+                         sketch_data->data_in,
+                         sketch_data->nrows_data_work,
+                         base_d_beta_ze,
+                         data_out,
+                         sketch_dim );
+            break;
+        case SRHT_CFWHT:
+        case SRHT_FFTW:
+        default:
+            // SRHT
+            if ( sketch_data->sketch_type == SKETCH_1D ) {  // sequential np = 1 and ncols_data_in = 1 (np is number of MPI process)
+                base_compute_sketch( sketch_data );
+            }
+            else if ( sketch_data->sketch_type == SKETCH_2D ) {  // parallel np >= 1 and ncols_data_in >= 1
+                base_compute_sketch_mat( sketch_data );
+            }
+            // Rademacher Left vector product
+            if ( sketch_data->nDl > 0 ) {
+                for ( j = 0; j < ncols_data_in; ++j ) {
+                    for ( i = 0; i < nDl; ++i )
+                        data_out[j * sketch_dim + rademacher_array[nDr + i]] *= -1;
+                }
+            }
             break;
     }
 }
