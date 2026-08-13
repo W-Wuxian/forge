@@ -5,6 +5,7 @@ library(scales)
 library(plotly)
 
 args <- commandArgs(trailingOnly = TRUE)
+csv_name <- tools::file_path_sans_ext(basename(args[1]))
 # 1. Lecture du fichier CSV
 # On précise col_names = FALSE car on va renommer proprement pour éviter les problèmes d'espaces
 # "output/rotatedata_mat_benchmark.csv"
@@ -66,12 +67,12 @@ fwht_plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group
 
 # 4. Affichage et sauvegarde du graphique
 #print(fwht_plot)
-ggsave("plot_benchmark_fwht.pdf", fwht_plot, device="pdf", width = 8, height = 6, dpi = 300)
-ggsave("plot_benchmark_fwht.png", fwht_plot, width = 8, height = 6, dpi = 300)
+ggsave(paste0(csv_name, ".pdf"), fwht_plot, device="pdf", width = 8, height = 6, dpi = 300)
+ggsave(paste0(csv_name, ".png"), fwht_plot, width = 8, height = 6, dpi = 300)
 
 # Conversion en plot interactif
 interactive_plot <- ggplotly(fwht_plot) %>%
   config(scrollZoom = TRUE)  # Active le zoom à la molette
 
 # Sauvegarde en HTML
-htmlwidgets::saveWidget(interactive_plot, "fwht_plot_interactive.html")
+htmlwidgets::saveWidget(interactive_plot, paste0(csv_name, ".html"))

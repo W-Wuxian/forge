@@ -9,20 +9,43 @@ source /home/vlederer/Bureau/DEV/ext/jube-2.7.1/bin/activate
 
 
 comp=gcc
+
 run_jube() {
-    #guix time-machine -C ../forge-channels.scm -- shell -m fwht_manifest.scm --  bash -c "jube run benchmark.xml"
     jube run jubescripts/benchmark.xml
 }
 run_R() {
-    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_R_manifest.scm -- bash -c "Rscript rscripts/gen_bench.R output/rotatedata_mat_benchmark.csv"
+    shopt -s nullglob
+    for f in output/rotatedata_mat_*_benchmark.csv; do
+        echo "Génération du graphe pour $f"
+        Rscript rscripts/gen_bench.R "$f"
+    done
 }
 run_jube_fwht() {
-    #guix time-machine -C ../forge-channels.scm -- shell -m fwht_manifest.scm -- bash -c "jube run benchmark_fwht_ext.xml"
-    jube run jubescripts/benchmark_fwht_ext.xml
+    jube run jubescripts/benchmark_fwht.xml
 }
 run_R_fwht() {
-    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_R_manifest.scm -- bash -c "Rscript rscripts/gen_bench_fwht.R output/fwht_mat_benchmark.csv"
+    shopt -s nullglob
+    for f in output/fwht_mat_*_benchmark.csv; do
+        echo "Génération du graphe pour $f"
+        Rscript rscripts/gen_bench_fwht.R "$f"
+    done
 }
+
+
+# run_jube() {
+#     #guix time-machine -C ../forge-channels.scm -- shell -m fwht_manifest.scm --  bash -c "jube run benchmark.xml"
+#     jube run jubescripts/benchmark.xml
+# }
+# run_R() {
+#     guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_R_manifest.scm -- bash -c "Rscript rscripts/gen_bench.R output/rotatedata_mat_benchmark.csv"
+# }
+# run_jube_fwht() {
+#     #guix time-machine -C ../forge-channels.scm -- shell -m fwht_manifest.scm -- bash -c "jube run benchmark_fwht_ext.xml"
+#     jube run jubescripts/benchmark_fwht_ext.xml
+# }
+# run_R_fwht() {
+#     guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_R_manifest.scm -- bash -c "Rscript rscripts/gen_bench_fwht.R output/fwht_mat_benchmark.csv"
+# }
 
 FORGE_ROOT=$PWD/..
 source $FORGE_ROOT/tools/export_path.bash

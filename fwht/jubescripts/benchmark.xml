@@ -69,7 +69,7 @@
 
     <!-- 4. Collect : Collecte et concatène tous les fichiers results_${mem_allocator_flag}.csv -->
     <step name="collect" depend="execute">
-       <use>comp_mem_allocator_flag</use>
+      <use>comp_mem_allocator_flag</use>
       <!-- La première fois, on crée le header une seule fois dans le fichier de sortie -->
       <do><![CDATA[
         OUT="${jube_benchmark_home}/../output/rotatedata_mat_${mem_allocator_flag}_benchmark.csv"

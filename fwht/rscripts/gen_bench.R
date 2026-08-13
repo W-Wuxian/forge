@@ -68,6 +68,7 @@ plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = me
 
 # 4. Affichage et sauvegarde du graphique
 print(plot)
+ggsave(paste0(csv_name, ".pdf"), plot, device="pdf", width = 8, height = 6, dpi = 300)
 ggsave(paste0(csv_name, ".png"), plot, width = 8, height = 6, dpi = 300)
 
 # Conversion en plot interactif

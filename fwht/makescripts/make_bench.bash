@@ -31,7 +31,13 @@ run_jube_fwht() {
     guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_fftw_manifest.scm -- bash -c "jube run jubescripts/benchmark_fwht.xml"
 }
 run_R_fwht() {
-    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_R_manifest.scm -- bash -c "Rscript rscripts/gen_bench_fwht.R output/fwht_mat_benchmark.csv"
+    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_R_manifest.scm -- bash -c '
+        shopt -s nullglob
+        for f in output/fwht_mat_*_benchmark.csv; do
+            echo "Génération du graphe pour $f"
+            Rscript rscripts/gen_bench_fwht.R "$f"
+        done
+    '
 }
 
 FORGE_ROOT=$PWD/..
@@ -57,8 +63,8 @@ LOG_FILE=logs/bench.log
 BENCH_OUT_FILE=output/bench_base_rotatedata_mat.csv
 
 #run_jube_rotatedata_R
-run_jube && run_R
-#run_jube_fwht && run_R_fwht
+#run_jube && run_R
+run_jube_fwht && run_R_fwht
 
 mv *.pdf *.png *.html gen/
 

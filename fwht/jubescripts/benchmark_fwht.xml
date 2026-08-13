@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jube>
   <benchmark name="FWHT_Benchmark" outpath="jube_bench_fwht_run">
-    
+    <!-- Paramètres des flags de compilation -->
+    <parameterset name="comp_mem_allocator_flag">
+      <parameter name="mem_allocator_flag" type="string">USE_POSIX_MEMALIGN,USE_MALLOC</parameter>
+    </parameterset>
     <!-- 1. Paramètres du benchmark (Dimensions de la matrice) -->
     <parameterset name="matrix_params">
       <parameter name="nrows" type="int">1048576</parameter>
@@ -25,11 +28,12 @@
     </fileset>
 
     <parameterset name="run_bench_cmd">
-      <parameter name="command" type="string">./bench_fwht_exe --confidence=10.0 --output=results_fwht.csv</parameter>
+      <parameter name="command" type="string">./bench_fwht_exe --confidence=10.0 --output=results_fwht_${mem_allocator_flag}.csv</parameter>
     </parameterset>
 
     <!-- 2. Compilation -->
     <step name="compile">
+      <use>comp_mem_allocator_flag</use>
       <use>matrix_params</use>
       <use>env_params</use>
       <use>source_files</use>
@@ -39,7 +43,7 @@
       <do>sed -i 's/JUBE_NROWS/${nrows}/g' fwht_bench_fwht_mat.c</do>
       <do>sed -i 's/JUBE_NCOLS/${ncols}/g' fwht_bench_fwht_mat.c</do>
       <do>
-      gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -DNDEBUG -DNOASSERTINT -DNOPRINTMAT -DFFTW_WITH_OMP -o bench_fwht_exe hada.c base_fwht.c fwht_bench_fwht_mat.c ${RESOLVE_LD} ${RESOLVE_CPATH}
+        gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -DNDEBUG -DNOASSERTINT -DNOPRINTMAT -DFFTW_WITH_OMP -D${mem_allocator_flag} -o bench_fwht_exe hada.c base_fwht.c fwht_bench_fwht_mat.c ${RESOLVE_LD} ${RESOLVE_CPATH}
         <!-- gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -DNDEBUG -DNOASSERTINT -DNOPRINTMAT -DFFTW_WITH_OMP -o bench_fwht_exe hada.c base_fwht.c fwht_bench_fwht_mat.c -L${GUIX_ENV}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -L${HADI_FWHT}/lib -lfwht ${RESOLVE_CPATH} -->
         <!-- gcc -O0 -march=native -g3 -Wall -fopenmp -fopt-info-vec-all=vec.report -DNDEBUG -DNOASSERTINT -DNOPRINTMAT -o bench_fwht_exe hada.c base_fwht.c fwht_bench_fwht_mat.c -L${GUIX_ENV}/lib -lopenblas -lfftw3 -lpthread -lm -L${HADI_FWHT}/lib -lfwht -I${GUIX_ENV}/include ${RESOLVE_CPATH} -->
         <!-- gcc -O2 -Wall -o bench_fwht_exe hada.c base_fwht.c fwht_bench_fwht_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH} -->
@@ -57,13 +61,14 @@
 
     <!-- 4. Collect : Collecte et concatène tous les fichiers results_fwht.csv -->
     <step name="collect" depend="execute">
+      <use>comp_mem_allocator_flag</use>
       <!-- La première fois, on crée le header une seule fois dans le fichier de sortie -->
       <do><![CDATA[
-        OUT="${jube_benchmark_home}/../output/fwht_mat_benchmark.csv"
+        OUT="${jube_benchmark_home}/../output/fwht_mat_${mem_allocator_flag}_benchmark.csv"
         if [ ! -f "$OUT" ]; then
-          head -n 1 execute/results_fwht.csv > "$OUT"
+          head -n 1 execute/results_fwht_${mem_allocator_flag}.csv > "$OUT"
         fi
-        tail -n +2 execute/results_fwht.csv >> "$OUT"
+        tail -n +2 execute/results_fwht_${mem_allocator_flag}.csv >> "$OUT"
       ]]></do>
     </step>
 

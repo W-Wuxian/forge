@@ -6,17 +6,30 @@ echo "SCRIPT DIR IS $SCRIPT_DIR"
 cd $SCRIPT_DIR/..
 
 comp="guix shell gcc-toolchain@14.2.0 openblas jube -- gcc "
+
 run_jube() {
     guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_manifest.scm --  bash -c "jube run jubescripts/benchmark.xml"
 }
 run_R() {
-    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_R_manifest.scm -- bash -c "Rscript rscripts/gen_bench.R output/rotatedata_mat_benchmark.csv"
+    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_R_manifest.scm -- bash -c '
+        shopt -s nullglob
+        for f in output/rotatedata_mat_*_benchmark.csv; do
+            echo "Génération du graphe pour $f"
+            Rscript rscripts/gen_bench.R "$f"
+        done
+    '
 }
 run_jube_fwht() {
-    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_manifest.scm -- bash -c "jube run jubescripts/benchmark_fwht_ext.xml"
+    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_manifest.scm -- bash -c "jube run jubescripts/benchmark_fwht.xml"
 }
 run_R_fwht() {
-    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_R_manifest.scm -- bash -c "Rscript rscripts/gen_bench_fwht.R output/fwht_mat_benchmark.csv"
+    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_R_manifest.scm -- bash -c '
+        shopt -s nullglob
+        for f in output/fwht_mat_*_benchmark.csv; do
+            echo "Génération du graphe pour $f"
+            Rscript rscripts/gen_bench_fwht.R "$f"
+        done
+    '
 }
 
 FORGE_ROOT=$PWD/..
