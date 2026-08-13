@@ -38,4 +38,15 @@ typedef uint64_t base_uint_t;
 
 #endif
 
+#define base_ialign 64
+#define base_dalign 64
+
+// p1 -> +1  m1 -> -1   ze -> 0.0
+#define base_d_p1 (double)1.0
+#define base_d_m1 (double)-1.0
+#define base_d_ze (double)0.0
+
+#define base_d_beta_ze base_d_ze
+#define base_d_alpha_p1 base_d_p1
+
 #endif  //__BASE_DATATYPE_H__

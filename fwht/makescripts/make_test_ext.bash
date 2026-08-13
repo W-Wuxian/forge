@@ -3,24 +3,38 @@
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
 echo "SCRIPT DIR IS $SCRIPT_DIR"
-cd $SCRIPT_DIR
+cd $SCRIPT_DIR/..
 
-if command -v guix >/dev/null 2>&1; then
-    echo "Guix is installed."
-    comp="guix shell gcc-toolchain@14.2.0 openblas fftw -- gcc "
-else
-    echo "Guix is not installed."
-    comp=gcc
-fi
+comp=gcc
 
-HADI_FWHT_INSTALL=hadi-fwht-master
 FORGE_ROOT=$PWD/..
-#export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht
-#export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:$LD_LIBRARY_PATH
-export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/include
-export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/lib:$LD_LIBRARY_PATH
-RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I$FORGE_ROOT/ext/${HADI_FWHT_INSTALL}/include"
-echo $CPATH
+source $FORGE_ROOT/tools/export_path.bash
+HADI_FWHT_INSTALL=hadi-fwht-master
+FFTW_EXT_VER=3.3.11
+FFTW_EXT_INSTALL=fftw-$FFTW_EXT_VER
+OPENBLAS_EXT_VER=0.3.34
+OPENBLAS_EXT_INSTALL=openblas-$OPENBLAS_EXT_VER
+
+
+export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:${EXT_ROOT}/${HADI_FWHT_INSTALL}/include:${EXT_ROOT}/${FFTW_EXT_INSTALL}/include:${EXT_ROOT}/${OPENBLAS_EXT_INSTALL}/include
+export LD_LIBRARY_PATH=${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib:${EXT_ROOT}/${FFTW_EXT_INSTALL}/lib:${EXT_ROOT}/${OPENBLAS_EXT_INSTALL}/lib:$LD_LIBRARY_PATH
+#RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I${EXT_ROOT}/${HADI_FWHT_INSTALL}/include -I${EXT_ROOT}/${FFTW_EXT_INSTALL}/${FFTW_EXT_VER}/include"
+
+RESOLVE_CPATH_FORGE="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht"
+RESOLVE_CPATH_HADI="-I${EXT_ROOT}/${HADI_FWHT_INSTALL}/include"
+RESOLVE_CPATH_FFTW="-I${EXT_ROOT}/${FFTW_EXT_INSTALL}/include"
+RESOLVE_CPATH_OPENBLAS="-I${EXT_ROOT}/${OPENBLAS_EXT_INSTALL}/include"
+RESOLVE_CPATH="${RESOLVE_CPATH_FORGE} ${RESOLVE_CPATH_OPENBLAS} ${RESOLVE_CPATH_HADI} ${RESOLVE_CPATH_FFTW}"
+
+RESOLVE_LD_HADI="-L${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib -lfwht"
+RESOLVE_LD_FFTW="-L${EXT_ROOT}/${FFTW_EXT_INSTALL}/lib -lfftw3"
+RESOLVE_LD_OPENBLAS="-L${EXT_ROOT}/${OPENBLAS_EXT_INSTALL}/lib -lopenblas -lpthread -lm"
+RESOLVE_LD="${RESOLVE_LD_OPENBLAS} ${RESOLVE_LD_HADI} ${RESOLVE_LD_FFTW}"
+
+echo "$RESOLVE_CPATH"
+echo "$RESOLVE_LD"
+
+#exit 0
 
 mkdir -p bin/
 rm -f bin/*
@@ -40,10 +54,8 @@ $comp $debug_option -o bin/showcase_fwht \
 $FORGE_ROOT/fwht_utils/hada.c \
 base_fwht.c test/fwht_showcase.c \
 -DFWHT_SHOWCASE_COL_M=16 \
--I$GUIX_ENVIRONMENT/include \
--L$GUIX_ENVIRONMENT/lib -lopenblas -lfftw3 -lpthread -lm \
--L/mnt/e/WSL-WORK/forge/ext/${HADI_FWHT_INSTALL}/lib -lfwht \
-$RESOLVE_CPATH \
+${RESOLVE_LD} \
+${RESOLVE_CPATH} \
 2>&1 | tee build.log
 bin/showcase_fwht |& tee -a build.log
 mv gmon.out prof/gmon-showcase_fwht.out
@@ -53,10 +65,8 @@ gprof bin/showcase_fwht prof/gmon-showcase_fwht.out > prof/grof-showcase_fwht.ou
 $comp $debug_option -o bin/test_base_dummy_fwht \
 $FORGE_ROOT/fwht_utils/hada.c \
 base_fwht.c test/fwht_tester.c test/fwht_tester_base_dummy_fwht.c \
--L$GUIX_ENVIRONMENT/lib -lopenblas -lfftw3 -lpthread -lm \
--L/mnt/e/WSL-WORK/forge/ext/${HADI_FWHT_INSTALL}/lib -lfwht \
--I$GUIX_ENVIRONMENT/include \
-$RESOLVE_CPATH \
+${RESOLVE_LD} \
+${RESOLVE_CPATH} \
 2>&1 | tee -a build.log
 bin/test_base_dummy_fwht |& tee -a build.log
 mv gmon.out prof/gmon-test_base_dummy_fwht.out
@@ -66,10 +76,8 @@ gprof bin/test_base_dummy_fwht prof/gmon-test_base_dummy_fwht.out > prof/gprof-t
 $comp $debug_option -o bin/test_base_rotatedata_mat \
 $FORGE_ROOT/fwht_utils/hada.c \
 base_fwht.c test/fwht_tester.c test/fwht_tester_rotatedata_mat.c \
--L$GUIX_ENVIRONMENT/lib -lopenblas -lfftw3 -lpthread -lm \
--L/mnt/e/WSL-WORK/forge/ext/${HADI_FWHT_INSTALL}/lib -lfwht \
--I$GUIX_ENVIRONMENT/include \
-$RESOLVE_CPATH \
+${RESOLVE_LD} \
+${RESOLVE_CPATH} \
 2>&1 | tee -a build.log
 bin/test_base_rotatedata_mat |& tee -a build.log
 mv gmon.out prof/gmon-test_base_rotatedata_mat.out
@@ -77,9 +85,14 @@ gprof bin/test_base_rotatedata_mat prof/gmon-test_base_rotatedata_mat.out > prof
 
 $comp $debug_option -o bin/test_cblas_dgemm \
 test/test_cblas_dgemm.c \
--L$GUIX_ENVIRONMENT/lib -lopenblas -lfftw3 -lpthread -lm \
--I$GUIX_ENVIRONMENT/include \
+${RESOLVE_LD} \
+${RESOLVE_CPATH} \
 2>&1 | tee -a build.log
 bin/test_cblas_dgemm |& tee -a build.log
 mv gmon.out prof/gmon-test_cblas_dgemm.out
 gprof bin/test_cblas_dgemm prof/gmon-test_cblas_dgemm.out > prof/gprof-test_cblas_dgemm.out
+
+for li in bin/*
+do
+  ldd $li
+done
