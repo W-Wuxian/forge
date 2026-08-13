@@ -1,0 +1,178 @@
+#ifndef __SKETCH_H__
+#define __SKETCH_H__
+
+#include "base_fwht.h"
+
+// iparam
+#define IDX_NROWS_DATA_IN 0      /**< Index for the number of rows */
+#define IDX_NCOLS_DATA_IN 1      /**< Index for the number of columns */
+#define IDX_SKETCH_DIM 2         /**< Index for the sketch dimension (row) */
+#define IDX_NDR 3                /**< Index for the right rademarcher flag */
+#define IDX_NDL 4                /**< Index for the left rademarcher flag */
+#define IDX_SKETCH_ALG 5         /**< Index for the sketching algo flag */
+#define IDX_SKETCH_TYPE 6        /**< Index for the sketching type flag */
+#define IDX_SKETCH_NUM_THREADS 7 /**< Index for the number of threads */
+#define IDX_SKETCH_NUM_GPU 9     /**< Index for the number of gpu */
+#define IDX_SKETCH_IPARAM_LEN 9  /**< Length of sketch iparam array */
+
+typedef enum { SRHT_CFWHT, SRHT_FFTW, SRHT_HADI_FWHT, SRHT_HADI_FWHT_OPENMP, SRHT_HADI_FWHT_GPU, GAUSS, NUMBER_OF_SKETCH_ALG } base_sketch_alg_e;
+typedef enum { SKETCH_1D, SKETCH_2D, NUMBER_OF_SKETCH_TYPE } base_sketch_type_e;
+static const char *const string_sketch_alg[NUMBER_OF_SKETCH_ALG]   = { "SRHT_CFWHT", "SRHT_FFTW", "SRHT_HADI_FWHT", "SRHT_HADI_FWHT_OPENMP", "SRHT_HADI_FWHT_GPU", "GAUSS" };
+static const char *const string_sketch_type[NUMBER_OF_SKETCH_TYPE] = { "SKETCH_1D", "SKETCH_2D" };
+/**
+ * \struct base_sketch_t
+ * \brief The SKETCH data structure in double precision
+ * \details This structure describes datas with different characteristics that will be used by
+ * the SKETCH solver:
+ *              - data dimensions
+ *              - scaling factor
+ *              - Pointer to the user memory
+ *              - SKETCH memory
+ * SRHT uses FWHT algo
+ */
+typedef struct {
+    fftw_plan          Hadaplan;           /**< FFTW Hadamard plan */
+    double             scale;              /**< scaling  factor needed by SKETCH algo, computed with base_set_sketch */
+    double            *data_in;            /**< Pointer (double prec) to the user memory for the data to be Sketch */
+    double            *data_out;           /**< Pointer (double prec) to the user memory for the Sketch of data_in */
+    double            *data_work;          /**< Dynamic array (nswork x ncols_data_in) used to resize data_in at a power of two with zero-padding */
+    size_t             memMB;              /**< memory allocated by SKETCH in MB */
+    size_t             flops;              /**< SKETCH flops */
+    base_int_t        *rademacher_array;   /**< Dynamic array used to store the Rademacher array needed by SRHT algo */
+    base_int_t        *permutation_array;  /**< Dynamic array used to store the Permutation array needed by SRHT algo */
+    base_sketch_alg_e  sketch_alg;         /**< SRHT_CFWHT or SRHT_FFTW or SRHT_HADI_FWHT or GAUSS */
+    base_sketch_type_e sketch_type;        /**< SKETCH_1D, SKETCH_2D */
+    base_int_t         nrows_data_in;      /**< (local) size(data_in)[1]  */
+    base_int_t         ncols_data_in;      /**< size(data_in)[2] */
+    base_int_t         sketch_dim;         /**< Sketch  dimension*/
+    base_int_t         nDr;                /**<  length of the rademacher right array, computed internally */
+    base_int_t         nDl;                /**<  length of the rademacher left array, computed internally */
+    base_int_t         nrows_data_work;    /**< size(data_work)[1] = nswork, and nswork is the next power of 2 from nrows_data_in if wsketch != GAUSS else nrows_data_in, computed internally */
+    base_int_t         sketch_num_threads; /**< number of omp or mkl threads to be used for fwht or gauss */
+    base_int_t         sketch_num_gpu;     /**< number of gpu to be used for fwht or gauss */
+    // fwht_config_t
+    fwht_context_t *sketch_hadi_fwht_ctx;
+} base_sketch_t;
+
+/**
+ * @brief Private function
+ * @details random matrix using ?larnv
+ *
+ * @param[in, out] mat - mat matrix-object like pointer
+ * @param[in] rank rank MPI rank
+ * @param localsize The local number of rows based on the rank
+ * @param ncols The global number of columns
+ * @param nb The number of column to compute
+ * @param cite The current iteration
+ */
+void _base_mat_larnv( double *mat, int rank, base_int_t localsize, base_int_t ncols, base_int_t nb, int cite );
+
+/**
+ * \fn _base_create_random_permutation
+ * \brief Private function
+ * \details With a fixed seed, from an input size input_len, it creates a random permutation array data_out
+ * of size len_data_out <= input_len.
+ * Ex: for(i = 0; i < len_data_out; ++i)cblas_dcopy(1, A[data_out[i]], 1, B[i], 1);
+ * \param[in] input_len - Length of the array on wich we want to proceed a permutation
+ * \param[in, out] data_out - Pointer to a vector-like object storing permutation
+ * \param[in] len_data_out - Dimension of the permutation
+ */
+void _base_create_random_permutation( base_int_t input_len, base_int_t *data_out, base_int_t len_data_out );
+
+/**
+ * @brief Set internal flags based on user parameters
+ * and initialize memory for permutation, rademacher arrays
+ *
+ * @param sketch_data  - pointer to base_sketch_t data structure
+ * @param iparam - pointer to sketch parameters
+ * @param rank - MPI process ID
+ * @param size - MPI communicator size
+ */
+void base_init_sketch_data( base_sketch_t *sketch_data, base_int_t *iparam, int rank, int size );
+
+/**
+ * \fn base_set_sketch_data
+ * \brief Memory allocation and initialization for swork array (sketch)
+ *
+ * \param[in, out] sketch_data - pointer base_sketch_t struct
+ * \param[in] rank - MPI procs rank
+ * \param[in] size - number of MPI process
+ */
+void base_set_sketch_data( base_sketch_t *sketch_data, int rank, int size );
+
+/**
+ * \fn base_free_sketch_data
+ * \brief Free memory allocated by base_Set_sketch_data.
+ * \param[in, out] sketch_data - pointer to base_sketch_t struct
+ */
+void base_free_sketch_data( base_sketch_t *sketch_data );
+
+/**
+ * \fn base_getdata_sketch_data
+ * \brief Used to share pointers, public function
+ * \details Update sketch pointers with the user memory, update sketch ncols_data_in
+ * \param[in, out] sketch_data - pointer to base_sketch_t struct
+ * \param[in] ncols_data_in - number of columns of data_in
+ * \param[in] data_in - pointer to the input data
+ * \param[in] data_out - pointer to the output data
+ */
+void base_getdata_sketch_data( base_sketch_t *sketch_data, const base_int_t ncols_data_in, double *data_in, double *data_out );
+
+/**
+ * \fn base_compute_sketch
+ * \brief double precision version of the srth with a 1D input data, public function
+ * \details  Compute SKETCH of an input vector
+ * nrows_data_in number of rows of data_in, nrows_data_in as to be a power of 2 if not try zero-padding before calling this function
+ * data_out the skecth of data_in
+ * Kproj dimension of the sketch, with Kproj << nrows_data_in
+ * D rademacher array
+ * nD length of Dr (D[0:nDr-1]==Dr)
+ * Perm permutation array
+ * swork working array for fwht()
+ * nswork length of swork
+ * scale factor (1 / sqrt(Kproj))
+ * \param[in,out] sketch_data - pointer to base_sketch_t struct
+ */
+void base_compute_sketch( base_sketch_t *sketch_data );
+
+/**
+ * \enum base_compute_sketch_mat
+ * \brief double precision version of the srth with a 2D inout data, public function
+ * \details Computes the block fwht on the input data using a 1D-FWHT on the block data via cblas_drotm(), fftw or Gaussian matrix
+ * In Block Vector to be Sketch, In is nIn x ncols
+ * nIn number of rows of In, nIn as to be a power of 2 if not try zero-padding before calling this function
+ * ncols number of cols of nIn
+ * Out the block skecth of In
+ * Kproj dimension of the sketch, with Kproj <= nIn
+ * D rademacher array
+ * nD length of Dr (D[0:nDr-1]==Dr)
+ * Perm permutation array
+ * swork working array for fwht()
+ * nswork length of swork
+ * scale factor (1 / sqrt(Kproj))
+ * \param[in,out] sketch_data - pointer to sketch_data_t struct
+ */
+void base_compute_sketch_mat( base_sketch_t *sketch_data );
+
+/**
+ * \enum base_compute_block_sketch_nocomm
+ * \brief double precision version of the Block sketch, public function
+ * \details Compute a block sketch on the input block vector In,
+ * using a 1D-FWHT on the block data via cblas_drotm(), fftw or Gaussian matrix. Computes the left Rademacher product
+ * and sum results over all procs
+ * In Block Vector to be Sketch
+ * nIn number of rows of In, nIn as to be a power of 2 if not try zero-padding before calling this function
+ * ncols number of cols of In
+ * Out the block skecth of In of size Kproj x ncols
+ * Kproj dimension of the sketch, Kproj has to be <= nIn
+ * D rademacher array
+ * nDr+nDl length of D (D[0:nDr-1]==Dr & D[nDr:nDr+nDl-1]==Dl)
+ * Perm permutation array
+ * swork working array for fwht()
+ * nswork length of swork
+ * scale factor
+ * \param[in,out] sketch_data - pointer to base_sketch_t struct
+ */
+void base_compute_block_sketch_nocomm( base_sketch_t *sketch_data );
+
+#endif  //__SKETCH_H__

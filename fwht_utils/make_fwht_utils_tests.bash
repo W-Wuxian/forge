@@ -15,8 +15,10 @@ else
 fi
 
 FORGE_ROOT=$PWD/..
-export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils
-RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils"
+source $FORGE_ROOT/tools/export_path.bash
+HADI_FWHT_INSTALL=hadi-fwht-master
+export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils::${EXT_ROOT}/${HADI_FWHT_INSTALL}/include
+RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I:${EXT_ROOT}/${HADI_FWHT_INSTALL}/include"
 
 mkdir -p bin/
 rm -f bin/*
