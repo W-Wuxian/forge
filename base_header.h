@@ -131,10 +131,12 @@
 
 #ifdef _WIN32
 #define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = _aligned_malloc( ( size ), ( align ) ) ) == NULL ? -1 : 0 )
-#elif defined( DUSE_POSIX_MEMALIGN )
+#elif defined( USE_POSIX_MEMALIGN )
 #define SPEALLOC( ptr, align, size ) posix_memalign( (void **)&( ptr ), ( align ), ( size ) )
-#elif defined( DUSE_MKL_MALLOC )
+#elif defined( USE_MKL_MALLOC )
 #define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = mkl_malloc( ( size ), ( align ) ) ) == NULL ? -1 : 0 )
+#elif defined( USE_MALLOC )
+#define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = malloc( size ) ) == NULL ? -1 : 0 )
 #else
 #define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = malloc( size ) ) == NULL ? -1 : 0 )
 #endif

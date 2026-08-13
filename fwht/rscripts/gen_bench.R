@@ -1,9 +1,12 @@
 # Charger les bibliothèques nécessaires
 # Installe-les avec install.packages("tidyverse") si ce n'est pas déjà fait
 library(tidyverse)
-library(scales) 
+library(scales)
+library(plotly)
+library(tools)
 
 args <- commandArgs(trailingOnly = TRUE)
+csv_name <- tools::file_path_sans_ext(basename(args[1]))
 # 1. Lecture du fichier CSV
 # On précise col_names = FALSE car on va renommer proprement pour éviter les problèmes d'espaces
 # "output/rotatedata_mat_benchmark.csv"
@@ -65,4 +68,11 @@ plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = me
 
 # 4. Affichage et sauvegarde du graphique
 print(plot)
-ggsave("plot_benchmark_rotatedata.png", plot, width = 8, height = 6, dpi = 300)
+ggsave(paste0(csv_name, ".png"), plot, width = 8, height = 6, dpi = 300)
+
+# Conversion en plot interactif
+interactive_plot <- ggplotly(plot) %>%
+  config(scrollZoom = TRUE)  # Active le zoom à la molette
+
+# Sauvegarde en HTML
+htmlwidgets::saveWidget(interactive_plot, paste0(csv_name, ".html"))

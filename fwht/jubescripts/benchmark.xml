@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jube>
   <benchmark name="Rotation_Benchmark" outpath="jube_bench_run">
-    
+
+    <!-- Paramètres des flags de compilation -->
+    <parameterset name="comp_mem_allocator_flag">
+      <parameter name="mem_allocator_flag" type="string">USE_POSIX_MEMALIGN,USE_MALLOC</parameter>
+    </parameterset>
+
     <!-- 1. Paramètres du benchmark (Dimensions de la matrice) -->
     <parameterset name="matrix_params">
       <parameter name="nrows" type="int">1024, 2048</parameter>
@@ -30,11 +35,12 @@
     </fileset>
 
     <parameterset name="run_bench_cmd">
-      <parameter name="command" type="string">./bench_exe --confidence=10.0 --output=results.csv</parameter>
+      <parameter name="command" type="string">./bench_exe --confidence=10.0 --output=results_${mem_allocator_flag}.csv</parameter>
     </parameterset>
 
     <!-- 2. Compilation -->
     <step name="compile" active="${valid}">
+      <use>comp_mem_allocator_flag</use>
       <use>matrix_params</use>
       <use>env_params</use>
       <use>source_files</use>
@@ -47,7 +53,7 @@
       <do>sed -i 's/JUBE_RIDX2/${ridx2}/g' fwht_bench_rotatedata_mat.c</do>
       <do>
         <!-- gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -o bench_exe hada.c base_fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lfftw3 -lpthread -lm ${RESOLVE_CPATH} -->
-        gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -o bench_exe hada.c base_fwht.c fwht_bench_rotatedata_mat.c ${RESOLVE_LD} ${RESOLVE_CPATH}
+        gcc -O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -D${mem_allocator_flag} -o bench_exe hada.c base_fwht.c fwht_bench_rotatedata_mat.c ${RESOLVE_LD} ${RESOLVE_CPATH}
         <!-- gcc -O2 -Wall -o bench_exe hada.c base_fwht.c fwht_bench_rotatedata_mat.c -L${GUIX_ENV}/lib -lopenblas -lpthread -lm -I${GUIX_ENV}/include ${RESOLVE_CPATH} -->
       </do>
     </step>
@@ -61,17 +67,24 @@
       <do>$command</do>
     </step>
 
-    <!-- 4. Collect : Collecte et concatène tous les fichiers results.csv -->
+    <!-- 4. Collect : Collecte et concatène tous les fichiers results_${mem_allocator_flag}.csv -->
     <step name="collect" depend="execute">
+       <use>comp_mem_allocator_flag</use>
       <!-- La première fois, on crée le header une seule fois dans le fichier de sortie -->
       <do><![CDATA[
-        OUT="${jube_benchmark_home}/../output/rotatedata_mat_benchmark.csv"
+        OUT="${jube_benchmark_home}/../output/rotatedata_mat_${mem_allocator_flag}_benchmark.csv"
         if [ ! -f "$OUT" ]; then
-          head -n 1 execute/results.csv > "$OUT"
+          head -n 1 execute/results_${mem_allocator_flag}.csv > "$OUT"
         fi
-        tail -n +2 execute/results.csv >> "$OUT"
+        tail -n +2 execute/results_${mem_allocator_flag}.csv >> "$OUT"
       ]]></do>
     </step>
+
+<!--     <step name="plot" depend="collect">
+      <use>comp_mem_allocator_flag</use>
+      <use>matrix_params</use>
+      <do>Rscript ${FORGE_ROOT}/fwht/rscripts/gen_bench.R ${FORGE_ROOT}/fwht/output/rotatedata_mat_${mem_allocator_flag}_benchmark.csv</do>
+    </step> -->
 
   </benchmark>
 </jube>
