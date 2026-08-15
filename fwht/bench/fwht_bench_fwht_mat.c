@@ -8,7 +8,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
 {
     base_int_t i = 0;
     for ( ; i < nele; ++i ) {
-        mat[i] = ( ( (double)i ) / ( (double)ncols ) ) + 3.14748;
+        mat[i] = ( ( (double)i ) / ( (double)10 * (double)ncols ) ) + (double)( nele - i );
     }
 }
 
@@ -19,12 +19,9 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         base_int_t ncols        = (base_int_t)NCOLS;                                                                                                                                                   \
         base_int_t num_elements = nrows * ncols;                                                                                                                                                       \
         size_t     array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                         \
-        double    *data         = (double *)malloc( array_size );                                                                                                                                      \
-                                                                                                                                                                                                       \
-        /* Call your initialization function here */                                                                                                                                                   \
+        double    *data         = NULL;                                                                                                                                                                \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
-                                                                                                                                                                                                       \
-        /* ubench ONLY times the execution inside this block */                                                                                                                                        \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
         {                                                                                                                                                                                              \
             base_fwht_mat( data, nrows, ncols );                                                                                                                                                       \
@@ -41,12 +38,9 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         base_int_t ncols        = (base_int_t)NCOLS;                                                                                                                                                   \
         base_int_t num_elements = nrows * ncols;                                                                                                                                                       \
         size_t     array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                         \
-        double    *data         = (double *)malloc( array_size );                                                                                                                                      \
-                                                                                                                                                                                                       \
-        /* Call your initialization function here */                                                                                                                                                   \
+        double    *data         = NULL;                                                                                                                                                                \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
-                                                                                                                                                                                                       \
-        /* ubench ONLY times the execution inside this block */                                                                                                                                        \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
         {                                                                                                                                                                                              \
             base_fwht_mat_v3( data, NULL, nrows, ncols );                                                                                                                                              \
@@ -64,13 +58,11 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         base_int_t num_elements = nrows * ncols;                                                                                                                                                       \
         size_t     array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                         \
         size_t     buffer_size  = (size_t)( ncols * 2 * sizeof( double ) );                                                                                                                            \
-        double    *data         = (double *)malloc( array_size );                                                                                                                                      \
-        double    *buffer       = (double *)malloc( buffer_size );                                                                                                                                     \
-                                                                                                                                                                                                       \
-        /* Call your initialization function here */                                                                                                                                                   \
+        double    *data         = NULL;                                                                                                                                                                \
+        double    *buffer       = NULL;                                                                                                                                                                \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
+        SPEALLOC( buffer, base_dalign, buffer_size );                                                                                                                                                  \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
-                                                                                                                                                                                                       \
-        /* ubench ONLY times the execution inside this block */                                                                                                                                        \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
         {                                                                                                                                                                                              \
             base_fwht_mat_v3( data, buffer, nrows, ncols );                                                                                                                                            \
@@ -89,10 +81,9 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         base_int_t ncols        = (base_int_t)NCOLS;                                                                                                                                                   \
         base_int_t num_elements = nrows * ncols;                                                                                                                                                       \
         size_t     array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                         \
-        double    *data         = (double *)malloc( array_size );                                                                                                                                      \
-                                                                                                                                                                                                       \
+        double    *data         = NULL;                                                                                                                                                                \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
-                                                                                                                                                                                                       \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
         {                                                                                                                                                                                              \
             base_fwht_mat_rmaj( data, nrows, ncols );                                                                                                                                                  \
@@ -109,10 +100,9 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         base_int_t ncols        = (base_int_t)NCOLS;                                                                                                                                                   \
         base_int_t num_elements = nrows * ncols;                                                                                                                                                       \
         size_t     array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                         \
-        double    *data         = (double *)malloc( array_size );                                                                                                                                      \
-                                                                                                                                                                                                       \
+        double    *data         = NULL;                                                                                                                                                                \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
-                                                                                                                                                                                                       \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
         {                                                                                                                                                                                              \
             base_fwht_mat_rmaj_v2( data, nrows, ncols );                                                                                                                                               \
@@ -129,10 +119,9 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         base_int_t ncols        = (base_int_t)NCOLS;                                                                                                                                                   \
         base_int_t num_elements = nrows * ncols;                                                                                                                                                       \
         size_t     array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                         \
-        double    *data         = (double *)malloc( array_size );                                                                                                                                      \
-                                                                                                                                                                                                       \
+        double    *data         = NULL;                                                                                                                                                                \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
-                                                                                                                                                                                                       \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
         {                                                                                                                                                                                              \
             base_fwht_mat_rmaj_v3( data, nrows, ncols );                                                                                                                                               \
@@ -149,52 +138,9 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         base_int_t ncols        = (base_int_t)NCOLS;                                                                                                                                                   \
         base_int_t num_elements = nrows * ncols;                                                                                                                                                       \
         size_t     array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                         \
-        double    *data         = (double *)malloc( array_size );                                                                                                                                      \
-                                                                                                                                                                                                       \
-        set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
-                                                                                                                                                                                                       \
-        UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
-        {                                                                                                                                                                                              \
-            base_fwht_mat_rmaj_v4( data, nrows, ncols );                                                                                                                                               \
-        }                                                                                                                                                                                              \
-                                                                                                                                                                                                       \
-        free( data );                                                                                                                                                                                  \
-        data = NULL;                                                                                                                                                                                   \
-    }
-
-#define BENCH_FWHT_MAT_RMAJ_V31( NROWS, NCOLS )                                                                                                                                                        \
-    UBENCH_EX( fwht_mat_rmaj_v31, dim_##NROWS##x##NCOLS )                                                                                                                                              \
-    {                                                                                                                                                                                                  \
-        base_int_t nrows        = (base_int_t)NROWS;                                                                                                                                                   \
-        base_int_t ncols        = (base_int_t)NCOLS;                                                                                                                                                   \
-        base_int_t num_elements = nrows * ncols;                                                                                                                                                       \
-        size_t     array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                         \
         double    *data         = NULL;                                                                                                                                                                \
-        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
-                                                                                                                                                                                                       \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
-                                                                                                                                                                                                       \
-        UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
-        {                                                                                                                                                                                              \
-            base_fwht_mat_rmaj_v3( data, nrows, ncols );                                                                                                                                               \
-        }                                                                                                                                                                                              \
-                                                                                                                                                                                                       \
-        free( data );                                                                                                                                                                                  \
-        data = NULL;                                                                                                                                                                                   \
-    }
-
-#define BENCH_FWHT_MAT_RMAJ_V41( NROWS, NCOLS )                                                                                                                                                        \
-    UBENCH_EX( fwht_mat_rmaj_v41, dim_##NROWS##x##NCOLS )                                                                                                                                              \
-    {                                                                                                                                                                                                  \
-        base_int_t nrows        = (base_int_t)NROWS;                                                                                                                                                   \
-        base_int_t ncols        = (base_int_t)NCOLS;                                                                                                                                                   \
-        base_int_t num_elements = nrows * ncols;                                                                                                                                                       \
-        size_t     array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                         \
-        double    *data         = NULL;                                                                                                                                                                \
-        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
-                                                                                                                                                                                                       \
-        set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
-                                                                                                                                                                                                       \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
         {                                                                                                                                                                                              \
             base_fwht_mat_rmaj_v4( data, nrows, ncols );                                                                                                                                               \
@@ -212,10 +158,8 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         base_int_t num_elements = nrows * ncols;                                                                                                                                                       \
         size_t     array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                         \
         double    *data         = NULL;                                                                                                                                                                \
-        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
-                                                                                                                                                                                                       \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
-                                                                                                                                                                                                       \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
         {                                                                                                                                                                                              \
             base_fwht_mat_rmaj_v5( data, nrows, ncols );                                                                                                                                               \
@@ -250,7 +194,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
     }
 
 #define BENCH_FWHT_FFTW_ESTIMATE_MAT( NROWS, NCOLS )                                                                                                                                                   \
-    UBENCH_EX( fwht_fftw_estimate_mat, dim_##NROWS##x##NCOLS )                                                                                                                                         \
+    UBENCH_EX( fwht_fftw_execute_r2r_estimate_mat, dim_##NROWS##x##NCOLS )                                                                                                                             \
     {                                                                                                                                                                                                  \
         base_int_t nrows        = (base_int_t)NROWS;                                                                                                                                                   \
         base_int_t ncols        = (base_int_t)NCOLS;                                                                                                                                                   \
@@ -274,7 +218,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
     }
 
 #define BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( NROWS, NCOLS, NT )                                                                                                                                           \
-    UBENCH_EX( fwht_fftw_omp_##NT##_estimate_mat, dim_##NROWS##x##NCOLS )                                                                                                                              \
+    UBENCH_EX( fwht_fftw_execute_r2r_omp_##NT##_estimate_mat, dim_##NROWS##x##NCOLS )                                                                                                                  \
     {                                                                                                                                                                                                  \
         base_int_t nrows        = (base_int_t)NROWS;                                                                                                                                                   \
         base_int_t ncols        = (base_int_t)NCOLS;                                                                                                                                                   \
@@ -306,8 +250,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         fwht_status_t status       = FWHT_SUCCESS;                                                                                                                                                     \
         size_t        array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                      \
         double       *data         = NULL;                                                                                                                                                             \
-        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
-                                                                                                                                                                                                       \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
                                                                                                                                                                                                        \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
@@ -331,8 +274,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         size_t        array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                      \
         double       *data         = NULL;                                                                                                                                                             \
         double       *coldata[ncols];                                                                                                                                                                  \
-        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
-                                                                                                                                                                                                       \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
         for ( base_int_t i = 0; i < ncols; i++ ) {                                                                                                                                                     \
             coldata[i] = &data[i * nrows];                                                                                                                                                             \
@@ -356,8 +298,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         size_t        array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                      \
         double       *data         = NULL;                                                                                                                                                             \
         double       *coldata[ncols];                                                                                                                                                                  \
-        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
-                                                                                                                                                                                                       \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
         for ( base_int_t i = 0; i < ncols; i++ ) {                                                                                                                                                     \
             coldata[i] = &data[i * nrows];                                                                                                                                                             \
@@ -383,8 +324,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         size_t          array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                    \
         double         *data         = NULL;                                                                                                                                                           \
         double         *coldata[ncols];                                                                                                                                                                \
-        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
-                                                                                                                                                                                                       \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
         for ( base_int_t i = 0; i < ncols; i++ ) {                                                                                                                                                     \
             coldata[i] = &data[i * nrows];                                                                                                                                                             \
@@ -411,8 +351,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         size_t          array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                    \
         double         *data         = NULL;                                                                                                                                                           \
         double         *coldata[k];                                                                                                                                                                    \
-        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
-                                                                                                                                                                                                       \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
         {                                                                                                                                                                                              \
@@ -430,7 +369,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
     }
 
 #define BENCH_HADI_FWHT_MAT_V6( NROWS, NCOLS, NT )                                                                                                                                                     \
-    UBENCH_EX( hadi_fwht_openmp_##NT##_mat_v6, dim_##NROWS##x##NCOLS )                                                                                                                                 \
+    UBENCH_EX( hadi_fwht_batch_f64_openmp_##NT##_mat_v6, dim_##NROWS##x##NCOLS )                                                                                                                       \
     {                                                                                                                                                                                                  \
         base_int_t      nrows        = (base_int_t)NROWS;                                                                                                                                              \
         base_int_t      ncols        = (base_int_t)NCOLS;                                                                                                                                              \
@@ -441,7 +380,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         size_t          array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                    \
         double         *data         = NULL;                                                                                                                                                           \
         double         *coldata[ncols];                                                                                                                                                                \
-        posix_memalign( (void **)&data, 64, array_size );                                                                                                                                              \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
         printf( "NUM THREADS %d\n", omp_get_num_threads() );                                                                                                                                           \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
         for ( base_int_t i = 0; i < ncols; i++ ) {                                                                                                                                                     \
@@ -456,32 +395,80 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         data = NULL;                                                                                                                                                                                   \
     }
 
-// 3. Generate benchmarks for any dimensions (square or rectangular)
-// BENCH_FWHT_MAT( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_FWHT_MAT_V3( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_FWHT_MAT_V3_PREALLOC( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_FWHT_MAT_RMAJ( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_FWHT_MAT_RMAJ_V2( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_FWHT_MAT_RMAJ_V3( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_FWHT_MAT_RMAJ_V31( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_FWHT_MAT_RMAJ_V4( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_FWHT_MAT_RMAJ_V41( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_FWHT_MAT_RMAJ_V5( JUBE_NROWS, JUBE_NCOLS )
-BENCH_FWHT_FFTW_MEASURE_MAT( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_FWHT_FFTW_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_HADI_FWHT_MAT_V1( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_HADI_FWHT_MAT_V2( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_HADI_FWHT_MAT_V3( JUBE_NROWS, JUBE_NCOLS )
-// BENCH_HADI_FWHT_MAT_V4( JUBE_NROWS, JUBE_NCOLS )
-BENCH_HADI_FWHT_MAT_V5( JUBE_NROWS, JUBE_NCOLS )
+#define BENCH_HADI_FWHT_MAT_V7( NROWS, NCOLS, NT )                                                                                                                                                     \
+    UBENCH_EX( hadi_fwht_batch_f64_contiguous_openmp_##NT##_mat_v7, dim_##NROWS##x##NCOLS )                                                                                                            \
+    {                                                                                                                                                                                                  \
+        base_int_t      nrows        = (base_int_t)NROWS;                                                                                                                                              \
+        base_int_t      ncols        = (base_int_t)NCOLS;                                                                                                                                              \
+        base_int_t      num_elements = nrows * ncols;                                                                                                                                                  \
+        fwht_status_t   status       = FWHT_SUCCESS;                                                                                                                                                   \
+        fwht_config_t   config       = { .backend = FWHT_BACKEND_OPENMP, .num_threads = NT, .gpu_device = 0, .normalize = true };                                                                      \
+        fwht_context_t *ctx          = fwht_create_context( &config );                                                                                                                                 \
+        size_t          array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                    \
+        double         *data         = NULL;                                                                                                                                                           \
+        SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
+        printf( "NUM THREADS %d\n", omp_get_num_threads() );                                                                                                                                           \
+        set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
+        UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
+        {                                                                                                                                                                                              \
+            status = fwht_batch_f64_contiguous( ctx, data, nrows, ncols );                                                                                                                             \
+        }                                                                                                                                                                                              \
+        fwht_destroy_context( ctx );                                                                                                                                                                   \
+        free( data );                                                                                                                                                                                  \
+        data = NULL;                                                                                                                                                                                   \
+    }
+
+// fwht_status_t status = fwht_batch_f64_contiguous( NULL, data_work, nrows_data_work, ncols_data_in );
+//  3. Generate benchmarks for any dimensions (square or rectangular)
+/// BENCH_FWHT_MAT( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_FWHT_MAT_V3( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_FWHT_MAT_V3_PREALLOC( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_FWHT_MAT_RMAJ( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_FWHT_MAT_RMAJ_V2( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_FWHT_MAT_RMAJ_V3( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_FWHT_MAT_RMAJ_V31( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_FWHT_MAT_RMAJ_V4( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_FWHT_MAT_RMAJ_V41( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_FWHT_MAT_RMAJ_V5( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_FWHT_FFTW_MEASURE_MAT( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_FWHT_FFTW_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_HADI_FWHT_MAT_V1( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_HADI_FWHT_MAT_V2( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_HADI_FWHT_MAT_V3( JUBE_NROWS, JUBE_NCOLS )
+/// BENCH_HADI_FWHT_MAT_V4( JUBE_NROWS, JUBE_NCOLS )
+// BENCH_HADI_FWHT_MAT_V5( JUBE_NROWS, JUBE_NCOLS )
 BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 1 )
 BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 2 )
 BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 4 )
 BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 6 )
+BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 8 )
+BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 12 )
+BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 24 )
+BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 48 )
+BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 96 )
+BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 104 )
+
+BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 1 )
+BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 2 )
+BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 4 )
+BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 6 )
+BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 8 )
+BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 12 )
+BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 24 )
+BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 48 )
+BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 96 )
+BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 104 )
 
 BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 1 )
 BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 2 )
 BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 4 )
 BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 6 )
+BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 8 )
+BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 12 )
+BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 24 )
+BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 48 )
+BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 96 )
+BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 104 )
+
 // 4. Generate the main() function
 UBENCH_MAIN()
