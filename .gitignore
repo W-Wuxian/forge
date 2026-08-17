@@ -63,8 +63,7 @@ prof/
 bin/
 output/
 gen/
-jube_bench_run/
-jube_bench_fwht_run/
+jube_bench*/
 logs/
 *.pdf
 *.png

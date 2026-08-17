@@ -12,7 +12,7 @@
 #define IDX_SKETCH_ALG 5         /**< Index for the sketching algo flag */
 #define IDX_SKETCH_TYPE 6        /**< Index for the sketching type flag */
 #define IDX_SKETCH_NUM_THREADS 7 /**< Index for the number of threads */
-#define IDX_SKETCH_NUM_GPU 9     /**< Index for the number of gpu */
+#define IDX_SKETCH_NUM_GPU 8     /**< Index for the number of gpu */
 #define IDX_SKETCH_IPARAM_LEN 9  /**< Length of sketch iparam array */
 
 typedef enum { SRHT_CFWHT, SRHT_FFTW, SRHT_HADI_FWHT, SRHT_HADI_FWHT_OPENMP, SRHT_HADI_FWHT_GPU, GAUSS, NUMBER_OF_SKETCH_ALG } base_sketch_alg_e;

@@ -34,7 +34,8 @@ _base_rotatedata_mat_v2( double *data, double *buffer, base_int_t nrows, base_in
         _buffer = buffer;
     }
     else {
-        _buffer = (double *)malloc( sizeof( double ) * 2 * ncols );
+        SPEALLOC( _buffer, base_dalign, sizeof( double ) * ncols * 2 );
+        //_buffer = (double *)malloc( sizeof( double ) * 2 * ncols );
     }
     // Alias
     double *x = &data[ridx1];
@@ -75,7 +76,8 @@ _base_rotatedata_mat_v3( double *data, double *buffer, base_int_t nrows, base_in
         _buffer = buffer;
     }
     else {
-        _buffer = (double *)malloc( sizeof( double ) * ncols * 2 );
+        SPEALLOC( _buffer, base_dalign, sizeof( double ) * ncols * 2 );
+        //_buffer = (double *)malloc( sizeof( double ) * ncols * 2 );
     }
 
     cblas_dcopy( ncols, data + ridx1, nrows, _buffer, 1 );

@@ -78,6 +78,8 @@ base_init_sketch_data( base_sketch_t *sketch_data, base_int_t *iparam, int rank,
             sketch_data->scale             = base_d_p1 / sqrt( (double)iparam[IDX_SKETCH_DIM] );
             break;
         case SRHT_HADI_FWHT:
+        case SRHT_HADI_FWHT_OPENMP:
+        case SRHT_HADI_FWHT_GPU:
         case SRHT_CFWHT:
         case SRHT_FFTW:
         default:
@@ -168,6 +170,8 @@ base_set_sketch_data( base_sketch_t *sketch_data, int rank, int size )
             base_flops_SKETCH_d(sketch_data, size); */
             break;
         case SRHT_HADI_FWHT:
+        case SRHT_HADI_FWHT_OPENMP:
+        case SRHT_HADI_FWHT_GPU:
         case SRHT_CFWHT:
         case SRHT_FFTW:
         default:
@@ -277,6 +281,8 @@ base_compute_sketch( base_sketch_t *sketch_data )
                          sketch_dim );
             break;
         case SRHT_HADI_FWHT:
+        case SRHT_HADI_FWHT_OPENMP:
+        case SRHT_HADI_FWHT_GPU:
         case SRHT_CFWHT:
         case SRHT_FFTW:
         default:
@@ -289,7 +295,9 @@ base_compute_sketch( base_sketch_t *sketch_data )
             // FWHT computation
             switch ( sketch_data->sketch_alg ) {
                 case SRHT_HADI_FWHT:
-                    fwht_status_t status = fwht_batch_f64( NULL, (double **)&data_work, nrows_data_work, 1 );
+                case SRHT_HADI_FWHT_OPENMP:
+                case SRHT_HADI_FWHT_GPU:
+                    fwht_status_t status = fwht_batch_f64_contiguous( sketch_data->sketch_hadi_fwht_ctx, data_work, nrows_data_work, 1 );
                     if ( status != FWHT_SUCCESS ) {
                         fprintf( stderr, "%s\n", fwht_error_string( status ) );
                     }
@@ -299,7 +307,7 @@ base_compute_sketch( base_sketch_t *sketch_data )
                     break;
                 case SRHT_CFWHT:
                 default:
-                    base_fwht_mat( data_work, nrows_data_work, 1 );
+                    base_fwht_mat_v3( data_work, NULL, nrows_data_work, 1 );
                     break;
             }
             // Random sampling
@@ -346,6 +354,9 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
                          data_out,
                          sketch_dim );
             break;
+        case SRHT_HADI_FWHT:
+        case SRHT_HADI_FWHT_OPENMP:
+        case SRHT_HADI_FWHT_GPU:
         case SRHT_CFWHT:
         case SRHT_FFTW:
         default:
@@ -353,6 +364,7 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
             for ( j = 0; j < ncols_data_in; ++j ) {
                 memset( data_work + ( j * nrows_data_work + nrows_data_in ), 0, sizeof( double ) * ( nrows_data_work - nrows_data_in ) );
             }
+            //PRINT_COLMAJ_MAT(data_work, nrows_data_work, ncols_data_in , "data_work");
             // memset(data_work, 0, sizeof(double)*nrows_data_work*ncols_data_in);
             ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', nrows_data_in, ncols_data_in, data_in, nrows_data_in, data_work, nrows_data_work );
             if ( ierr != 0 ) {
@@ -367,7 +379,9 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
             // FWHT computation
             switch ( sketch_data->sketch_alg ) {
                 case SRHT_HADI_FWHT:
-                    fwht_status_t status = fwht_batch_f64_contiguous( NULL, data_work, nrows_data_work, ncols_data_in );
+                case SRHT_HADI_FWHT_OPENMP:
+                case SRHT_HADI_FWHT_GPU:
+                    fwht_status_t status = fwht_batch_f64_contiguous( sketch_data->sketch_hadi_fwht_ctx, data_work, nrows_data_work, ncols_data_in );
                     if ( status != FWHT_SUCCESS ) {
                         fprintf( stderr, "%s\n", fwht_error_string( status ) );
                     }
@@ -377,7 +391,7 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
                     break;
                 case SRHT_CFWHT:
                 default:
-                    base_fwht_mat( data_work, nrows_data_work, ncols_data_in );
+                    base_fwht_mat_v3( data_work, NULL, nrows_data_work, ncols_data_in );
                     break;
             }
             // Random sampling
@@ -394,7 +408,7 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
 void
 base_compute_block_sketch_nocomm( base_sketch_t *sketch_data )
 {
-    int         ierr = 0;
+    //int         ierr = 0;
     base_int_t  i;
     base_int_t  j;
     base_int_t  ncols_data_in    = sketch_data->ncols_data_in;
@@ -421,6 +435,9 @@ base_compute_block_sketch_nocomm( base_sketch_t *sketch_data )
                          data_out,
                          sketch_dim );
             break;
+        case SRHT_HADI_FWHT:
+        case SRHT_HADI_FWHT_OPENMP:
+        case SRHT_HADI_FWHT_GPU:
         case SRHT_CFWHT:
         case SRHT_FFTW:
         default:
