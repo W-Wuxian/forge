@@ -16,7 +16,7 @@ fi
 
 FORGE_ROOT=$PWD/..
 source $FORGE_ROOT/tools/export_path.bash
-HADI_FWHT_INSTALL=hadi-fwht-master
+
 export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils::${EXT_ROOT}/${HADI_FWHT_INSTALL}/include
 RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I:${EXT_ROOT}/${HADI_FWHT_INSTALL}/include"
 

@@ -265,6 +265,7 @@ base_compute_sketch( base_sketch_t *sketch_data )
     double     *data_work         = sketch_data->data_work;
     switch ( sketch_data->sketch_alg ) {
         case GAUSS:
+            openblas_set_num_threads( sketch_data->sketch_num_threads );
             cblas_dgemm( CblasColMajor,
                          CblasNoTrans,
                          CblasNoTrans,
@@ -279,6 +280,7 @@ base_compute_sketch( base_sketch_t *sketch_data )
                          base_d_beta_ze,
                          data_out,
                          sketch_dim );
+            openblas_set_num_threads( 1 );
             break;
         case SRHT_HADI_FWHT:
         case SRHT_HADI_FWHT_OPENMP:
@@ -339,6 +341,7 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
     double     *data_work         = sketch_data->data_work;
     switch ( sketch_data->sketch_alg ) {
         case GAUSS:
+            openblas_set_num_threads( sketch_data->sketch_num_threads );
             cblas_dgemm( CblasColMajor,
                          CblasNoTrans,
                          CblasNoTrans,
@@ -353,6 +356,7 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
                          base_d_beta_ze,
                          data_out,
                          sketch_dim );
+            openblas_set_num_threads( 1 );
             break;
         case SRHT_HADI_FWHT:
         case SRHT_HADI_FWHT_OPENMP:
@@ -364,8 +368,8 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
             for ( j = 0; j < ncols_data_in; ++j ) {
                 memset( data_work + ( j * nrows_data_work + nrows_data_in ), 0, sizeof( double ) * ( nrows_data_work - nrows_data_in ) );
             }
-            //PRINT_COLMAJ_MAT(data_work, nrows_data_work, ncols_data_in , "data_work");
-            // memset(data_work, 0, sizeof(double)*nrows_data_work*ncols_data_in);
+            // PRINT_COLMAJ_MAT(data_work, nrows_data_work, ncols_data_in , "data_work");
+            //  memset(data_work, 0, sizeof(double)*nrows_data_work*ncols_data_in);
             ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', nrows_data_in, ncols_data_in, data_in, nrows_data_in, data_work, nrows_data_work );
             if ( ierr != 0 ) {
                 printf( "base_compute_sketch_mat::LAPACKE_dlacpy::ierr != 0\n" );
@@ -408,7 +412,7 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
 void
 base_compute_block_sketch_nocomm( base_sketch_t *sketch_data )
 {
-    //int         ierr = 0;
+    // int         ierr = 0;
     base_int_t  i;
     base_int_t  j;
     base_int_t  ncols_data_in    = sketch_data->ncols_data_in;

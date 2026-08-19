@@ -42,7 +42,6 @@ run_R_fwht() {
 
 FORGE_ROOT=$PWD/..
 source $FORGE_ROOT/tools/export_path.bash
-HADI_FWHT_INSTALL=hadi-fwht-master
 
 export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:${EXT_ROOT}/${HADI_FWHT_INSTALL}/include:$GUIX_ENVIRONMENT/include
 export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib:$LD_LIBRARY_PATH

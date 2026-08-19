@@ -42,7 +42,10 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         base_set_sketch_data( &sketch_data, 0, 1 );                                                                                                                                                    \
         set_mat_values( In, len_In, sketch_iparam[IDX_NCOLS_DATA_IN] );                                                                                                                                \
         memset( Out, 0, size_Out );                                                                                                                                                                    \
-        base_getdata_sketch_data( &sketch_data, sketch_iparam[IDX_NCOLS_DATA_IN], In, Out );                                                                                            \
+        base_getdata_sketch_data( &sketch_data, sketch_iparam[IDX_NCOLS_DATA_IN], In, Out );                                                                                                           \
+        if ( ( SKETCH_ALG == SRHT_CFWHT || SKETCH_ALG == SRHT_HADI_FWHT || SKETCH_ALG == SRHT_HADI_FWHT_GPU ) && ( NT > 1 ) ) {                                                                        \
+            UBENCH_SKIP();                                                                                                                                                                             \
+        }                                                                                                                                                                                              \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
         {                                                                                                                                                                                              \
             base_compute_block_sketch_nocomm( &sketch_data );                                                                                                                                          \
@@ -55,6 +58,9 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
     }
 
 BENCH_SKECTH_BLOCK_NOCOMM( JUBE_NROWS, JUBE_NCOLS, JUBE_SKETCH_DIM, JUBE_SKETCH_ALG, JUBE_SKETCH_TYPE, 1 )
+BENCH_SKECTH_BLOCK_NOCOMM( JUBE_NROWS, JUBE_NCOLS, JUBE_SKETCH_DIM, JUBE_SKETCH_ALG, JUBE_SKETCH_TYPE, 2 )
 BENCH_SKECTH_BLOCK_NOCOMM( JUBE_NROWS, JUBE_NCOLS, JUBE_SKETCH_DIM, JUBE_SKETCH_ALG, JUBE_SKETCH_TYPE, 4 )
+BENCH_SKECTH_BLOCK_NOCOMM( JUBE_NROWS, JUBE_NCOLS, JUBE_SKETCH_DIM, JUBE_SKETCH_ALG, JUBE_SKETCH_TYPE, 6 )
+
 // 4. Generate the main() function
 UBENCH_MAIN()

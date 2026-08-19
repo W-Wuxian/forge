@@ -10,7 +10,6 @@ comp="guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_
 
 FORGE_ROOT=$PWD/..
 source $FORGE_ROOT/tools/export_path.bash
-HADI_FWHT_INSTALL=hadi-fwht-master
 
 
 export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:${EXT_ROOT}/${HADI_FWHT_INSTALL}/include:$GUIX_ENVIRONMENT/include

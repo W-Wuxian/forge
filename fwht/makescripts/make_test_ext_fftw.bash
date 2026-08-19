@@ -9,9 +9,6 @@ comp="guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_
 
 FORGE_ROOT=$PWD/..
 source $FORGE_ROOT/tools/export_path.bash
-HADI_FWHT_INSTALL=hadi-fwht-master
-FFTW_EXT_INSTALL=fftw-seq-double
-FFTW_EXT_VER=3.3.11
 
 export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:${EXT_ROOT}/${HADI_FWHT_INSTALL}/include:${EXT_ROOT}/${FFTW_EXT_INSTALL}/${FFTW_EXT_VER}/include:$GUIX_ENVIRONMENT/include
 export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib:${EXT_ROOT}/${FFTW_EXT_INSTALL}/${FFTW_EXT_VER}/lib:$LD_LIBRARY_PATH

@@ -2,7 +2,7 @@
 #include "ubench.h"
 
 #ifndef NROWS
-#define NROWS 10000000
+#define NROWS 10000
 #endif
 
 #ifndef NCOLS
@@ -23,6 +23,10 @@
 
 #ifndef NT
 #define NT 2
+#endif
+
+#ifndef NG
+#define NG 2
 #endif
 
 void
@@ -53,7 +57,7 @@ main()
     sketch_iparam[IDX_SKETCH_ALG]         = SKETCH_ALG;
     sketch_iparam[IDX_SKETCH_TYPE]        = SKETCH_TYPE;
     sketch_iparam[IDX_SKETCH_NUM_THREADS] = NT;
-    sketch_iparam[IDX_SKETCH_NUM_GPU]     = 0;
+    sketch_iparam[IDX_SKETCH_NUM_GPU]     = NG;
     len_In                                = sketch_iparam[IDX_NROWS_DATA_IN] * sketch_iparam[IDX_NCOLS_DATA_IN];
     len_Out                               = sketch_iparam[IDX_SKETCH_DIM] * sketch_iparam[IDX_NCOLS_DATA_IN];
     size_In                               = len_In * sizeof( double );
@@ -66,13 +70,13 @@ main()
     base_set_sketch_data( &sketch_data, 0, 1 );
     set_mat_values( In, len_In, sketch_iparam[IDX_NCOLS_DATA_IN] );
     memset( Out, 0, size_Out );
-    //PRINT_COLMAJ_MAT(In,sketch_iparam[IDX_NROWS_DATA_IN],sketch_iparam[IDX_NCOLS_DATA_IN],"In");
-    //PRINT_COLMAJ_MAT(Out,sketch_iparam[IDX_SKETCH_DIM],sketch_iparam[IDX_NCOLS_DATA_IN],"Out");
+    // PRINT_COLMAJ_MAT(In,sketch_iparam[IDX_NROWS_DATA_IN],sketch_iparam[IDX_NCOLS_DATA_IN],"In");
+    // PRINT_COLMAJ_MAT(Out,sketch_iparam[IDX_SKETCH_DIM],sketch_iparam[IDX_NCOLS_DATA_IN],"Out");
     base_getdata_sketch_data( &sketch_data, sketch_iparam[IDX_NCOLS_DATA_IN], In, Out );
-    //PRINT_COLMAJ_MAT(sketch_data.data_in,sketch_iparam[IDX_NROWS_DATA_IN],sketch_iparam[IDX_NCOLS_DATA_IN],"sketch_data.In");
-    //PRINT_COLMAJ_MAT(sketch_data.data_out,sketch_iparam[IDX_SKETCH_DIM],sketch_iparam[IDX_NCOLS_DATA_IN],"sketch_data.Out");
+    // PRINT_COLMAJ_MAT(sketch_data.data_in,sketch_iparam[IDX_NROWS_DATA_IN],sketch_iparam[IDX_NCOLS_DATA_IN],"sketch_data.In");
+    // PRINT_COLMAJ_MAT(sketch_data.data_out,sketch_iparam[IDX_SKETCH_DIM],sketch_iparam[IDX_NCOLS_DATA_IN],"sketch_data.Out");
     base_compute_block_sketch_nocomm( &sketch_data );
-    PRINT_COLMAJ_MAT(sketch_data.data_out,sketch_iparam[IDX_SKETCH_DIM],sketch_iparam[IDX_NCOLS_DATA_IN],"SOL sketch_data.Out");
+    PRINT_COLMAJ_MAT( sketch_data.data_out, sketch_iparam[IDX_SKETCH_DIM], sketch_iparam[IDX_NCOLS_DATA_IN], "SOL sketch_data.Out" );
     base_free_sketch_data( &sketch_data );
     free( In );
     In = NULL;

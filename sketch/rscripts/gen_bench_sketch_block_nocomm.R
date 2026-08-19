@@ -1,78 +1,88 @@
-# Charger les bibliothèques nécessaires
-# Installe-les avec install.packages("tidyverse") si ce n'est pas déjà fait
 library(tidyverse)
 library(scales)
 library(plotly)
 
 args <- commandArgs(trailingOnly = TRUE)
 csv_name <- tools::file_path_sans_ext(basename(args[1]))
+
 # 1. Lecture du fichier CSV
-# On précise col_names = FALSE car on va renommer proprement pour éviter les problèmes d'espaces
-# "output/rotatedata_mat_benchmark.csv"
 df <- read_csv(args[1], skip = 1, col_names = c("name", "mean_ns", "stddev_pct", "confidence_pct", "drop")) %>%
-  select(-drop) # Supprimer la dernière colonne vide causée par la virgule finale
+  select(-drop)
 
 # 2. Extraction des paramètres depuis la colonne "name"
 df_parsed <- df %>%
   extract(
     col = name,
-    into = c("method", "nrows", "ncols"),
-    regex = "^([^.]+)\\.dim_(\\d+)x(\\d+)",
-    convert = TRUE # Convertit automatiquement les nombres en entiers (integer)
+    into = c("method", "nrows", "ncols", "sketch_dim", "sketch_alg", "sketch_type", "omp_thread"),
+    regex = "^([^.]+)\\.dim_(\\d+)x(\\d+)_sketch_dim_(\\d+)_sketch_alg_(\\w+)_sketch_type_(\\w+)_openmp_(\\d+)",
+    convert = TRUE
+  ) %>%
+  mutate(
+    mean_s        = mean_ns / 1e9,
+    sd_s          = mean_s * (stddev_pct / 100),
+    omp_thread    = factor(omp_thread, levels = sort(unique(omp_thread))),
+    nrows_lab     = paste0("nrows = ", nrows),
+    sketch_dim_lab = paste0("sketch_dim = ", sketch_dim),
+    thread_lab    = factor(paste0(omp_thread, " threads"),
+                            levels = paste0(sort(unique(omp_thread)), " threads"))
   )
-#df_parsed <- df_parsed |> filter(method != c("rotatedata_mat_rmaj"))
-#df_parsed <- df_parsed |> filter(method != c("rotatedata_rmaj_loop"))
-# Affichage de vérification dans la console
+
+stopifnot(all(c("nrows_lab", "sketch_dim_lab", "thread_lab", "sketch_alg", "sketch_type", "mean_s") %in% colnames(df_parsed)))
 print(df_parsed)
 
 # 3. Création du graphique avec ggplot2
-fwht_plot <- ggplot(df_parsed, aes(x = ncols, y = mean_ns, color = method, group = method)) +
-  facet_grid( ~ nrows + "nrows") +
-  geom_line(linewidth = 1) +
-  geom_point(size = 3) +
-  
-  # Configuration de l'axe X pour afficher les puissances de 2 (2^x)
-  scale_x_continuous(
-  #  trans = log2_trans(),
-  breaks = unique(df_parsed$ncols),
-  #  #breaks = trans_breaks("log2", function(x) 2^x),
-  #  breaks = 2^(10:15),
-  labels = unique(df_parsed$ncols)
-  #  labels = trans_format("log2", math_format(2^.x))
+sketch_plot <- ggplot(
+  df_parsed,
+  aes(x = factor(ncols), y = mean_s, color = sketch_alg,
+      linetype = sketch_type, group = interaction(sketch_alg, sketch_type))
+) +
+  facet_grid(rows = vars(nrows_lab, sketch_dim_lab), cols = vars(thread_lab),
+             labeller = label_value, scales = "free_x") +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 2.2) +
+  geom_errorbar(
+    aes(ymin = mean_s - sd_s, ymax = mean_s + sd_s),
+    width = 0.15, alpha = 0.5
   ) +
-  
-  # Axe Y : Conversion de nanosecondes en secondes
+  scale_color_viridis_d(option = "D", end = 0.85) +
   scale_y_continuous(
-    labels = function(y) y / 1e9  # Divise par 1 milliard
+    labels = label_number(accuracy = 0.001),
+    expand = expansion(mult = c(0.05, 0.1))
   ) +
-  # (Optionnel) Axe Y rendu plus lisible
-  #scale_y_continuous(labels = scales::label_number(scale_cut = scales::cut_short_scale())) +
-  
   labs(
-    title = "Impact of memory access pattern on fwht performance",
-    subtitle = "Mean execution time across matrix sizes",
-    x = "number of columns", #expression("number of"~columns), # expression() permet un rendu mathématique du titre
-    y = "mean time (sec)",
-    color = "function"
+    title    = "Sketch block (no comm) — temps d'exécution",
+    subtitle = "Temps moyen par taille de matrice, dimension de sketch et nombre de threads OpenMP",
+    x        = "Nombre de colonnes",
+    y        = "Temps moyen (sec)",
+    color    = "Algorithme de sketch",
+    linetype = "Type de sketch",
+    caption  = "Facettes : lignes = nrows × sketch_dim, colonnes = threads OpenMP"
   ) +
   guides(
-    color = guide_legend(nrow = 4)
+    color    = guide_legend(nrow = 2, override.aes = list(linewidth = 1.2)),
+    linetype = guide_legend(nrow = 1)
   ) +
-  theme_minimal() +
+  theme_minimal(base_size = 12) +
   theme(
-    plot.title       = element_text(face = "bold"),
+    plot.title       = element_text(face = "bold", size = 14),
+    plot.subtitle    = element_text(size = 10, color = "grey30"),
+    plot.caption     = element_text(size = 8, color = "grey50", hjust = 0),
     legend.position  = "bottom",
-    axis.text.x      = element_text(size = 8, angle = 45, hjust = 1) 
+    legend.box       = "vertical",
+    strip.background = element_rect(fill = "grey90", color = NA),
+    strip.text       = element_text(face = "bold", size = 8),
+    axis.text.x      = element_text(size = 8, angle = 45, hjust = 1),
+    panel.spacing    = unit(0.5, "lines"),
+    panel.grid.minor = element_blank()
   )
 
 # 4. Affichage et sauvegarde du graphique
-#print(fwht_plot)
-ggsave(paste0(csv_name, ".pdf"), fwht_plot, device="pdf", width = 8, height = 6, dpi = 300)
-ggsave(paste0(csv_name, ".png"), fwht_plot, width = 8, height = 6, dpi = 300)
+ggsave(paste0(csv_name, ".pdf"), sketch_plot, device = "pdf", width = 12, height = 9, dpi = 300)
+ggsave(paste0(csv_name, ".png"), sketch_plot, width = 12, height = 9, dpi = 300)
 
 # Conversion en plot interactif
-interactive_plot <- ggplotly(fwht_plot) %>%
-  config(scrollZoom = TRUE)  # Active le zoom à la molette
+interactive_plot <- ggplotly(sketch_plot) %>%
+  config(scrollZoom = TRUE)
 
 # Sauvegarde en HTML
 htmlwidgets::saveWidget(interactive_plot, paste0(csv_name, ".html"))

@@ -11,7 +11,7 @@ run_jube_sketch() {
     guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_fftw_manifest.scm -- bash -c "jube run jubescripts/benchmark_sketch_block_nocomm.xml"
 }
 run_R_sketch() {
-    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_R_manifest.scm -- bash -c '
+    guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/R_manifest.scm -- bash -c '
         shopt -s nullglob
         for f in output/sketch_block_nocomm_*_benchmark.csv; do
             echo "Génération du graphe pour $f"
@@ -22,7 +22,6 @@ run_R_sketch() {
 
 FORGE_ROOT=$PWD/..
 source $FORGE_ROOT/tools/export_path.bash
-HADI_FWHT_INSTALL=hadi-fwht-master
 
 export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:$FORGE_ROOT/sketch:${EXT_ROOT}/${HADI_FWHT_INSTALL}/include:$GUIX_ENVIRONMENT/include
 export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib:$LD_LIBRARY_PATH
@@ -39,7 +38,6 @@ export RESOLVE_LD="${RESOLVE_LD_GUIX} ${RESOLVE_LD_HADI}"
 mkdir -p bin/ logs/ output/ gen/
 rm -f bin/* logs/* output/* gen/*
 
-run_jube_sketch
-# && run_R_sketch
+run_jube_sketch && run_R_sketch
 
 mv *.pdf *.png *.html gen/
