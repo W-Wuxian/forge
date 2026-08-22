@@ -140,3 +140,25 @@ do
         #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.log
     done
 done
+
+###########################################################################################################################################
+# Sketch 1D block test t3
+for SK_ALGO in SRHT_CFWHT SRHT_FFTW SRHT_HADI_FWHT SRHT_HADI_FWHT_OPENMP
+do
+    for SK_TYPE in SKETCH_2D
+    do
+        echo "Sketch 1D block nocomm test t3 sing sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
+        $comp $debug_option -DSKETCH_NUM_THREADS=2 -DFFTW_WITH_OMP -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3 \
+        $FORGE_ROOT/sketch/sketch.c \
+        $FORGE_ROOT/fwht_utils/hada.c \
+        $FORGE_ROOT/fwht/base_fwht.c \
+        test/sketch_tester_sketch_1D_block_nocomm_t3.c \
+        ${RESOLVE_LD} \
+        ${RESOLVE_CPATH} \
+        2>&1 | tee build.log
+        bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3 |& tee -a build.log
+        mv gmon.out prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3.out
+        gprof bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3 prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3.out > prof/gprof-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3.out
+        #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3 2>&1 |& tee -a valgrind.log
+    done
+done
