@@ -4,26 +4,14 @@ SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
 echo "SCRIPT DIR IS $SCRIPT_DIR"
 cd $SCRIPT_DIR/..
+GUIX_FILES=$PWD/../guix_files
 
-
-comp="guix time-machine -C ../forge-channels.scm -- shell -m guixmanifests/fwht_fftw_manifest.scm -- gcc"
+comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht.scm -- gcc"
 
 FORGE_ROOT=$PWD/..
-source $FORGE_ROOT/tools/export_path.bash
+#source ${FORGE_ROOT}/tools/export_path.bash
 
-
-export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:${EXT_ROOT}/${HADI_FWHT_INSTALL}/include:$GUIX_ENVIRONMENT/include
-export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib:$LD_LIBRARY_PATH
-#RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I${EXT_ROOT}/${HADI_FWHT_INSTALL}/include -I$GUIX_ENVIRONMENT/include"
-
-RESOLVE_CPATH_FORGE="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht"
-RESOLVE_CPATH_GUIX="-I$GUIX_ENVIRONMENT/include"
-RESOLVE_CPATH_HADI="-I${EXT_ROOT}/${HADI_FWHT_INSTALL}/include"
-RESOLVE_CPATH="${RESOLVE_CPATH_FORGE} ${RESOLVE_CPATH_GUIX} ${RESOLVE_CPATH_HADI}"
-
-RESOLVE_LD_GUIX="-L$GUIX_ENVIRONMENT/lib -lopenblas -lfftw3 -lpthread -lm"
-RESOLVE_LD_HADI="-L${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib -lfwht"
-RESOLVE_LD="${RESOLVE_LD_GUIX} ${RESOLVE_LD_HADI}"
+RESOLVE_CPATH_FORGE="-I${FORGE_ROOT} -I${FORGE_ROOT}/fwht_utils -I${FORGE_ROOT}/fwht"
 
 mkdir -p bin/
 rm -f bin/*
@@ -40,11 +28,11 @@ debug_option="-O0 -g3 -pg -fopenmp -Wall -Wno-unknown-pragmas -DPRINTMAT"
 
 # showcase fwht
 $comp $debug_option -o bin/showcase_fwht \
-$FORGE_ROOT/fwht_utils/hada.c \
+${FORGE_ROOT}/fwht_utils/hada.c \
 base_fwht.c test/fwht_showcase.c \
 -DFWHT_SHOWCASE_COL_M=16 \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
+-L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lpthread -lm -lfwht \
+${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
 2>&1 | tee build.log
 bin/showcase_fwht |& tee -a build.log
 mv gmon.out prof/gmon-showcase_fwht.out
@@ -52,10 +40,10 @@ gprof bin/showcase_fwht prof/gmon-showcase_fwht.out > prof/grof-showcase_fwht.ou
 
 
 $comp $debug_option -o bin/test_base_dummy_fwht \
-$FORGE_ROOT/fwht_utils/hada.c \
+${FORGE_ROOT}/fwht_utils/hada.c \
 base_fwht.c test/fwht_tester.c test/fwht_tester_base_dummy_fwht.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
+-L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lpthread -lm -lfwht \
+${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
 2>&1 | tee -a build.log
 bin/test_base_dummy_fwht |& tee -a build.log
 mv gmon.out prof/gmon-test_base_dummy_fwht.out
@@ -63,10 +51,10 @@ gprof bin/test_base_dummy_fwht prof/gmon-test_base_dummy_fwht.out > prof/gprof-t
 
 
 $comp $debug_option -o bin/test_base_rotatedata_mat \
-$FORGE_ROOT/fwht_utils/hada.c \
+${FORGE_ROOT}/fwht_utils/hada.c \
 base_fwht.c test/fwht_tester.c test/fwht_tester_rotatedata_mat.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
+-L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lpthread -lm -lfwht \
+${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
 2>&1 | tee -a build.log
 bin/test_base_rotatedata_mat |& tee -a build.log
 mv gmon.out prof/gmon-test_base_rotatedata_mat.out
@@ -74,8 +62,8 @@ gprof bin/test_base_rotatedata_mat prof/gmon-test_base_rotatedata_mat.out > prof
 
 $comp $debug_option -o bin/test_cblas_dgemm \
 test/test_cblas_dgemm.c \
-${RESOLVE_LD_GUIX} \
-${RESOLVE_CPATH_GUIX} \
+-L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lpthread -lm -lfwht \
+${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
 2>&1 | tee -a build.log
 bin/test_cblas_dgemm |& tee -a build.log
 mv gmon.out prof/gmon-test_cblas_dgemm.out

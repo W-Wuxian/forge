@@ -3,5 +3,4 @@
 ;; that accepts a '--manifest' (or '-m') option.
 
 (specifications->manifest
-  (list "gcc-toolchain" "openblas" ))
-;;  (list "gcc-toolchain" "julia" "openblas" "fftw"))
+  (list "r" "r-tidyverse" "r-plotly"))
