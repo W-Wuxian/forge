@@ -4,26 +4,14 @@ SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
 echo "SCRIPT DIR IS $SCRIPT_DIR"
 cd $SCRIPT_DIR/..
+GUIX_FILES=$PWD/../guix_files
 
-
-comp="guix time-machine -C ../forge-channels.scm -- shell -m ../fwht/guixmanifests/fwht_fftw_manifest.scm -- gcc"
+comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht.scm -- gcc"
 
 
 FORGE_ROOT=$PWD/..
-source $FORGE_ROOT/tools/export_path.bash
-
-export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:$FORGE_ROOT/sketch:${EXT_ROOT}/${HADI_FWHT_INSTALL}/include:$GUIX_ENVIRONMENT/include
-export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib:$LD_LIBRARY_PATH
-#RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I${EXT_ROOT}/${HADI_FWHT_INSTALL}/include -I$GUIX_ENVIRONMENT/include"
 
 RESOLVE_CPATH_FORGE="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I$FORGE_ROOT/sketch"
-RESOLVE_CPATH_GUIX="-I${GUIX_ENVIRONMENT}/include"
-RESOLVE_CPATH_HADI="-I${EXT_ROOT}/${HADI_FWHT_INSTALL}/include"
-RESOLVE_CPATH="${RESOLVE_CPATH_FORGE} ${RESOLVE_CPATH_GUIX} ${RESOLVE_CPATH_HADI}"
-
-RESOLVE_LD_GUIX="-L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm"
-RESOLVE_LD_HADI="-L${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib -lfwht"
-RESOLVE_LD="${RESOLVE_LD_GUIX} ${RESOLVE_LD_HADI}"
 
 mkdir -p bin/
 rm -f bin/*
@@ -45,8 +33,8 @@ $FORGE_ROOT/sketch/sketch.c \
 $FORGE_ROOT/fwht_utils/hada.c \
 $FORGE_ROOT/fwht/base_fwht.c \
 test/sketch_tester_create_random_permutation.c \
-${RESOLVE_LD} \
-${RESOLVE_CPATH} \
+-L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
+${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
 2>&1 | tee build.log
 bin/tester_create_random_permutation |& tee -a build.log
 mv gmon.out prof/gmon-tester_create_random_permutation.out
@@ -65,8 +53,8 @@ do
         $FORGE_ROOT/fwht_utils/hada.c \
         $FORGE_ROOT/fwht/base_fwht.c \
         test/sketch_tester_sketch_1D.c \
-        ${RESOLVE_LD} \
-        ${RESOLVE_CPATH} \
+        -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
+        ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
         2>&1 | tee build.log
         bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE} |& tee -a build.log
         mv gmon.out prof/gmon-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}.out
@@ -87,8 +75,8 @@ do
         $FORGE_ROOT/fwht_utils/hada.c \
         $FORGE_ROOT/fwht/base_fwht.c \
         test/sketch_tester_sketch_1D_t1.c \
-        ${RESOLVE_LD} \
-        ${RESOLVE_CPATH} \
+        -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
+        ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
         2>&1 | tee build.log
         bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
         mv gmon.out prof/gmon-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1.out
@@ -109,8 +97,8 @@ do
         $FORGE_ROOT/fwht_utils/hada.c \
         $FORGE_ROOT/fwht/base_fwht.c \
         test/sketch_tester_sketch_1D_mat_t1.c \
-        ${RESOLVE_LD} \
-        ${RESOLVE_CPATH} \
+        -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
+        ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
         2>&1 | tee build.log
         bin/tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
         mv gmon.out prof/gmon-tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1.out
@@ -131,8 +119,8 @@ do
         $FORGE_ROOT/fwht_utils/hada.c \
         $FORGE_ROOT/fwht/base_fwht.c \
         test/sketch_tester_sketch_1D_block_nocomm_t1.c \
-        ${RESOLVE_LD} \
-        ${RESOLVE_CPATH} \
+        -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
+        ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
         2>&1 | tee build.log
         bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
         mv gmon.out prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1.out
@@ -153,8 +141,8 @@ do
         $FORGE_ROOT/fwht_utils/hada.c \
         $FORGE_ROOT/fwht/base_fwht.c \
         test/sketch_tester_sketch_1D_block_nocomm_t3.c \
-        ${RESOLVE_LD} \
-        ${RESOLVE_CPATH} \
+        -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
+        ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
         2>&1 | tee build.log
         bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3 |& tee -a build.log
         mv gmon.out prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3.out

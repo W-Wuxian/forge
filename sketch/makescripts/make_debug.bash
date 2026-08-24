@@ -4,29 +4,20 @@ SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
 echo "SCRIPT DIR IS $SCRIPT_DIR"
 cd $SCRIPT_DIR/..
+GUIX_FILES=$PWD/../guix_files
 
-
-comp="guix time-machine -C ../forge-channels.scm -- shell -m ../fwht/guixmanifests/fwht_fftw_manifest.scm -- gcc"
+comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht.scm -- gcc"
 exec=
 
 
-#module load nvhpc-hpcx-cuda12/26.5
+module load nvhpc-hpcx-cuda12/26.5
 
 FORGE_ROOT=$PWD/..
-source $FORGE_ROOT/tools/export_path.bash
-
-export CPATH=$FORGE_ROOT:$FORGE_ROOT/fwht_utils:$FORGE_ROOT/fwht:$FORGE_ROOT/sketch:${EXT_ROOT}/${HADI_FWHT_INSTALL}/include:$GUIX_ENVIRONMENT/include
-export LD_LIBRARY_PATH=$GUIX_ENVIRONMENT/lib:${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib:$LD_LIBRARY_PATH
-#RESOLVE_CPATH="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I${EXT_ROOT}/${HADI_FWHT_INSTALL}/include -I$GUIX_ENVIRONMENT/include"
 
 RESOLVE_CPATH_FORGE="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I$FORGE_ROOT/sketch"
 RESOLVE_CPATH_GUIX="-I${GUIX_ENVIRONMENT}/include"
-RESOLVE_CPATH_HADI="-I${EXT_ROOT}/${HADI_FWHT_INSTALL}/include"
-RESOLVE_CPATH="${RESOLVE_CPATH_FORGE} ${RESOLVE_CPATH_GUIX} ${RESOLVE_CPATH_HADI}"
 
-RESOLVE_LD_GUIX="-L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm"
-RESOLVE_LD_HADI="-L${EXT_ROOT}/${HADI_FWHT_INSTALL}/lib -lfwht"
-RESOLVE_LD="${RESOLVE_LD_GUIX} ${RESOLVE_LD_HADI} -lstdc++"
+RESOLVE_LD_GUIX="-L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht -lstdc++"
 
 mkdir -p bin/
 rm -f bin/*
@@ -52,8 +43,8 @@ for SK_ALGO in SRHT_CFWHT SRHT_FFTW SRHT_HADI_FWHT SRHT_HADI_FWHT_OPENMP SRHT_HA
 do
     if [ ${SK_ALGO} == SRHT_HADI_FWHT_GPU ]
     then
-      comp="guix time-machine -C ../forge-channels.scm -- shell -m ../fwht/guixmanifests/fwht_fftw_manifest.scm --expose=/dev/ --expose=/usr/lib/x86_64-linux-gnu -- env LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so gcc"
-      exec="guix time-machine -C ../forge-channels.scm -- shell -m ../fwht/guixmanifests/fwht_fftw_manifest.scm --expose=/dev/ --expose=/usr/lib/x86_64-linux-gnu -- env LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so"
+      comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm  -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht.scm --expose=/dev/ --expose=/usr/lib/x86_64-linux-gnu -- env LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so gcc"
+      exec="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --expose=/dev/ --expose=/usr/lib/x86_64-linux-gnu -- env LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so"
     fi
     for SK_TYPE in SKETCH_2D
     do
@@ -65,8 +56,8 @@ do
           $FORGE_ROOT/fwht_utils/hada.c \
           $FORGE_ROOT/fwht/base_fwht.c \
           test/sketch_tester_sketch_1D_block_nocomm_t2.c \
-          ${RESOLVE_LD} \
-          ${RESOLVE_CPATH} \
+          -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht -lstdc++ \
+          ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
           2>&1 | tee -a build.log
           $exec bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_${MEM_ALLOC}_t2 |& tee -a build.log
           mv gmon.out prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_${MEM_ALLOC}_t2.out

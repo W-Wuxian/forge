@@ -9,7 +9,6 @@ GUIX_FILES=$PWD/../guix_files
 comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht.scm -- gcc"
 
 FORGE_ROOT=$PWD/..
-#source ${FORGE_ROOT}/tools/export_path.bash
 
 RESOLVE_CPATH_FORGE="-I${FORGE_ROOT} -I${FORGE_ROOT}/fwht_utils -I${FORGE_ROOT}/fwht"
 
