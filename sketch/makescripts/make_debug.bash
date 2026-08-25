@@ -6,7 +6,7 @@ echo "SCRIPT DIR IS $SCRIPT_DIR"
 cd $SCRIPT_DIR/..
 GUIX_FILES=$PWD/../guix_files
 
-comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht.scm -- gcc"
+comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht-cuda.scm -- gcc"
 exec=
 
 
@@ -43,8 +43,8 @@ for SK_ALGO in SRHT_CFWHT SRHT_FFTW SRHT_HADI_FWHT SRHT_HADI_FWHT_OPENMP SRHT_HA
 do
     if [ ${SK_ALGO} == SRHT_HADI_FWHT_GPU ]
     then
-      comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm  -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht.scm --expose=/dev/ --expose=/usr/lib/x86_64-linux-gnu -- env LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so gcc"
-      exec="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --expose=/dev/ --expose=/usr/lib/x86_64-linux-gnu -- env LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so"
+      comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm  -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht-cuda.scm --expose=/dev/ --expose=/usr/lib/x86_64-linux-gnu -- env LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so gcc"
+      exec="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht-cuda.scm --expose=/dev/ --expose=/usr/lib/x86_64-linux-gnu -- env LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so"
     fi
     for SK_TYPE in SKETCH_2D
     do

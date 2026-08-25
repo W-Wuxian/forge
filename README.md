@@ -2,7 +2,7 @@
 
 - [X] install latest version of fftw form sources
 - [X] install latest version of hadi/fwht
-- [] manage OMP version for sketch CFWHT FFTW HADI_FWHT and GAUSS
+- [X] manage OMP version for sketch CFWHT FFTW HADI_FWHT and GAUSS
 - [] choose optim functions from hadi fwht
 - [] split GAUSS sketch from CFWHT FFTW and HADI_FWHT sketch functions
 
@@ -13,6 +13,29 @@ I need to looks for:
 https://github.com/FALCONN-LIB/FFHT
 
 https://github.com/hadipourh/fwht
+
+## HADI FWHT with GPU
+
+### Using NVHPC via module env
+
+```bash
+module load nvhpc-hpcx-cuda12/26.5
+make PREFIX=$HOME/Work/HADI-FWHT/hadi-fwht-gpu-main \ CUDA_PATH=$NVHPC_ROOT/cuda/12.9 \
+CUDA_LDFLAGS="-L$NVHPC_ROOT/cuda/12.9/lib64 -lcudart -lstdc++" \
+all lib cli examples
+make PREFIX=$HOME/Work/HADI-FWHT/hadi-fwht-gpu-main install
+```
+
+### Using Cuda Toolkit
+
+```bash
+make PREFIX=$HOME/Work/HADI-FWHT/hadi-fwht-gpu-main-sys \
+CUDA_PATH=/usr/local/cuda \
+CUDA_LDFLAGS="-L/usr/local/cuda/lib64 -lcudart -lstdc++" \
+all lib cli examples
+make PREFIX=$HOME/Work/HADI-FWHT/hadi-fwht-gpu-main-sys install
+```
+
 
 ## CORE API - SIMPLE INTERFACE
 All transforms are in-place and use the standard butterfly algorithm.

@@ -6,7 +6,7 @@ echo "SCRIPT DIR IS $SCRIPT_DIR"
 cd $SCRIPT_DIR/..
 GUIX_FILES=$PWD/../guix_files
 
-comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht-2.0.1.scm -- gcc"
+comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht.scm -- gcc"
 
 
 FORGE_ROOT=$PWD/..
