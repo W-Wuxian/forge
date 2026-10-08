@@ -1,21 +1,9 @@
 (list (channel
-        (name 'guix-hpc)
-        (url "https://gitlab.inria.fr/guix-hpc/guix-hpc.git")
-        (branch "master")
-        (commit
-          "ae4a812197a7e565c22f763a1f09684257e79723"))
-      (channel
-        (name 'guix-hpc-non-free)
-        (url "https://gitlab.inria.fr/guix-hpc/guix-hpc-non-free.git")
-        (branch "master")
-        (commit
-          "c546e8121b4d8a715dcb6cd743680dd7eee30b0e"))
-      (channel
         (name 'guix)
         (url "https://git.guix.gnu.org/guix.git")
         (branch "master")
         (commit
-          "97fb1887ad10000c067168176c504274e29e4430")
+          "26e42c6c26e4aaa646df860d26386c285564a0e0")
         (introduction
           (make-channel-introduction
             "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -26,7 +14,7 @@
         (url "https://codeberg.org/guix-science/guix-science-nonfree.git")
         (branch "master")
         (commit
-          "de7cda4027d619bddcecf6dd68be23b040547bc7")
+          "69aead21a001939e152898029b9c804fd2fd5906")
         (introduction
           (make-channel-introduction
             "58661b110325fd5d9b40e6f0177cc486a615817e"
@@ -37,7 +25,7 @@
         (url "https://codeberg.org/guix-science/guix-science.git")
         (branch "master")
         (commit
-          "4ace0bab259e91bf0ec9d37e56c2676b1517fccd")
+          "4f29b99ce090ed2992d5bc6f3af42180201f5058")
         (introduction
           (make-channel-introduction
             "b1fe5aaff3ab48e798a4cce02f0212bc91f423dc"
@@ -48,7 +36,7 @@
         (url "https://codeberg.org/guix-science/guix-past.git")
         (branch "master")
         (commit
-          "70fc56e752ef6d5ff6e1e1a0997fa72e04337b24")
+          "82f634f37c1d7b6d4051aa126f7b835c2419e58b")
         (introduction
           (make-channel-introduction
             "0c119db2ea86a389769f4d2b9c6f5c41c027e336"

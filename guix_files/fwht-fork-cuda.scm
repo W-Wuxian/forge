@@ -70,7 +70,7 @@
      (list autoconf automake libtool
            gcc-toolchain patchelf))
     (inputs
-     (list cuda-12.9))
+     (list cuda-12.4))
 
     (home-page "https://github.com/W-Wuxian/hadi-fwht")
     (synopsis "Fast Walsh-Hadamard Transform library")
