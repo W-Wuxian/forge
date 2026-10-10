@@ -386,16 +386,19 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
                 case SRHT_HADI_FWHT_OPENMP:
                 case SRHT_HADI_FWHT_GPU:
                     fwht_status_t status = fwht_batch_f64_contiguous( sketch_data->sketch_hadi_fwht_ctx, data_work, nrows_data_work, ncols_data_in );
+                    fprintf( stderr, "%s %s\n", string_sketch_alg[sketch_data->sketch_alg], fwht_error_string( status ) );
                     if ( status != FWHT_SUCCESS ) {
                         fprintf( stderr, "%s\n", fwht_error_string( status ) );
                     }
                     break;
                 case SRHT_FFTW:
                     fftw_execute_r2r( sketch_data->Hadaplan, data_work, data_work );
+                    fprintf( stdout, "SRHT_FFTW\n" );
                     break;
                 case SRHT_CFWHT:
                 default:
                     base_fwht_mat_v3( data_work, NULL, nrows_data_work, ncols_data_in );
+                    fprintf( stdout, "SRHT_CFWHT\n" );
                     break;
             }
             // Random sampling

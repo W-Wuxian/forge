@@ -2,15 +2,15 @@
 #include "ubench.h"
 
 #ifndef NROWS
-#define NROWS 10000
+#define NROWS 1000000
 #endif
 
 #ifndef NCOLS
-#define NCOLS 3
+#define NCOLS 5
 #endif
 
 #ifndef SKETCH_DIM
-#define SKETCH_DIM 10
+#define SKETCH_DIM 5
 #endif
 
 #ifndef SKETCH_ALG
@@ -21,12 +21,12 @@
 #define SKETCH_TYPE SKETCH_2D
 #endif
 
-#ifndef NT
-#define NT 2
+#ifndef SKETCH_NUM_THREADS
+#define SKETCH_NUM_THREADS 1
 #endif
 
-#ifndef NG
-#define NG 2
+#ifndef SKETCH_NUM_GPUS
+#define SKETCH_NUM_GPUS 1
 #endif
 
 void
@@ -56,8 +56,8 @@ main()
     sketch_iparam[IDX_NDR]                = 1;
     sketch_iparam[IDX_SKETCH_ALG]         = SKETCH_ALG;
     sketch_iparam[IDX_SKETCH_TYPE]        = SKETCH_TYPE;
-    sketch_iparam[IDX_SKETCH_NUM_THREADS] = NT;
-    sketch_iparam[IDX_SKETCH_NUM_GPU]     = NG;
+    sketch_iparam[IDX_SKETCH_NUM_THREADS] = SKETCH_NUM_THREADS;
+    sketch_iparam[IDX_SKETCH_NUM_GPU]     = SKETCH_NUM_GPUS;
     len_In                                = sketch_iparam[IDX_NROWS_DATA_IN] * sketch_iparam[IDX_NCOLS_DATA_IN];
     len_Out                               = sketch_iparam[IDX_SKETCH_DIM] * sketch_iparam[IDX_NCOLS_DATA_IN];
     size_In                               = len_In * sizeof( double );

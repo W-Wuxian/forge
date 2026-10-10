@@ -5,7 +5,7 @@
 - [X] manage OMP version for sketch CFWHT FFTW HADI_FWHT and GAUSS
 - [] choose optim functions from hadi fwht
 - [] split GAUSS sketch from CFWHT FFTW and HADI_FWHT sketch functions
-
+- [] need to uniformize skecth test macro WHICH_SKETCH_TYPE vs SKETCH_TYPE 
 I need to looks for:
 
 # FWHT
@@ -85,3 +85,18 @@ https://github.com/sheredom/ubench.h
 # SIMD
 
 https://github.com/simd-everywhere/simde?tab=readme-ov-file
+
+# trace or exec
+
+```bash
+# inside guix shell to test guix build of hadi fwht with cuda --file=fwht-fork-cuda.scm
+module load cuda-toolkit/13.0
+guix shell --file=fwht-fork-cuda.scm -- bash
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so.1 nsys profile --trace=cuda --stats=true fwht_cli
+```
+```bash
+# applications build on top of hadi fwht with cuda --file=fwht-fork-cuda.scm simply need LD_PRELOAD (guix shell not needed)
+module load cuda-toolkit/13.0
+# loadind cuda-toolkit only to get nsys utils
+LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so.1 nsys profile --trace=cuda --stats=true tester_sketch_1D_block_nocomm_SRHT_HADI_FWHT_GPU_SKETCH_2D_t2
+```

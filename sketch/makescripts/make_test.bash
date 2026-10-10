@@ -5,8 +5,9 @@ SCRIPT_DIR=$(dirname "$(realpath "$0")")
 echo "SCRIPT DIR IS $SCRIPT_DIR"
 cd $SCRIPT_DIR/..
 GUIX_FILES=$PWD/../guix_files
+FWHT_BUILD_TYPE=fwht-fork-cuda.scm
 
-comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht.scm -- gcc"
+comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/${FWHT_BUILD_TYPE} -- gcc"
 
 
 FORGE_ROOT=$PWD/..
@@ -135,7 +136,7 @@ for SK_ALGO in SRHT_CFWHT SRHT_FFTW SRHT_HADI_FWHT SRHT_HADI_FWHT_OPENMP
 do
     for SK_TYPE in SKETCH_2D
     do
-        echo "Sketch 1D block nocomm test t3 sing sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
+        echo "Sketch 1D block nocomm test t3 using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
         $comp $debug_option -DSKETCH_NUM_THREADS=2 -DFFTW_WITH_OMP -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3 \
         $FORGE_ROOT/sketch/sketch.c \
         $FORGE_ROOT/fwht_utils/hada.c \
@@ -148,5 +149,47 @@ do
         mv gmon.out prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3.out
         gprof bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3 prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3.out > prof/gprof-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3.out
         #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3 2>&1 |& tee -a valgrind.log
+    done
+done
+
+###########################################################################################################################################
+# Sketch 1D block test t2
+for SK_ALGO in SRHT_CFWHT SRHT_FFTW SRHT_HADI_FWHT SRHT_HADI_FWHT_OPENMP
+do
+    for SK_TYPE in SKETCH_2D
+    do
+        echo "Sketch 1D block nocomm test t2 using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
+        $comp $debug_option -DSKETCH_NUM_THREADS=2 -DSKETCH_NUM_GPUS=1 -DFFTW_WITH_OMP -DSKETCH_ALG=${SK_ALGO} -DSKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2 \
+        $FORGE_ROOT/sketch/sketch.c \
+        $FORGE_ROOT/fwht_utils/hada.c \
+        $FORGE_ROOT/fwht/base_fwht.c \
+        test/sketch_tester_sketch_1D_block_nocomm_t2.c \
+        -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
+        ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
+        2>&1 | tee build.log
+        bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2 |& tee -a build.log
+        #mv gmon.out prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2.out
+        #gprof bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2 prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2.out > prof/gprof-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2.out
+        #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2 2>&1 |& tee -a valgrind.log
+    done
+done
+
+for SK_ALGO in SRHT_HADI_FWHT_GPU
+do
+    for SK_TYPE in SKETCH_2D
+    do
+        echo "Sketch 1D block nocomm test t2 using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
+        $comp $debug_option -DSKETCH_NUM_THREADS=2 -DSKETCH_NUM_GPUS=1 -DFFTW_WITH_OMP -DSKETCH_ALG=${SK_ALGO} -DSKETCH_TYPE=${SK_TYPE}  -o bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2 \
+        $FORGE_ROOT/sketch/sketch.c \
+        $FORGE_ROOT/fwht_utils/hada.c \
+        $FORGE_ROOT/fwht/base_fwht.c \
+        test/sketch_tester_sketch_1D_block_nocomm_t2.c \
+        -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
+        ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
+        2>&1 | tee build.log
+        LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so.1 bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2 |& tee -a build.log
+        #mv gmon.out prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2.out
+        #gprof bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2 prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2.out > prof/gprof-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2.out
+        #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2 2>&1 |& tee -a valgrind.log
     done
 done

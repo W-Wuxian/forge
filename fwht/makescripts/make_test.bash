@@ -5,8 +5,9 @@ SCRIPT_DIR=$(dirname "$(realpath "$0")")
 echo "SCRIPT DIR IS $SCRIPT_DIR"
 cd $SCRIPT_DIR/..
 GUIX_FILES=$PWD/../guix_files
+FWHT_BUILD_TYPE=fwht-fork-cuda.scm
 
-comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/fwht.scm -- gcc"
+comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/${FWHT_BUILD_TYPE} -- gcc"
 
 FORGE_ROOT=$PWD/..
 
