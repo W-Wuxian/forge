@@ -29,7 +29,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         sketch_iparam[IDX_SKETCH_ALG]         = SKETCH_ALG;                                                                                                                                            \
         sketch_iparam[IDX_SKETCH_TYPE]        = SKETCH_TYPE;                                                                                                                                           \
         sketch_iparam[IDX_SKETCH_NUM_THREADS] = NT;                                                                                                                                                    \
-        sketch_iparam[IDX_SKETCH_NUM_GPU]     = 0;                                                                                                                                                     \
+        sketch_iparam[IDX_SKETCH_NUM_GPU]     = 1;                                                                                                                                                     \
         len_In                                = sketch_iparam[IDX_NROWS_DATA_IN] * sketch_iparam[IDX_NCOLS_DATA_IN];                                                                                   \
         len_Out                               = sketch_iparam[IDX_SKETCH_DIM] * sketch_iparam[IDX_NCOLS_DATA_IN];                                                                                      \
         size_In                               = len_In * sizeof( double );                                                                                                                             \
@@ -43,7 +43,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         set_mat_values( In, len_In, sketch_iparam[IDX_NCOLS_DATA_IN] );                                                                                                                                \
         memset( Out, 0, size_Out );                                                                                                                                                                    \
         base_getdata_sketch_data( &sketch_data, sketch_iparam[IDX_NCOLS_DATA_IN], In, Out );                                                                                                           \
-        if ( ( SKETCH_ALG == SRHT_CFWHT || SKETCH_ALG == SRHT_HADI_FWHT || SKETCH_ALG == SRHT_HADI_FWHT_GPU ) && ( NT > 1 ) ) {                                                                        \
+        if ( ( SKETCH_ALG == SRHT_CFWHT || SKETCH_ALG == SRHT_HADI_FWHT_GPU ) && ( NT > 1 ) ) {                                                                        \
             UBENCH_SKIP();                                                                                                                                                                             \
         }                                                                                                                                                                                              \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \

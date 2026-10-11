@@ -46,7 +46,6 @@
          (string-append "--with-cuda-lib="
                          #$(this-package-input "cuda-toolkit")
                          "/lib64")
-
          "--disable-simd"
          "CFLAGS=-march=x86-64-v3 -mtune=generic -O3"
          "CXXFLAGS=-march=x86-64-v3 -mtune=generic -O3")
