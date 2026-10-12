@@ -381,7 +381,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         double         *data         = NULL;                                                                                                                                                           \
         double         *coldata[ncols];                                                                                                                                                                \
         SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
-        omp_set_num_threads(NT); \
+        omp_set_num_threads( NT );                                                                                                                                                                     \
         printf( "NUM THREADS %d\n", omp_get_num_threads() );                                                                                                                                           \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
         for ( base_int_t i = 0; i < ncols; i++ ) {                                                                                                                                                     \
@@ -396,20 +396,20 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         data = NULL;                                                                                                                                                                                   \
     }
 
-#define BENCH_HADI_FWHT_MAT_V6_GPU( NROWS, NCOLS, NG )                                                                                                                                                     \
-    UBENCH_EX( hadi_fwht_batch_f64_gpu_##NG##_mat_v6, dim_##NROWS##x##NCOLS )                                                                                                                       \
+#define BENCH_HADI_FWHT_MAT_V6_GPU( NROWS, NCOLS, NG )                                                                                                                                                 \
+    UBENCH_EX( hadi_fwht_batch_f64_gpu_##NG##_mat_v6, dim_##NROWS##x##NCOLS )                                                                                                                          \
     {                                                                                                                                                                                                  \
         base_int_t      nrows        = (base_int_t)NROWS;                                                                                                                                              \
         base_int_t      ncols        = (base_int_t)NCOLS;                                                                                                                                              \
         base_int_t      num_elements = nrows * ncols;                                                                                                                                                  \
         fwht_status_t   status       = FWHT_SUCCESS;                                                                                                                                                   \
-        fwht_config_t   config       = { .backend = FWHT_BACKEND_GPU, .num_threads = 1, .gpu_device = NG, .normalize = true };                                                                      \
+        fwht_config_t   config       = { .backend = FWHT_BACKEND_GPU, .num_threads = 1, .gpu_device = NG, .normalize = true };                                                                         \
         fwht_context_t *ctx          = fwht_create_context( &config );                                                                                                                                 \
         size_t          array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                    \
         double         *data         = NULL;                                                                                                                                                           \
         double         *coldata[ncols];                                                                                                                                                                \
         SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
-        omp_set_num_threads(1); \
+        omp_set_num_threads( 1 );                                                                                                                                                                      \
         printf( "NUM THREADS %d\n", omp_get_num_threads() );                                                                                                                                           \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
         for ( base_int_t i = 0; i < ncols; i++ ) {                                                                                                                                                     \
@@ -436,7 +436,7 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         size_t          array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                    \
         double         *data         = NULL;                                                                                                                                                           \
         SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
-        omp_set_num_threads(1); \
+        omp_set_num_threads( 1 );                                                                                                                                                                      \
         printf( "NUM THREADS %d\n", omp_get_num_threads() );                                                                                                                                           \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
@@ -448,20 +448,19 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         data = NULL;                                                                                                                                                                                   \
     }
 
-
-#define BENCH_HADI_FWHT_MAT_V7_GPU( NROWS, NCOLS, NG )                                                                                                                                                     \
-    UBENCH_EX( hadi_fwht_batch_f64_contiguous_gpu_##NG##_mat_v7, dim_##NROWS##x##NCOLS )                                                                                                            \
+#define BENCH_HADI_FWHT_MAT_V7_GPU( NROWS, NCOLS, NG )                                                                                                                                                 \
+    UBENCH_EX( hadi_fwht_batch_f64_contiguous_gpu_##NG##_mat_v7, dim_##NROWS##x##NCOLS )                                                                                                               \
     {                                                                                                                                                                                                  \
         base_int_t      nrows        = (base_int_t)NROWS;                                                                                                                                              \
         base_int_t      ncols        = (base_int_t)NCOLS;                                                                                                                                              \
         base_int_t      num_elements = nrows * ncols;                                                                                                                                                  \
         fwht_status_t   status       = FWHT_SUCCESS;                                                                                                                                                   \
-        fwht_config_t   config       = { .backend = FWHT_BACKEND_GPU, .num_threads = 1, .gpu_device = NG, .normalize = true };                                                                      \
+        fwht_config_t   config       = { .backend = FWHT_BACKEND_GPU, .num_threads = 1, .gpu_device = NG, .normalize = true };                                                                         \
         fwht_context_t *ctx          = fwht_create_context( &config );                                                                                                                                 \
         size_t          array_size   = (size_t)( num_elements * sizeof( double ) );                                                                                                                    \
         double         *data         = NULL;                                                                                                                                                           \
         SPEALLOC( data, base_dalign, array_size );                                                                                                                                                     \
-        omp_set_num_threads(1); \
+        omp_set_num_threads( 1 );                                                                                                                                                                      \
         printf( "NUM THREADS %d\n", omp_get_num_threads() );                                                                                                                                           \
         set_mat_values( data, num_elements, ncols );                                                                                                                                                   \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
@@ -500,9 +499,9 @@ BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 6 )
 BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 8 )
 BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 12 )
 BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 24 )
-//BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 48 )
-//BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 96 )
-//BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 104 )
+// BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 48 )
+// BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 96 )
+// BENCH_HADI_FWHT_MAT_V6( JUBE_NROWS, JUBE_NCOLS, 104 )
 BENCH_HADI_FWHT_MAT_V7_GPU( JUBE_NROWS, JUBE_NCOLS, 1 )
 BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 1 )
 BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 2 )
@@ -511,9 +510,9 @@ BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 6 )
 BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 8 )
 BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 12 )
 BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 24 )
-//BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 48 )
-//BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 96 )
-//BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 104 )
+// BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 48 )
+// BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 96 )
+// BENCH_HADI_FWHT_MAT_V7( JUBE_NROWS, JUBE_NCOLS, 104 )
 
 BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 1 )
 BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 2 )
@@ -522,9 +521,9 @@ BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 6 )
 BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 8 )
 BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 12 )
 BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 24 )
-//BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 48 )
-//BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 96 )
-//BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 104 )
+// BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 48 )
+// BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 96 )
+// BENCH_FWHT_FFTW_OMP_ESTIMATE_MAT( JUBE_NROWS, JUBE_NCOLS, 104 )
 
 // 4. Generate the main() function
 UBENCH_MAIN()

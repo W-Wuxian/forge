@@ -13,6 +13,9 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
 #define BENCH_SKECTH_BLOCK_NOCOMM( NROWS, NCOLS, SKETCH_DIM, SKETCH_ALG, SKETCH_TYPE, NT )                                                                                                             \
     UBENCH_EX( sketch_block_nocomm, dim_##NROWS##x##NCOLS##_sketch_dim_##SKETCH_DIM##_sketch_alg_##SKETCH_ALG##_sketch_type_##SKETCH_TYPE##_openmp_##NT )                                              \
     {                                                                                                                                                                                                  \
+        if ( ( SKETCH_ALG == SRHT_CFWHT || SKETCH_ALG == SRHT_HADI_FWHT || SKETCH_ALG == SRHT_HADI_FWHT_GPU ) && ( NT > 1 ) ) {                                                                        \
+            UBENCH_SKIP();                                                                                                                                                                             \
+        }                                                                                                                                                                                              \
         base_int_t    sketch_iparam[IDX_SKETCH_IPARAM_LEN];                                                                                                                                            \
         base_int_t    len_In   = 0;                                                                                                                                                                    \
         base_int_t    len_Out  = 0;                                                                                                                                                                    \
@@ -34,26 +37,35 @@ set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
         len_Out                               = sketch_iparam[IDX_SKETCH_DIM] * sketch_iparam[IDX_NCOLS_DATA_IN];                                                                                      \
         size_In                               = len_In * sizeof( double );                                                                                                                             \
         size_Out                              = len_Out * sizeof( double );                                                                                                                            \
-        SPEALLOC( In, base_dalign, size_In );                                                                                                                                                          \
-        assert( In != NULL );                                                                                                                                                                          \
-        SPEALLOC( Out, base_dalign, size_Out );                                                                                                                                                        \
-        assert( Out != NULL );                                                                                                                                                                         \
+        if ( SKETCH_ALG != SRHT_FFTW ) {                                                                                                                                                               \
+            SPEALLOC( In, base_dalign, size_In );                                                                                                                                                      \
+            assert( In != NULL );                                                                                                                                                                      \
+            SPEALLOC( Out, base_dalign, size_Out );                                                                                                                                                    \
+            assert( Out != NULL );                                                                                                                                                                     \
+        }                                                                                                                                                                                              \
+        else {                                                                                                                                                                                         \
+            In  = (double *)fftw_malloc( size_In );                                                                                                                                                    \
+            Out = (double *)fftw_malloc( size_Out );                                                                                                                                                   \
+        }                                                                                                                                                                                              \
         base_init_sketch_data( &sketch_data, &sketch_iparam[0], 0, 1 );                                                                                                                                \
         base_set_sketch_data( &sketch_data, 0, 1 );                                                                                                                                                    \
         set_mat_values( In, len_In, sketch_iparam[IDX_NCOLS_DATA_IN] );                                                                                                                                \
         memset( Out, 0, size_Out );                                                                                                                                                                    \
         base_getdata_sketch_data( &sketch_data, sketch_iparam[IDX_NCOLS_DATA_IN], In, Out );                                                                                                           \
-        if ( ( SKETCH_ALG == SRHT_CFWHT || SKETCH_ALG == SRHT_HADI_FWHT_GPU ) && ( NT > 1 ) ) {                                                                        \
-            UBENCH_SKIP();                                                                                                                                                                             \
-        }                                                                                                                                                                                              \
         UBENCH_DO_BENCHMARK()                                                                                                                                                                          \
         {                                                                                                                                                                                              \
             base_compute_block_sketch_nocomm( &sketch_data );                                                                                                                                          \
         }                                                                                                                                                                                              \
         base_free_sketch_data( &sketch_data );                                                                                                                                                         \
-        free( In );                                                                                                                                                                                    \
-        In = NULL;                                                                                                                                                                                     \
-        free( Out );                                                                                                                                                                                   \
+        if ( SKETCH_ALG != SRHT_FFTW ) {                                                                                                                                                               \
+            free( In );                                                                                                                                                                                \
+            free( Out );                                                                                                                                                                               \
+        }                                                                                                                                                                                              \
+        else {                                                                                                                                                                                         \
+            fftw_free( In );                                                                                                                                                                           \
+            fftw_free( Out );                                                                                                                                                                          \
+        }                                                                                                                                                                                              \
+        In  = NULL;                                                                                                                                                                                    \
         Out = NULL;                                                                                                                                                                                    \
     }
 

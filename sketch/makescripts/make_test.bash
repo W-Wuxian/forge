@@ -6,7 +6,8 @@ echo "SCRIPT DIR IS $SCRIPT_DIR"
 cd $SCRIPT_DIR/..
 GUIX_FILES=$PWD/../guix_files
 FWHT_BUILD_TYPE=fwht-fork-cuda-SM52.scm
-
+echo "$GUIX_FILES"
+exit 0
 comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/${FWHT_BUILD_TYPE} -- gcc"
 
 

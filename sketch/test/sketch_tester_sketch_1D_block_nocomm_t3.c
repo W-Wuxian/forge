@@ -6,9 +6,9 @@
  * else cst = size(X)[1]
  * @version 0.1
  * @date 2026-08-22
- * 
+ *
  * @copyright Copyright (c) 2026
- * 
+ *
  */
 
 #include "sketch.h"
@@ -93,7 +93,7 @@ main()
     PRINT_COLMAJ_MAT( In, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "In" );
     PRINT_COLMAJ_MAT( Out, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "Out Computed" );
 
-    cblas_dcopy(len_Out, Out, 1, In, 1);
+    cblas_dcopy( len_Out, Out, 1, In, 1 );
     base_getdata_sketch_data( &sketch_data, sketch_iparam[IDX_NCOLS_DATA_IN], In, Out );
     base_compute_block_sketch_nocomm( &sketch_data );
 

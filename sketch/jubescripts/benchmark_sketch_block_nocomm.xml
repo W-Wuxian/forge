@@ -3,14 +3,14 @@
   <benchmark name="SKETCH_block_nocomm_Benchmark" outpath="jube_bench_sketch_block_nocomm_run">
     <!-- Paramètres des flags de compilation -->
     <parameterset name="comp_mem_allocator_flag">
-      <parameter name="mem_allocator_flag" type="string">USE_POSIX_MEMALIGN,USE_MALLOC</parameter>
+      <parameter name="mem_allocator_flag" type="string">USE_POSIX_MEMALIGN</parameter>
     </parameterset>
     <!-- 1. Paramètres du benchmark (Dimensions de la matrice) -->
     <parameterset name="matrix_params">
-      <parameter name="nrows" type="int">65536</parameter>
-      <parameter name="ncols" type="int">1, 10</parameter>
-      <parameter name="sketch_dim" type="int">10</parameter>
-      <parameter name="sketch_alg" type="string">SRHT_CFWHT, SRHT_FFTW, SRHT_HADI_FWHT, SRHT_HADI_FWHT_OPENMP, SRHT_HADI_FWHT_GPU, GAUSS</parameter>
+      <parameter name="nrows" type="int">1048576, 2097152, 8388608</parameter>
+      <parameter name="ncols" type="int">1, 10, 200</parameter>
+      <parameter name="sketch_dim" type="int">200, 2000</parameter>
+      <parameter name="sketch_alg" type="string">SRHT_HADI_FWHT_OPENMP, SRHT_HADI_FWHT_GPU, GAUSS, SRHT_FFTW</parameter>
       <parameter name="sketch_type" type="string">SKETCH_2D</parameter>
     </parameterset>
 
@@ -54,7 +54,7 @@
     </step>
 
     <!-- 3. Exécution -->
-    <step name="execute" depend="compile">
+    <step name="execute" depend="compile"  max_async="4">
       <use>matrix_params</use>
       <use>run_bench_cmd</use>
       <!-- Exécute le binaire et génère le fichier CSV de ubench -->

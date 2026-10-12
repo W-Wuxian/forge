@@ -205,6 +205,9 @@ base_set_sketch_data( base_sketch_t *sketch_data, int rank, int size )
                     base_SetFFTW( &sketch_data->Hadaplan, &vIn, 1, sketch_data->data_work, sketch_data->data_work );
                 }
                 BASE_ASSERT_ISNOTNULL( ( sketch_data->Hadaplan ) );
+                if ( sketch_data->Hadaplan == NULL ) {
+                    printf( "Hadaplan is NULL\n" );
+                }
                 // if (rank==0)fftw_print_plan(sketch_data->Hadaplan);
             }
             memset( sketch_data->data_work, 0, size_data_work );
@@ -386,19 +389,19 @@ base_compute_sketch_mat( base_sketch_t *sketch_data )
                 case SRHT_HADI_FWHT_OPENMP:
                 case SRHT_HADI_FWHT_GPU:
                     fwht_status_t status = fwht_batch_f64_contiguous( sketch_data->sketch_hadi_fwht_ctx, data_work, nrows_data_work, ncols_data_in );
-                    fprintf( stderr, "%s %s\n", string_sketch_alg[sketch_data->sketch_alg], fwht_error_string( status ) );
+                    // fprintf( stderr, "%s %s\n", string_sketch_alg[sketch_data->sketch_alg], fwht_error_string( status ) );
                     if ( status != FWHT_SUCCESS ) {
                         fprintf( stderr, "%s\n", fwht_error_string( status ) );
                     }
                     break;
                 case SRHT_FFTW:
                     fftw_execute_r2r( sketch_data->Hadaplan, data_work, data_work );
-                    fprintf( stdout, "SRHT_FFTW\n" );
+                    // fprintf( stdout, "SRHT_FFTW\n" );
                     break;
                 case SRHT_CFWHT:
                 default:
                     base_fwht_mat_v3( data_work, NULL, nrows_data_work, ncols_data_in );
-                    fprintf( stdout, "SRHT_CFWHT\n" );
+                    // fprintf( stdout, "SRHT_CFWHT\n" );
                     break;
             }
             // Random sampling
