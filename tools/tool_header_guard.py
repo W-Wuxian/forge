@@ -40,6 +40,7 @@ if __name__ == "__main__":
     # Par défaut: cherche dans "../"
     if len(sys.argv) < 2:
         paths = [
+            Path("../rgs"),
             Path("../sketch"),
             Path("../fwht_utils"),
             Path("../fwht"),
