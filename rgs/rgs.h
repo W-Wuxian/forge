@@ -56,8 +56,8 @@ typedef struct {
     // ptr
     double *data_need_facto;  //*W; /**< Input (nIn x ncols) (ptr to the user mem) data to be factorized */
 
-    size_t memMB;
-    size_t flops;
+    base_mem_t rgs_memory;
+    double     rgs_flops;
 
     base_int_t len_tmp_data_work;     // lth_tmpwork; /**< length of tmpwork */
     base_int_t size_tmp_data_work;    // si_tmpwork;
@@ -191,7 +191,7 @@ int base_rgs_saving_error( rgs_data_t *rgs_data, double *W, base_int_t globalsiz
  *
  * @param rgs_data - pointer to a rgs_data_t data structure
  */
-void base_flops_RGS_d( rgs_data_t *rgs_data );
+void base_flops_rgs( rgs_data_t *rgs_data );
 
 /**
  * @brief Compute RGS memory
@@ -200,6 +200,6 @@ void base_flops_RGS_d( rgs_data_t *rgs_data );
  * @param sketch_memMB - size_t
  * @param memOC - size_t
  */
-void base_memMB_rgs( size_t *rgs_memMB, size_t sketch_memMB, size_t memOC );
+void base_memory_rgs( size_t *rgs_memMB, size_t sketch_memMB, size_t memOC );
 
 #endif  //__RGS_H__

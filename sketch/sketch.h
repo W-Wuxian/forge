@@ -31,13 +31,14 @@ static const char *const string_sketch_type[NUMBER_OF_SKETCH_TYPE] = { "SKETCH_1
  * SRHT uses FWHT algo
  */
 typedef struct {
-    fftw_plan          Hadaplan;           /**< FFTW Hadamard plan */
-    double             scale;              /**< scaling  factor needed by SKETCH algo, computed with base_set_sketch */
-    double            *data_in;            /**< Pointer (double prec) to the user memory for the data to be Sketch */
-    double            *data_out;           /**< Pointer (double prec) to the user memory for the Sketch of data_in */
-    double            *data_work;          /**< Dynamic array (nswork x ncols_data_in) used to resize data_in at a power of two with zero-padding */
-    size_t             memMB;              /**< memory allocated by SKETCH in MB */
-    size_t             flops;              /**< SKETCH flops */
+    fftw_plan Hadaplan;  /**< FFTW Hadamard plan */
+    double    scale;     /**< scaling  factor needed by SKETCH algo, computed with base_set_sketch */
+    double   *data_in;   /**< Pointer (double prec) to the user memory for the data to be Sketch */
+    double   *data_out;  /**< Pointer (double prec) to the user memory for the Sketch of data_in */
+    double   *data_work; /**< Dynamic array (nswork x ncols_data_in) used to resize data_in at a power of two with zero-padding */
+    // size_t             memMB;              /**< memory allocated by SKETCH in MB */
+    base_mem_t         sketch_memory;
+    double             sketch_flops;       /**< SKETCH flops */
     base_int_t        *rademacher_array;   /**< Dynamic array used to store the Rademacher array needed by SRHT algo */
     base_int_t        *permutation_array;  /**< Dynamic array used to store the Permutation array needed by SRHT algo */
     base_sketch_alg_e  sketch_alg;         /**< SRHT_CFWHT or SRHT_FFTW or SRHT_HADI_FWHT or GAUSS */
@@ -78,6 +79,23 @@ void _base_mat_larnv( double *mat, int rank, base_int_t localsize, base_int_t nc
  * \param[in] len_data_out - Dimension of the permutation
  */
 void _base_create_random_permutation( base_int_t input_len, base_int_t *data_out, base_int_t len_data_out );
+
+/**
+ * @brief base_flops_sketch
+ * @details Flops of SKETCH for 1 call
+ *
+ * @param sketch_data - pointer to base_sketch_t struct
+ * @param size - MPI communicator size
+ */
+void base_flops_sketch( base_sketch_t *sketch_data, base_int_t size );
+
+/**
+ * @brief base_memory_sketch
+ * @details Memory used by SKETCH
+ * @param sketch_memory - pointer to memory used by skecth_data
+ * @param mem_in_bytes
+ */
+void base_memory_sketch( base_mem_t *sketch_memory, size_t mem_in_bytes );
 
 /**
  * @brief Set internal flags based on user parameters
@@ -150,7 +168,7 @@ void base_compute_sketch( base_sketch_t *sketch_data );
  * swork working array for fwht()
  * nswork length of swork
  * scale factor (1 / sqrt(Kproj))
- * \param[in,out] sketch_data - pointer to sketch_data_t struct
+ * \param[in,out] sketch_data - pointer to base_sketch_t struct
  */
 void base_compute_sketch_mat( base_sketch_t *sketch_data );
 

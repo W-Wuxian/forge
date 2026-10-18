@@ -127,6 +127,6 @@ void base_FreeFFTW_OMP( fftw_plan *Hadaplan );
  * @param n
  * @return size_t
  */
-size_t base_flops_FWHT( base_int_t m, base_int_t n );
+double base_flops_fwht( double m, double n );
 
 #endif  //__FWHT_H__

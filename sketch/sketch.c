@@ -55,6 +55,37 @@ _base_create_random_permutation( base_int_t input_len, base_int_t *data_out, bas
 }
 
 void
+base_flops_sketch( base_sketch_t *sketch_data, base_int_t size )
+{
+    double k   = sketch_data->sketch_dim;
+    double m   = sketch_data->nrows_data_in;
+    double n   = sketch_data->ncols_data_in;
+    double ns  = sketch_data->nrows_data_work;
+    //double nDr = sketch_data->nDr;
+    //double nDl = sketch_data->nDl;
+    // //size_t fp_ARED = k * n * (size_t)(round(log(size)/log(2)));
+    double fp_ARED = k * n * ( log( (double)size ) / log( base_d_p2 ) );  // UpperBound
+    double fp_fwht = base_flops_fwht( ns, n );
+    // //size_t fp_Dr = 3 * n * nDr;
+    double fp_Dr = n * m;  // UpperBound
+    // //size_t fp_Dl = (n==1) ? 0 : 4 * n * nDl;
+    double fp_Dl              = ( n == 1 ) ? 0 : n * k;  // UpperBound
+    double fp_memset_nswork   = ( ns - m ) * n;
+    double fp_dlacpy          = m * n;
+    double fp_perm            = 4 * n * k;
+    double fp_scale           = k * n;
+    double fp_other           = fp_memset_nswork + fp_dlacpy + fp_Dr + fp_perm + fp_scale + fp_Dl;
+    double fp_gemm            = 2 * m * n * k;
+    sketch_data->sketch_flops = ( sketch_data->sketch_alg == GAUSS ) ? fp_gemm + fp_ARED : fp_ARED + fp_fwht + fp_other;
+}
+
+void
+base_memory_sketch( base_mem_t *sketch_memory, size_t mem_in_bytes )
+{
+    *sketch_memory = set_mem_in_units( mem_in_bytes );
+}
+
+void
 base_init_sketch_data( base_sketch_t *sketch_data, base_int_t *iparam, int rank, int size )
 {
     sketch_data->nrows_data_in      = iparam[IDX_NROWS_DATA_IN];
@@ -166,6 +197,8 @@ base_set_sketch_data( base_sketch_t *sketch_data, int rank, int size )
                     printf( "ierr = %d %s\n", ierr, "base_Set_dSKETCH::LAPACKE_dlascl::ierr" );
                 abort();
             }
+            base_memory_sketch( &sketch_data->sketch_memory, size_data_work );
+            base_flops_sketch( sketch_data, size );
             /* base_memMB_SKETCH_d(&sketch_data->memMB, size_data_work);
             base_flops_SKETCH_d(sketch_data, size); */
             break;
@@ -211,6 +244,10 @@ base_set_sketch_data( base_sketch_t *sketch_data, int rank, int size )
                 // if (rank==0)fftw_print_plan(sketch_data->Hadaplan);
             }
             memset( sketch_data->data_work, 0, size_data_work );
+            size_t size_rademacher_array  = ( sketch_data->nDr + sketch_data->nDl ) * sizeof( base_int_t );
+            size_t size_permutation_array = sketch_data->sketch_dim * sizeof( base_int_t );
+            base_memory_sketch( &sketch_data->sketch_memory, size_rademacher_array + size_permutation_array + size_data_work );
+            base_flops_sketch( sketch_data, size );
             /* size_t size_rademacher_array  = ( sketch_data->nDr + sketch_data->nDl ) * sizeof( base_int_t );
             size_t size_permutation_array = sketch_data->sketch_dim * sizeof( base_int_t );
             base_memMB_SKETCH_d( &sketch_data->memMB, size_rademacher_array + size_permutation_array + size_data_work );

@@ -1,13 +1,14 @@
 #!/bin/bash
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-
 echo "SCRIPT DIR IS $SCRIPT_DIR"
+. "${SCRIPT_DIR}"/../../tools/export_path.bash
+
 cd $SCRIPT_DIR/..
 GUIX_FILES=$PWD/../guix_files
-FWHT_BUILD_TYPE=fwht-fork-cuda-SM52.scm
+#FWHT_BUILD_TYPE=fwht-fork-cuda-SM52.scm
 echo "$GUIX_FILES"
-exit 0
+
 comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/${FWHT_BUILD_TYPE} -- gcc"
 
 
@@ -57,7 +58,7 @@ do
         test/sketch_tester_sketch_1D.c \
         -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
         ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
-        2>&1 | tee build.log
+        2>&1 | tee -a build.log
         bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE} |& tee -a build.log
         mv gmon.out prof/gmon-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}.out
         gprof bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE} prof/gmon-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}.out > prof/gprof-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}.out
@@ -79,7 +80,7 @@ do
         test/sketch_tester_sketch_1D_t1.c \
         -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
         ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
-        2>&1 | tee build.log
+        2>&1 | tee -a build.log
         bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
         mv gmon.out prof/gmon-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1.out
         gprof bin/tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_sketch_1D_${SK_ALGO}_${SK_TYPE}_t1.out
@@ -101,7 +102,7 @@ do
         test/sketch_tester_sketch_1D_mat_t1.c \
         -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
         ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
-        2>&1 | tee build.log
+        2>&1 | tee -a build.log
         bin/tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
         mv gmon.out prof/gmon-tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1.out
         gprof bin/tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_sketch_1D_mat_${SK_ALGO}_${SK_TYPE}_t1.out
@@ -123,7 +124,7 @@ do
         test/sketch_tester_sketch_1D_block_nocomm_t1.c \
         -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
         ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
-        2>&1 | tee build.log
+        2>&1 | tee -a build.log
         bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
         mv gmon.out prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1.out
         gprof bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t1.out
@@ -145,7 +146,7 @@ do
         test/sketch_tester_sketch_1D_block_nocomm_t3.c \
         -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
         ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
-        2>&1 | tee build.log
+        2>&1 | tee -a build.log
         bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3 |& tee -a build.log
         mv gmon.out prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3.out
         gprof bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3 prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3.out > prof/gprof-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t3.out
@@ -167,7 +168,7 @@ do
         test/sketch_tester_sketch_1D_block_nocomm_t2.c \
         -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
         ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
-        2>&1 | tee build.log
+        2>&1 | tee -a build.log
         bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2 |& tee -a build.log
         #mv gmon.out prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2.out
         #gprof bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2 prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2.out > prof/gprof-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2.out
@@ -187,7 +188,7 @@ do
         test/sketch_tester_sketch_1D_block_nocomm_t2.c \
         -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
         ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
-        2>&1 | tee build.log
+        2>&1 | tee -a build.log
         LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so.1 bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2 |& tee -a build.log
         #mv gmon.out prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2.out
         #gprof bin/tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2 prof/gmon-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2.out > prof/gprof-tester_sketch_1D_block_nocomm_${SK_ALGO}_${SK_TYPE}_t2.out

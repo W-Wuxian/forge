@@ -522,8 +522,8 @@ base_FreeFFTW_OMP( fftw_plan *Hadaplan )
 }
 #endif
 
-size_t
-base_flops_FWHT( base_int_t m, base_int_t n )
+double
+base_flops_fwht( double m, double n )
 {
-    return m * n * ( (size_t)ceil( log( m ) / log( 2 ) ) );  // UpperBound (else round)
+    return m * n * ( log( m ) / log( base_d_p2 ) );
 }

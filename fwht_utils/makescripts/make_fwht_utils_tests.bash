@@ -1,17 +1,19 @@
 #!/bin/bash
 
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-
 echo "SCRIPT DIR IS $SCRIPT_DIR"
+. "${SCRIPT_DIR}"/../../tools/export_path.bash
+
 cd $SCRIPT_DIR/..
 GUIX_FILES=$PWD/../guix_files
-FWHT_BUILD_TYPE=fwht-fork-cuda-SM52.scm
+#FWHT_BUILD_TYPE=fwht-fork-cuda-SM52.scm
+echo "fwht build type $FWHT_BUILD_TYPE"
 
 comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/${FWHT_BUILD_TYPE} -- gcc"
 
 
 FORGE_ROOT=$PWD/..
-source $FORGE_ROOT/tools/export_path.bash
+#source $FORGE_ROOT/tools/export_path.bash
 
 RESOLVE_CPATH_FORGE="-I${FORGE_ROOT} -I${FORGE_ROOT}/fwht_utils"
 

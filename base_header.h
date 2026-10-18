@@ -141,4 +141,18 @@
 #define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = malloc( size ) ) == NULL ? -1 : 0 )
 #endif
 
+#if defined( USE_MKL_MALLOC )
+#define SPEFREE( ptr )                                                                                                                                                                                 \
+    {                                                                                                                                                                                                  \
+        mkl_free( ptr );                                                                                                                                                                               \
+        ptr = NULL;                                                                                                                                                                                    \
+    }
+#else
+#define SPEFREE( ptr )                                                                                                                                                                                 \
+    {                                                                                                                                                                                                  \
+        free( ptr );                                                                                                                                                                                   \
+        ptr = NULL;                                                                                                                                                                                    \
+    }
+#endif
+
 #endif  //__BASE_HEADER_H__
