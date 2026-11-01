@@ -1,20 +1,20 @@
-/**
- * @file sketch_tester_sketch_1D_block_nocomm_t3.c
- * @author your name (you@domain.com)
- * @brief fwht(fwht(X)) = cst * X , cst in |R ?
- * If fwht is normalized then cst = 1 / size(X)[1]
- * else cst = size(X)[1]
- * @version 0.1
- * @date 2026-08-22
- *
- * @copyright Copyright (c) 2026
- *
- */
-
 #include "sketch.h"
+#include "ubench.h"
+
+#ifndef NROWS
+#define NROWS 1000000
+#endif
+
+#ifndef NCOLS
+#define NCOLS 5
+#endif
+
+#ifndef SKETCH_DIM
+#define SKETCH_DIM 5
+#endif
 
 #ifndef WHICH_SKETCH_ALG
-#define WHICH_SKETCH_ALG SRHT_FFTW
+#define WHICH_SKETCH_ALG SRHT_CFWHT
 #endif
 
 #ifndef WHICH_SKETCH_TYPE
@@ -25,96 +25,61 @@
 #define SKETCH_NUM_THREADS 1
 #endif
 
+#ifndef SKETCH_NUM_GPUS
+#define SKETCH_NUM_GPUS 1
+#endif
+
+void
+set_mat_values( double *mat, base_int_t nele, base_int_t ncols )
+{
+    base_int_t i = 0;
+    for ( ; i < nele; ++i ) {
+        mat[i] = ( ( (double)i ) / ( (double)10 * (double)ncols ) ) + (double)( nele - i );
+    }
+}
+
 int
 main()
 {
-    int           ierr = 0;
     base_int_t    sketch_iparam[IDX_SKETCH_IPARAM_LEN];
-    base_int_t    len_In  = 0;
-    base_int_t    len_Out = 0;
+    base_int_t    len_In   = 0;
+    base_int_t    len_Out  = 0;
+    size_t        size_In  = 0;
+    size_t        size_Out = 0;
     base_sketch_t sketch_data;
-    // Data to be transformed (Out-of-place)
-    double *In = NULL;
-    // The transformed transformed
-    double *Out = NULL;
-
-    sketch_iparam[IDX_NCOLS_DATA_IN]      = 4;
-    sketch_iparam[IDX_NROWS_DATA_IN]      = 8;
-    sketch_iparam[IDX_SKETCH_DIM]         = 8;
-    sketch_iparam[IDX_NDL]                = 0;
-    sketch_iparam[IDX_NDR]                = 0;
-    sketch_iparam[IDX_SKETCH_TYPE]        = WHICH_SKETCH_TYPE;
+    double       *In                      = NULL;
+    double       *Out                     = NULL;
+    sketch_iparam[IDX_NROWS_DATA_IN]      = NROWS;
+    sketch_iparam[IDX_NCOLS_DATA_IN]      = NCOLS;
+    sketch_iparam[IDX_SKETCH_DIM]         = SKETCH_DIM;
+    sketch_iparam[IDX_NDL]                = 1;
+    sketch_iparam[IDX_NDR]                = 1;
     sketch_iparam[IDX_SKETCH_ALG]         = WHICH_SKETCH_ALG;
+    sketch_iparam[IDX_SKETCH_TYPE]        = WHICH_SKETCH_TYPE;
     sketch_iparam[IDX_SKETCH_NUM_THREADS] = SKETCH_NUM_THREADS;
-    sketch_iparam[IDX_SKETCH_NUM_GPU]     = 0;
-
-    printf( "Using sketch algo: %s with sketch type %s\n", string_sketch_alg[WHICH_SKETCH_ALG], string_sketch_type[WHICH_SKETCH_TYPE] );
-
-    len_In  = sketch_iparam[IDX_NROWS_DATA_IN] * sketch_iparam[IDX_NCOLS_DATA_IN];
-    len_Out = sketch_iparam[IDX_SKETCH_DIM] * sketch_iparam[IDX_NCOLS_DATA_IN];
-
-    size_t size_In = len_In * sizeof( double );
-    // In = (double*) mkl_malloc(size_In, d_align);
+    sketch_iparam[IDX_SKETCH_NUM_GPU]     = SKETCH_NUM_GPUS;
+    len_In                                = sketch_iparam[IDX_NROWS_DATA_IN] * sketch_iparam[IDX_NCOLS_DATA_IN];
+    len_Out                               = sketch_iparam[IDX_SKETCH_DIM] * sketch_iparam[IDX_NCOLS_DATA_IN];
+    size_In                               = len_In * sizeof( double );
+    size_Out                              = len_Out * sizeof( double );
     SPEALLOC( In, base_dalign, size_In );
     assert( In != NULL );
-    memset( In, 0, size_In );
-    size_t size_Out = len_Out * sizeof( double );
-    // Out = (double*) mkl_malloc(size_Out, d_align);
     SPEALLOC( Out, base_dalign, size_Out );
     assert( Out != NULL );
-    memset( In, 0, size_In );
-
     base_init_sketch_data( &sketch_data, &sketch_iparam[0], 0, 1 );
     base_set_sketch_data( &sketch_data, 0, 1 );
-
-    // Data Initialization
-    for ( base_int_t i = 0; i < sketch_iparam[IDX_NCOLS_DATA_IN]; ++i ) {
-        In[0 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1;
-        In[2 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1;
-        In[5 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1;
-        In[6 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1;
-    }
-
-    if ( sketch_iparam[IDX_SKETCH_ALG] != GAUSS ) {
-        // Identity Perm
-        for ( size_t i = 0; i < sketch_iparam[IDX_SKETCH_DIM]; ++i )
-            sketch_data.permutation_array[i] = i;
-        // Identity scaling
-        sketch_data.scale = 1;
-    }
-
-    PRINT_COLMAJ_MAT( In, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "In Init" );
-    PRINT_COLMAJ_MAT( Out, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "Out Init" );
-
+    set_mat_values( In, len_In, sketch_iparam[IDX_NCOLS_DATA_IN] );
+    memset( Out, 0, size_Out );
+    // PRINT_COLMAJ_MAT(In,sketch_iparam[IDX_NROWS_DATA_IN],sketch_iparam[IDX_NCOLS_DATA_IN],"In");
+    // PRINT_COLMAJ_MAT(Out,sketch_iparam[IDX_SKETCH_DIM],sketch_iparam[IDX_NCOLS_DATA_IN],"Out");
     base_getdata_sketch_data( &sketch_data, sketch_iparam[IDX_NCOLS_DATA_IN], In, Out );
-
+    // PRINT_COLMAJ_MAT(sketch_data.data_in,sketch_iparam[IDX_NROWS_DATA_IN],sketch_iparam[IDX_NCOLS_DATA_IN],"sketch_data.In");
+    // PRINT_COLMAJ_MAT(sketch_data.data_out,sketch_iparam[IDX_SKETCH_DIM],sketch_iparam[IDX_NCOLS_DATA_IN],"sketch_data.Out");
     base_compute_block_sketch_nocomm( &sketch_data );
-
-    PRINT_COLMAJ_MAT( In, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "In" );
-    PRINT_COLMAJ_MAT( Out, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "Out Computed" );
-
-    cblas_dcopy( len_Out, Out, 1, In, 1 );
-    base_getdata_sketch_data( &sketch_data, sketch_iparam[IDX_NCOLS_DATA_IN], In, Out );
-    base_compute_block_sketch_nocomm( &sketch_data );
-
-    PRINT_COLMAJ_MAT( In, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "In" );
-    PRINT_COLMAJ_MAT( Out, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], "Out Computed" );
-
-    memset( In, 0, size_In );
-    for ( base_int_t i = 0; i < 1; ++i ) {
-        In[0 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1 * sketch_iparam[IDX_NROWS_DATA_IN];
-        In[2 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1 * sketch_iparam[IDX_NROWS_DATA_IN];
-        In[5 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1 * sketch_iparam[IDX_NROWS_DATA_IN];
-        In[6 + i * sketch_iparam[IDX_NROWS_DATA_IN]] = 1 * sketch_iparam[IDX_NROWS_DATA_IN];
-    }
-    ierr = 0;
-    CHECK_COLMAJ_MAT_WITH_VEC( Out, In, sketch_iparam[IDX_NROWS_DATA_IN], sketch_iparam[IDX_NCOLS_DATA_IN], ierr );
-
+    PRINT_COLMAJ_MAT( sketch_data.data_out, sketch_iparam[IDX_SKETCH_DIM], sketch_iparam[IDX_NCOLS_DATA_IN], "SOL sketch_data.Out" );
     base_free_sketch_data( &sketch_data );
     free( In );
     In = NULL;
     free( Out );
     Out = NULL;
-
-    return ierr;
 }

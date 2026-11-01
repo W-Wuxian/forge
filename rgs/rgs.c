@@ -1,7 +1,7 @@
 #include "rgs.h"
 
 void
-base_set_rgs( rgs_data_t *rgs_data, base_int_t *iparam, int rank, int size, MPI_Comm comm )
+base_set_rgs_data( base_rgs_t *rgs_data, base_int_t *iparam, int rank, int size, MPI_Comm comm )
 {
     // Set MPI info
     rgs_data->rank = rank;
@@ -25,51 +25,52 @@ base_set_rgs( rgs_data_t *rgs_data, base_int_t *iparam, int rank, int size, MPI_
     if ( rgs_data->remaining_block_size > 0 ) {
         rgs_data->number_of_block += 1;
     }
-    rgs_data->current_blocks_size                  = ( iparam[IDX_USER_BLOCK_SIZE] > rgs_data->remaining_block_size ) ? iparam[IDX_USER_BLOCK_SIZE] : rgs_data->remaining_block_size;
-    base_int_t SKETCH_iparam[SKETCH_iparam_length] = { iparam[IDX_NROWS_DATA_IN], rgs_data->current_blocks_size, iparam[IDX_SKETCH_DIM], iparam[NDR], iparam[NDL], iparam[WSKETCH] };
+    rgs_data->current_block_size                    = ( iparam[IDX_USER_BLOCK_SIZE] > rgs_data->remaining_block_size ) ? iparam[IDX_USER_BLOCK_SIZE] : rgs_data->remaining_block_size;
+    base_int_t sketch_iparam[IDX_SKETCH_IPARAM_LEN] = { iparam[IDX_NROWS_DATA_IN], rgs_data->current_block_size, iparam[IDX_SKETCH_DIM],         iparam[IDX_NDR],           iparam[IDX_NDL],
+                                                        iparam[IDX_SKETCH_ALG],    iparam[IDX_SKETCH_TYPE],      iparam[IDX_SKETCH_NUM_THREADS], iparam[IDX_SKETCH_NUM_GPU] };
     // Init SKETCH
-    base_init_sketch_data( &rgs_data->sketch_data, SKETCH_iparam, rank, size );
+    base_init_sketch_data( &rgs_data->sketch_data, sketch_iparam, rank, size );
     // Set mem
-    base_int_t size_tmpwork = ( rgs_data->sketch_dim * rgs_data->current_blocks_size );
-    base_int_t Stmp         = ( rgs_data->sketch_dim * rgs_data->current_blocks_size * rgs_data->number_of_block );
-    base_int_t worktmp      = ( 2 * rgs_data->ncols_data_in * rgs_data->ncols_data_in ) * ( size + 1 );
-    base_int_t addtmp       = base_imax( Stmp, worktmp );
-    rgs_data->lth_tmpwork   = addtmp;
-    size_tmpwork += addtmp;
-    rgs_data->si_tmpwork    = size_tmpwork;
-    base_int_t size_PSke    = rgs_data->sketch_dim * rgs_data->ncols_data_in;
-    base_int_t size_SSke    = rgs_data->sketch_dim * rgs_data->ncols_data_in;
-    base_int_t size_Rfac    = rgs_data->ncols_data_in * rgs_data->ncols_data_in;
-    base_int_t size_Qfac    = rgs_data->nrows_data_in * rgs_data->ncols_data_in;
-    base_int_t size_tmpTSQR = rgs_data->nrows_data_in * rgs_data->user_block_size;
+    base_int_t size_tmp_data_work = ( rgs_data->sketch_dim * rgs_data->current_block_size );
+    base_int_t Stmp               = ( rgs_data->sketch_dim * rgs_data->current_block_size * rgs_data->number_of_block );
+    base_int_t worktmp            = ( 2 * rgs_data->ncols_data_in * rgs_data->ncols_data_in ) * ( size + 1 );
+    base_int_t addtmp             = base_imax( Stmp, worktmp );
+    rgs_data->len_tmp_data_work   = addtmp;
+    size_tmp_data_work += addtmp;
+    rgs_data->size_tmp_data_work  = size_tmp_data_work;
+    base_int_t size_pske          = rgs_data->sketch_dim * rgs_data->ncols_data_in;
+    base_int_t size_sske          = rgs_data->sketch_dim * rgs_data->ncols_data_in;
+    base_int_t size_rfac          = rgs_data->ncols_data_in * rgs_data->ncols_data_in;
+    base_int_t size_qfac          = rgs_data->nrows_data_in * rgs_data->ncols_data_in;
+    base_int_t size_tmp_data_tsqr = rgs_data->nrows_data_in * rgs_data->user_block_size;
 
-    base_int_t size_data_work = size_tmpwork + size_PSke + size_SSke + size_tmpTSQR;
-    size_data_work += ( size_Rfac + size_Qfac );
+    base_int_t size_data_work = size_tmp_data_work + size_pske + size_sske + size_tmp_data_tsqr;
+    size_data_work += ( size_rfac + size_qfac );
     rgs_data->size_data_work = size_data_work;
     SPEALLOC( rgs_data->data_work, base_dalign, size_data_work * sizeof( double ) );
     BASE_ASSERT_ISNOTNULL( rgs_data->data_work );
     // Set memory to Zero
     memset( rgs_data->data_work, 0, size_data_work * sizeof( double ) );
     // Set ptr
-    base_int_t offset = 0;
-    rgs_data->tmpwork = rgs_data->data_work;
-    offset += size_tmpwork;
-    rgs_data->PSke = rgs_data->data_work + offset;
-    offset += size_PSke;
-    rgs_data->SSke = rgs_data->data_work + offset;
-    offset += size_SSke;
-    rgs_data->Rfac = rgs_data->data_work + offset;
-    offset += size_Rfac;
-    rgs_data->Qfac = rgs_data->data_work + offset;
-    offset += size_Qfac;
-    rgs_data->tmpTSQR = rgs_data->data_work + offset;
-    offset += size_tmpTSQR;
+    base_int_t offset       = 0;
+    rgs_data->tmp_data_work = rgs_data->data_work;
+    offset += size_tmp_data_work;
+    rgs_data->pske = rgs_data->data_work + offset;
+    offset += size_pske;
+    rgs_data->sske = rgs_data->data_work + offset;
+    offset += size_sske;
+    rgs_data->rfac = rgs_data->data_work + offset;
+    offset += size_rfac;
+    rgs_data->qfac = rgs_data->data_work + offset;
+    offset += size_qfac;
+    rgs_data->tmp_data_tsqr = rgs_data->data_work + offset;
+    offset += size_tmp_data_tsqr;
     // Set Sketch
     base_set_sketch_data( &rgs_data->sketch_data, rank, size );
-    BASE_ASSERT_ISNOTNULL( ( rgs_data->sketch_data.swork != NULL ) );
+    BASE_ASSERT_ISNOTNULL( ( rgs_data->sketch_data.data_work ) );
 
     // Approx memory used and flops
-    base_int_t sum = ( size_PSke + size_SSke + size_Qfac + size_tmpTSQR + size_Rfac + size_tmpwork );
+    base_int_t sum = ( size_pske + size_sske + size_qfac + size_tmp_data_tsqr + size_rfac + size_tmp_data_work );
     base_memory_rgs( &rgs_data->rgs_memory, rgs_data->sketch_data.sketch_memory, (size_t)( sum * sizeof( double ) ) );
     base_flops_rgs( rgs_data );
 }
@@ -92,7 +93,7 @@ base_flops_rgs( base_rgs_t *rgs_data )
 {
     double coef = rgs_data->number_of_block;
     double m    = rgs_data->nrows_data_in;
-    double bs   = rgs_data->current_blocks_size;
+    double bs   = rgs_data->current_block_size;
     double nb   = rgs_data->user_block_size;
     double k    = rgs_data->sketch_dim;
 

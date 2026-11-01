@@ -53,6 +53,18 @@ typedef uint64_t base_uint_t;
 #define base_d_beta_ze base_d_ze
 #define base_d_alpha_p1 base_d_p1
 
+static inline base_int_t
+base_imin( base_int_t a, base_int_t b )
+{
+    return ( a < b ) ? a : b;
+}
+
+static inline base_int_t
+base_imax( base_int_t a, base_int_t b )
+{
+    return ( a > b ) ? a : b;
+}
+
 typedef struct {
     fix_dbl mem_in_kb;
     fix_dbl mem_in_mb;
@@ -65,21 +77,38 @@ typedef base_mem_s base_mem_t;
 #define BASE_MB ( 1024 * 1024 )
 #define BASE_GB ( 1024 * 1024 * 1024 )
 
+// static inline fix_dbl
+// set_mem_in_kb( size_t a )
+// {
+//     return (fix_dbl)ceil( (fix_dbl)a / BASE_KB );
+// }
+// static inline fix_dbl
+// set_mem_in_mb( size_t a )
+// {
+//     return (fix_dbl)ceil( (fix_dbl)a / BASE_MB );
+// }
+// static inline fix_dbl
+// set_mem_in_gb( size_t a )
+// {
+//     return (fix_dbl)ceil( (fix_dbl)a / BASE_GB );
+// }
+
 static inline fix_dbl
 set_mem_in_kb( size_t a )
 {
-    return (fix_dbl)ceil( (fix_dbl)a / BASE_KB );
+    return (fix_dbl)( (fix_dbl)a / BASE_KB );
 }
 static inline fix_dbl
 set_mem_in_mb( size_t a )
 {
-    return (fix_dbl)ceil( (fix_dbl)a / BASE_MB );
+    return (fix_dbl)( (fix_dbl)a / BASE_MB );
 }
 static inline fix_dbl
 set_mem_in_gb( size_t a )
 {
-    return (fix_dbl)ceil( (fix_dbl)a / BASE_GB );
+    return (fix_dbl)( (fix_dbl)a / BASE_GB );
 }
+
 static inline base_mem_t
 set_mem_in_units( size_t a )
 {
@@ -89,6 +118,15 @@ static inline base_mem_t
 base_mem_add( base_mem_t a, base_mem_t b )
 {
     return ( base_mem_t ){ .mem_in_kb = ( a.mem_in_kb + b.mem_in_kb ), .mem_in_mb = ( a.mem_in_mb + b.mem_in_mb ), .mem_in_gb = ( a.mem_in_gb + b.mem_in_gb ) };
+}
+
+static inline void
+base_display_mem( const base_mem_t a, const char *msg )
+{
+    printf( "%s\n", msg );
+    printf( "\r%g KB\n", a.mem_in_kb );
+    printf( "\r%g MB\n", a.mem_in_mb );
+    printf( "\r%g GB\n", a.mem_in_gb );
 }
 
 #endif  //__BASE_DATATYPE_H__

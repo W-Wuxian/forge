@@ -155,4 +155,16 @@
     }
 #endif
 
+// Source - https://stackoverflow.com/a/77881417
+// Posted by Lundin, modified by community. See post 'Timeline' for change history
+// Retrieved 2026-11-01, License - CC BY-SA 4.0
+
+#define IS_ARRAY( T ) _Generic( &( T ), typeof ( *T )( * )[]: true, default: false )
+
+// Source - https://stackoverflow.com/a/77939604
+// Posted by Lundin
+// Retrieved 2026-11-01, License - CC BY-SA 4.0
+
+#define IS_POINTER( P ) _Generic( &( typeof( P ) ){ 0 }, typeof( *P ) **: 1, default: 0 )
+
 #endif  //__BASE_HEADER_H__

@@ -4,7 +4,7 @@
 #include "sketch.h"
 
 #if !defined( WITH_MPI )
-#define MPI_Comm void
+#define MPI_Comm void *
 #endif
 
 #define IDX_USER_BLOCK_SIZE IDX_SKETCH_IPARAM_LEN /**< index for the user block size */                         // NBLOCKS
@@ -41,7 +41,7 @@ typedef enum {
  *            - memory needed by RGS
  */
 typedef struct {
-    base_sketch_t skecth_data; /**< sketch struct */
+    base_sketch_t sketch_data; /**< sketch struct */
 
     // data_work main memory for: tmpwork PSke SSke Rfac Qfac tmpTSQR
     double *data_work;  //*workd;
@@ -68,7 +68,7 @@ typedef struct {
     base_int_t current_block_size;    // blocks_size;                /**< The actual block size */
     base_int_t number_of_block;       // coef;                       /**< Number of nblocks */
     base_int_t remaining_block_size;  // remainder;                  /**< remaining block size */
-    base_int_t size_tmp_data_work;    // size_workd;
+    base_int_t size_data_work;        // size_workd;
     // base_int_t isalias; /**< Qfac as an alias */
     base_rgs_lss_alg_e lss_alg;  // wlss; /**< which Least-Squares Solver */
 
@@ -86,7 +86,7 @@ typedef struct {
 } base_rgs_t;
 
 /**
- * \fn base_set_rgs
+ * \fn base_set_rgs_data
  * \brief Set RGS data with respect to the user iparam and MPI
  * \details Set SKETCH and memory used by RGS
  * \param[in, out] rgs_data pointer to the RGS struct
@@ -95,14 +95,14 @@ typedef struct {
  * \param[in] size Size of the MPI communicator
  * \param[in] comm The MPI communicator used
  */
-void base_set_rgs( rgs_data_t *rgs_data, base_int_t *iparam, int rank, int size, MPI_Comm comm );
+void base_set_rgs_data( base_rgs_t *rgs_data, base_int_t *iparam, int rank, int size, MPI_Comm comm );
 
 /**
- * @fn base_free_rgs
+ * @fn base_free_rgs_data
  * @brief Free memory created by RGS (and SKETCH)
  * @param[in, out] rgs_data pointer to the RGS struct
  */
-void base_free_rgs( base_rgs_t *rgs_data );
+void base_free_rgs_data( base_rgs_t *rgs_data );
 
 /**
  * @fn base_get_data_rgs
@@ -113,7 +113,7 @@ void base_free_rgs( base_rgs_t *rgs_data );
  * @param[in] rgs_ite actual RGS iteration
  * @param[in] data_need_facto pointer to the input data (the block to factorize/orthogonalize)
  */
-void base_get_data_rgs( rgs_data_t *rgs_data, int rgs_ite, double *data_need_facto );
+void base_get_data_rgs( base_rgs_t *rgs_data, int rgs_ite, double *data_need_facto );
 
 /**
  * @fn base_compute_rgs
@@ -121,7 +121,7 @@ void base_get_data_rgs( rgs_data_t *rgs_data, int rgs_ite, double *data_need_fac
  * @details using random project based on SKETCH
  * @param[in, out] rgs_data pointer to the RGS struct
  */
-void base_compute_rgs( rgs_data_t *rgs_data );
+void base_compute_rgs( base_rgs_t *rgs_data );
 
 /**
  * @fn _base_lss_rgs
@@ -129,7 +129,7 @@ void base_compute_rgs( rgs_data_t *rgs_data );
  * @details Least-Squares solver reduired by RGS
  * @param[in, out] rgs_data pointer to the RGS structure
  */
-void _base_lss_rgs( rgs_data_t *rgs_data );
+void _base_lss_rgs( base_rgs_t *rgs_data );
 
 /**
  * @fn base_sketched_cholqr
@@ -141,9 +141,9 @@ void _base_lss_rgs( rgs_data_t *rgs_data );
  * - S^{*}_{i} the skecth of Q^{*}_{i}
  * - R_{i,i} the Cholesky factorization of (S^{*}_{i})^{T}S^{*}_{i}
  * - Q_{i} = Q^{*}_{i}(R_{i,i})^{-1}
- * @param[in,out] rgs_data - pointer to rgs_data_t data structure
+ * @param[in,out] rgs_data - pointer to base_rgs_t data structure
  */
-void base_sketched_cholqr( rgs_data_t *rgs_data );
+void base_sketched_cholqr( base_rgs_t *rgs_data );
 
 /**
  * @fn base_l2qr_sketched_cholqr
@@ -157,7 +157,7 @@ void base_sketched_cholqr( rgs_data_t *rgs_data );
  * Improves the stability of the sketched CholQR by pre-processing the matrix Q^{*}_{i} with TSQR
  * @param[in,out] rgs_data - pointer to a RGS data structure
  */
-void base_l2qr_sketched_cholqr( rgs_data_t *rgs_data );
+void base_l2qr_sketched_cholqr( base_rgs_t *rgs_data );
 
 /**
  * @brief Assert RGS errors
@@ -165,15 +165,15 @@ void base_l2qr_sketched_cholqr( rgs_data_t *rgs_data );
  * ||I-STS||
  * Cond(S)
  * Frobenius norm
- * @param rgs_data - pointer to a rgs_data_t data structure
+ * @param rgs_data - pointer to a base_rgs_t data structure
  * @param n - number of vectors to check (n<=size(S)[2])
  */
-void base_rgs_assert_error( rgs_data_t *rgs_data, base_int_t n );
+void base_rgs_assert_error( base_rgs_t *rgs_data, base_int_t n );
 
 /**
  * @brief Saving in a file ||P-SR||/||P||, ||W-QR||/||W||, ||I-STS|| and cond(S)
  *
- * @param rgs_data - pointer to a rgs_data_t data structure
+ * @param rgs_data - pointer to a base_rgs_t data structure
  * @param W - pointer to a matrix-like onject
  * @param globalsize - global number of rows
  * @param nthreads - number of threads
@@ -184,22 +184,22 @@ void base_rgs_assert_error( rgs_data_t *rgs_data, base_int_t n );
  * @param DirName - path to the directory used to store error file
  * @return int
  */
-int base_rgs_saving_error( rgs_data_t *rgs_data, double *W, base_int_t globalsize, int nthreads, int usrc, int isB, double TrV, char *MatName, char *DirName );
+int base_rgs_saving_error( base_rgs_t *rgs_data, double *W, base_int_t globalsize, int nthreads, int usrc, int isB, double TrV, char *MatName, char *DirName );
 
 /**
  * @brief Compute RGS flops
  *
- * @param rgs_data - pointer to a rgs_data_t data structure
+ * @param rgs_data - pointer to a base_rgs_t data structure
  */
-void base_flops_rgs( rgs_data_t *rgs_data );
+void base_flops_rgs( base_rgs_t *rgs_data );
 
 /**
  * @brief Compute RGS memory
  *
- * @param rgs_memMB - pointer to size_t
- * @param sketch_memMB - size_t
- * @param memOC - size_t
+ * @param rgs_memory - pointer to base_mem_t
+ * @param sketch_memory - sketch_memory
+ * @param mem_in_bytes - size_t
  */
-void base_memory_rgs( size_t *rgs_memMB, size_t sketch_memMB, size_t memOC );
+void base_memory_rgs( base_mem_t *rgs_memory, base_mem_t sketch_memory, size_t mem_in_bytes );
 
 #endif  //__RGS_H__

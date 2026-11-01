@@ -12,6 +12,10 @@
 #define SKETCH_NUM_THREADS 1
 #endif
 
+#ifndef SKETCH_NUM_GPUS
+#define SKETCH_NUM_GPUS 1
+#endif
+
 int
 main()
 {
@@ -33,7 +37,7 @@ main()
     sketch_iparam[IDX_SKETCH_TYPE]        = WHICH_SKETCH_TYPE;
     sketch_iparam[IDX_SKETCH_ALG]         = WHICH_SKETCH_ALG;
     sketch_iparam[IDX_SKETCH_NUM_THREADS] = SKETCH_NUM_THREADS;
-    sketch_iparam[IDX_SKETCH_NUM_GPU]     = 0;
+    sketch_iparam[IDX_SKETCH_NUM_GPU]     = SKETCH_NUM_GPUS;
 
     printf( "Using sketch algo: %s with sketch type %s\n", string_sketch_alg[WHICH_SKETCH_ALG], string_sketch_type[WHICH_SKETCH_TYPE] );
 
