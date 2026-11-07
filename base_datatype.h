@@ -49,9 +49,64 @@ typedef uint64_t base_uint_t;
 #define base_d_m1 ( fix_dbl ) - 1.0
 #define base_d_ze (fix_dbl)0.0
 #define base_d_p2 (fix_dbl)2.0
+#define base_d_p3 (fix_dbl)3.0
+#define base_d_p6 (fix_dbl)6.0
 
 #define base_d_beta_ze base_d_ze
 #define base_d_alpha_p1 base_d_p1
+
+typedef enum { BASE_ROWMAJOR, BASE_COLMAJOR } base_matrix_layout_e;
+
+static inline void
+_dinitlinear( double *mat, base_int_t nr, base_int_t nc, base_matrix_layout_e layout )
+{
+    // base_int_t i = 0, k = 0;
+    // if ( layout == BASE_ROWMAJOR ) {
+    //     for ( ; i < nr; ++i ) {
+    //         k = i * nc;
+    //         for ( base_int_t j = 0; j < nc; ++j ) {
+    //             mat[j + k] = (double)( j + k );
+    //         }
+    //     }
+    // }
+    // else if ( layout == BASE_COLMAJOR ) {
+    //     for ( ; i < nc; ++i ) {
+    //         k = i * nr;
+    //         for ( base_int_t j = 0; j < nr; ++j ) {
+    //             mat[j + k] = (double)( j + k );
+    //         }
+    //     }
+    // }
+
+    base_int_t i = 0, k = 0, tmp = 0;
+    if ( layout == BASE_COLMAJOR ) {
+        tmp = nr;
+        nr  = nc;
+        nc  = tmp;
+    }
+    for ( ; i < nr; ++i ) {
+        k = i * nc;
+        for ( base_int_t j = 0; j < nc; ++j ) {
+            mat[j + k] = (double)( j + k );
+        }
+    }
+}
+
+static inline void
+_dinitwrandrange( double *mat, base_int_t nele, double min, double max, base_uint_t se )
+{
+    if ( se ) {
+        srand( se );
+    }
+    else if ( !se ) {  // i.e se==0
+        srand( (base_uint_t)time( NULL ) );
+    }
+    base_int_t i     = 0;
+    double     scale = ( max - min ) / (double)RAND_MAX;
+    for ( ; i < nele; ++i ) {
+        mat[i] = min + scale * (double)rand();
+    }
+}
 
 static inline base_int_t
 base_imin( base_int_t a, base_int_t b )
@@ -121,9 +176,10 @@ base_mem_add( base_mem_t a, base_mem_t b )
 }
 
 static inline void
-base_display_mem( const base_mem_t a, const char *msg )
+base_display_stats( const base_mem_t a, const fix_dbl flops, const char *msg )
 {
     printf( "%s\n", msg );
+    printf( "\r%g Flops:\n", flops );
     printf( "\r%g KB\n", a.mem_in_kb );
     printf( "\r%g MB\n", a.mem_in_mb );
     printf( "\r%g GB\n", a.mem_in_gb );

@@ -62,9 +62,22 @@ main()
     rgs_iparam[IDX_NUMBER_REORTHO_LSS]             = 2;
     rgs_iparam[IDX_NUMBER_REORTHO_SKETCHED_CHOLQR] = 2;
     base_rgs_t rgs_data;
+    double    *data_need_facto = NULL;
+    SPEALLOC( data_need_facto, base_dalign, sizeof( double ) * NROWS * NCOLS );
+    _dinitwrandrange( data_need_facto, NROWS * NCOLS, -10, 10, 1234567 );
+    PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: _dinitwrand user fixed seed" );
+    _dinitwrandrange( data_need_facto, NROWS * NCOLS, -10, 10, 0 );
+    PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: _dinitwrand time bases seed" );
+    _dinitlinear( data_need_facto, NROWS, NCOLS, BASE_ROWMAJOR );
+    PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: _dinitlinear BASE_ROWMAJOR" );
+    _dinitlinear( data_need_facto, NROWS, NCOLS, BASE_COLMAJOR );
+    PRINT_COLMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: _dinitlinear BASE_COLMAJOR" );
     base_set_rgs_data( &rgs_data, &rgs_iparam[0], rank, size, comm );
-    base_display_mem( rgs_data.rgs_memory, "RGS Memory:" );
+    base_display_stats( rgs_data.rgs_memory, rgs_data.rgs_flops, "RGS Memory:" );
+    base_display_stats( rgs_data.sketch_data.sketch_memory, rgs_data.sketch_data.sketch_flops, "SKETCH Memory:" );
+    base_get_data_rgs( &rgs_data, 0, data_need_facto );
     base_free_rgs_data( &rgs_data );
+    SPEFREE( data_need_facto );
 
     return ierr;
 }

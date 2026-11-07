@@ -76,6 +76,31 @@ base_set_rgs_data( base_rgs_t *rgs_data, base_int_t *iparam, int rank, int size,
 }
 
 void
+base_get_data_rgs( base_rgs_t *rgs_data, int rgs_ite, double *data_need_facto )
+{
+    int ierr                  = 0;
+    rgs_data->current_rgs_ite = rgs_ite;
+    rgs_data->current_block_size =
+        ( rgs_data->remaining_block_size == 0 ) ? rgs_data->user_block_size : ( ( rgs_ite < ( rgs_data->number_of_block ) - 1 ) ? rgs_data->user_block_size : rgs_data->remaining_block_size );
+    rgs_data->data_need_facto = data_need_facto;
+    BASE_ASSERT_ISNOTNULL( rgs_data->data_work );
+    BASE_ASSERT_ISNOTNULL( rgs_data->qfac );
+    ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR,
+                           'A',
+                           rgs_data->nrows_data_in,
+                           rgs_data->current_block_size,
+                           data_need_facto,
+                           rgs_data->nrows_data_in,
+                           rgs_data->qfac + rgs_ite * rgs_data->user_block_size * rgs_data->nrows_data_in,
+                           rgs_data->nrows_data_in );
+    if ( ierr != 0 ) {
+        if ( rgs_data->rank == 0 )
+            PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
+        exit( 1 );
+    }
+}
+
+void
 base_free_rgs_data( base_rgs_t *rgs_data )
 {
     base_free_sketch_data( &rgs_data->sketch_data );
@@ -98,16 +123,16 @@ base_flops_rgs( base_rgs_t *rgs_data )
     double k    = rgs_data->sketch_dim;
 
     double fp_LSS       = 0;
-    double sumi         = ( coef + 1 ) * ( coef / 2 );
-    double sumi2        = ( coef * coef * coef / 3 ) - ( coef * coef / 2 ) + ( coef / 6 );
-    double sumi3        = ( coef / 2 ) * ( coef + 1 );
+    double sumi         = ( coef + base_d_p1 ) * ( coef / base_d_p2 );
+    double sumi2        = ( coef * coef * coef / base_d_p3 ) - ( coef * coef / base_d_p2 ) + ( coef / base_d_p6 );
+    double sumi3        = ( coef / base_d_p2 ) * ( coef + base_d_p1 );
     double fp_Qupd      = 2 * m * bs * ( 1 + nb * sumi );
     double fp_SKETCH    = (double)rgs_data->sketch_data.sketch_flops;
-    double fp_SCHOLQR   = ( bs == 1 ) ? 0 : fp_SKETCH + 2 * bs * bs * k + ( bs * bs * bs / 3 ) + ( bs * bs / 2 ) + m * m * bs;
+    double fp_SCHOLQR   = ( bs == 1 ) ? 0 : fp_SKETCH + 2 * bs * bs * k + ( bs * bs * bs / base_d_p3 ) + ( bs * bs / base_d_p2 ) + m * m * bs;
     double fp_L2SCHOLQR = ( bs == 1 ) ? 0 : m * bs + 2 * m * bs * bs + fp_SCHOLQR + bs * bs + 2 * bs * bs * bs + fp_SKETCH;
     switch ( rgs_data->lss_alg ) {
         case RGS_HH:
-            fp_LSS = k * nb * sumi + k * nb + nb * bs * sumi + 2 * k * nb * nb * sumi2 - ( 2 / 3 ) * nb * nb * nb * sumi3 + k * nb * bs * sumi + k * k * nb * sumi;
+            fp_LSS = k * nb * sumi + k * nb + nb * bs * sumi + 2 * k * nb * nb * sumi2 - ( 2 / base_d_p3 ) * nb * nb * nb * sumi3 + k * nb * bs * sumi + k * k * nb * sumi;
             break;
         case RGS_CGS:
         case RGS_BMGS:

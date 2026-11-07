@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include <time.h>
 #include <string.h>
 #include <math.h>
 #include <assert.h>
@@ -16,18 +17,24 @@
 // #include "mkl.h"
 #include "base_datatype.h"
 
-#define PRINT_INFO() printf( "In file:%s, function:%s() and line:%d ", __FILE__, __FUNCTION__, __LINE__ )
+#define PRINT_INFO() printf( "In file:%s, function:%s() and line:%d\n", __FILE__, __FUNCTION__, __LINE__ )
+#define PRINT_MSGERR( a, b ) printf( "%s %d\nIn file:%s, function:%s() and line:%d\n", ( a ), ( b ), __FILE__, __FUNCTION__, __LINE__ )
 
+#if defined( NOASSERTNULL ) || defined( NDEBUG )
+#define BASE_ASSERT_ISNOTNULL( a ) ( (void)0 )
+#else
 #define BASE_ASSERT_ISNOTNULL( a )                                                                                                                                                                     \
     do {                                                                                                                                                                                               \
-        if ( ( a ) == NULL ) {                                                                                                                                                                         \
+        const void *const __a_ptr = ( a );                                                                                                                                                             \
+        if ( __a_ptr == NULL ) {                                                                                                                                                                       \
             PRINT_INFO();                                                                                                                                                                              \
             printf( "assertion a != NULL failed:\n" );                                                                                                                                                 \
         }                                                                                                                                                                                              \
-        assert( ( a ) != NULL );                                                                                                                                                                       \
+        assert( __a_ptr != NULL );                                                                                                                                                                     \
     } while ( 0 )
+#endif
 
-#ifdef NOASSERTINT
+#if defined( NOASSERTINT ) || defined( NDEBUG )
 #define BASE_ASSERT_INT( a, b ) ( (void)0 )
 #define BASE_SILENT_ASSERT_INT( a, b ) ( (void)0 )
 #else
