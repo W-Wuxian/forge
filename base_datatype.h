@@ -53,7 +53,9 @@ typedef uint64_t base_uint_t;
 #define base_d_p6 (fix_dbl)6.0
 
 #define base_d_beta_ze base_d_ze
+#define base_d_beta_p1 base_d_p1
 #define base_d_alpha_p1 base_d_p1
+#define base_d_alpha_m1 base_d_m1
 
 typedef enum { BASE_ROWMAJOR, BASE_COLMAJOR } base_matrix_layout_e;
 

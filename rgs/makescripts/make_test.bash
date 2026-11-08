@@ -25,7 +25,8 @@ mkdir -p prof/
 #-DNDEBUG \
 #debug_option="-O3 -march=native -g3 -pg -Wall -fopenmp -ftree-vectorize -fdump-tree-vect-details"
 #debug_option="-O0 -g3 -pg -Wall -Wno-unknown-pragmas -DNOPRINTMAT"
-debug_option="-O0 -g3 -pg -fopenmp -Wall -Wno-unknown-pragmas -DPRINTMAT"
+#debug_option="-O0 -g3 -pg -fopenmp -Wall -Wno-unknown-pragmas -DPRINTMAT"
+debug_option="-O0 -g3 -fopenmp -Wall -Wno-unknown-pragmas -DPRINTMAT"
 #debug_option="-O3 -g3 -pg -Wall -fopenmp -ftree-vectorize -fdump-tree-vect-details -DPRINTMAT"
 #debug_option="-O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -DNOPRINTMAT"
 #debug_option="-O3 -march=native -Wall -fopenmp -fopt-info-vec-optimized=vec_success.report -DPRINTMAT"
@@ -47,8 +48,8 @@ do
         ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
         2>&1 | tee -a build.log
         bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
-        mv gmon.out prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
-        gprof bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
+        #mv gmon.out prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
+        #gprof bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
         valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.log
     done
 done

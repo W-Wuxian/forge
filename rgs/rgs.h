@@ -159,6 +159,8 @@ void base_sketched_cholqr( base_rgs_t *rgs_data );
  */
 void base_l2qr_sketched_cholqr( base_rgs_t *rgs_data );
 
+int TSQR( MPI_Comm comm, base_int_t m, base_int_t n, double *A, double *Q, double *R, double *work );
+
 /**
  * @brief Assert RGS errors
  * ||P-SR|| / ||R||
