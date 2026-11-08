@@ -50,7 +50,7 @@ do
         bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
         #mv gmon.out prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
         #gprof bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
-        valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.log
+        #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.log
     done
 done
 

@@ -141,8 +141,9 @@ base_compute_rgs( base_rgs_t *rgs_data )
                      rgs_data->nrows_data_in );
     }
     if ( rgs_data->current_block_size > 1 ) { /**< Randomized Block Gram-Schmidt :: Computes R_{ite,ite} & S_{:,ite}*/
-        if ( rgs_data->current_rgs_ite == 0 ) {
+        if ( rgs_data->number_reortho_sketched_cholqr == 0 ) {
             base_l2qr_sketched_cholqr( rgs_data );
+            PRINT_MSGERR( "base_l2qr_sketched_cholqr current_block_size", rgs_data->current_block_size );
         }
         else {
             for ( base_int_t i = 0; i < rgs_data->number_reortho_sketched_cholqr; ++i ) {
@@ -350,31 +351,49 @@ base_l2qr_sketched_cholqr( base_rgs_t *rgs_data )
     base_int_t Riteite_offset = ( ite * ncols * nblocks ) + ( ite * blocks_size );  // R is ncols x ncols offset is past computation + computed R_{0:ite-1, ite} (like)
     double    *Riteite        = rgs_data->rfac + Riteite_offset;
     double    *work           = rgs_data->tmp_data_work + ( Kproj * nblocks );  // work is (2blocks_size^2)*(size+1)
+
+    PRINT_COLMAJ_MAT( rgs_data->tmp_data_tsqr, nIn, blocks_size, "Start with tmp_data_tsqr" );
+    PRINT_COLMAJ_MAT( Qite, nIn, blocks_size, "Start with Qite" );
+    PRINT_COLMAJ_MAT( rgs_data->tmp_data_work, blocks_size, blocks_size, "Start with tmp_data_work" );
+    PRINT_COLMAJ_MAT( Riteite, ncols, blocks_size, "Start with Riteite" );
     // Compute L2-QR factorization of Q^{*} (=Q'R')
     ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', nIn, blocks_size, Qite, nIn, rgs_data->tmp_data_tsqr, nIn );
+    PRINT_COLMAJ_MAT( rgs_data->tmp_data_tsqr, nIn, blocks_size, "tmp_data_tsqr" );
     if ( ierr != 0 ) {
         if ( rgs_data->rank == 0 )
             PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
         exit( 1 );
     }
     ierr = TSQR( comm, nIn, blocks_size, rgs_data->tmp_data_tsqr, Qite, rgs_data->tmp_data_work, work );
+    PRINT_COLMAJ_MAT( Qite, nIn, blocks_size, "Qite after TSQR" );
+    PRINT_COLMAJ_MAT( rgs_data->tmp_data_work, blocks_size, blocks_size, "tmp_data_work after TSQR" );
     // Compute Sketched CholQR fact Q' = QR''
     base_sketched_cholqr( rgs_data );
+    PRINT_COLMAJ_MAT( Riteite, ncols, blocks_size, "Riteite after sketched_cholqr" );
     // Compute R''R' Store the results in Riteite using trmmm B:=alpha*op(A)*B or dgemm
     /*cblas_dtrmm(CblasColMajor, CblasRight, CblasUpper, CblasNoTrans, CblasNonUnit, blocks_size, blocks_size, 1.0, rgs_data->tmp_data_work, Kproj, Riteite, ncols);*/
     ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', blocks_size, blocks_size, Riteite, ncols, work, blocks_size );
+    PRINT_COLMAJ_MAT( work, blocks_size, blocks_size, "work ==  Riteite" );
     if ( ierr != 0 ) {
         if ( rgs_data->rank == 0 )
             PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
         exit( 1 );
     }
+    PRINT_COLMAJ_MAT( rgs_data->tmp_data_tsqr, nIn, blocks_size, "tmp_data_tsqr before dgemm" );
+    PRINT_COLMAJ_MAT( work, blocks_size, blocks_size, "work before dgemm" );
+    PRINT_COLMAJ_MAT( rgs_data->tmp_data_work, blocks_size, blocks_size, "tmp_data_work before dgemm" );
+    printf( "base_d_alpha_p1 %g\n", base_d_alpha_p1 );
+    printf( "base_d_beta_ze %g\n", base_d_beta_ze );
     cblas_dgemm(
         CblasColMajor, CblasNoTrans, CblasNoTrans, blocks_size, blocks_size, blocks_size, base_d_alpha_p1, work, blocks_size, rgs_data->tmp_data_work, blocks_size, base_d_beta_ze, Riteite, ncols );
+    PRINT_COLMAJ_MAT( Riteite, ncols, blocks_size, "Riteite after dgemm" );
     // Compute S = S'R''^{-1} with trsm or BSKETCH
     /*cblas_dtrsm(CblasColMajor, CblasRight, CblasUpper, CblasNoTrans, CblasNonUnit, Kproj, blocks_size, 1.0,
      Riteite, ncols, SSkeite, Kproj); // X*op(A) = alpha*B*/
+    PRINT_COLMAJ_MAT( SSkeite, rgs_data->sketch_dim, nblocks, "SSkeite before skecth" );
     base_getdata_sketch_data( &rgs_data->sketch_data, blocks_size, Qite, SSkeite );
     base_compute_block_sketch_nocomm( &rgs_data->sketch_data );
+    PRINT_COLMAJ_MAT( SSkeite, rgs_data->sketch_dim, nblocks, "SSkeite After skecth" );
 }
 
 int
@@ -429,6 +448,7 @@ TSQR( MPI_Comm comm, base_int_t m, base_int_t n, double *A, double *Q, double *R
     //	Assemble the matrix of concatenated R
 
     // ierr = MPI_Allgather(R, n * n, MPI_DOUBLE, Q_s, n * n, MPI_DOUBLE, comm);
+    ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', n, n, R, n, Q_s, n );  // remplace MPI_Allgather en seq sans MPI
 
     //	Reorder in COL MAJOR
     /*

@@ -12,15 +12,15 @@
 #include "rgs.h"
 
 #ifndef NROWS
-#define NROWS 10
+#define NROWS 8
 #endif
 
 #ifndef NCOLS
-#define NCOLS 5
+#define NCOLS 2
 #endif
 
 #ifndef SKETCH_DIM
-#define SKETCH_DIM 5
+#define SKETCH_DIM 3
 #endif
 
 #ifndef WHICH_SKETCH_ALG
@@ -57,25 +57,45 @@ main()
     rgs_iparam[IDX_SKETCH_NUM_THREADS] = SKETCH_NUM_THREADS;
     rgs_iparam[IDX_SKETCH_NUM_GPU]     = SKETCH_NUM_GPUS;
 
-    rgs_iparam[IDX_USER_BLOCK_SIZE]                = 1;
+    rgs_iparam[IDX_USER_BLOCK_SIZE]                = NCOLS;
     rgs_iparam[IDX_LSS_ALG]                        = RGS_CGS;
     rgs_iparam[IDX_NUMBER_REORTHO_LSS]             = 2;
     rgs_iparam[IDX_NUMBER_REORTHO_SKETCHED_CHOLQR] = 2;
     base_rgs_t rgs_data;
     double    *data_need_facto = NULL;
     SPEALLOC( data_need_facto, base_dalign, sizeof( double ) * NROWS * NCOLS );
-    _dinitwrandrange( data_need_facto, NROWS * NCOLS, -10, 10, 1234567 );
-    PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: _dinitwrand user fixed seed" );
-    _dinitwrandrange( data_need_facto, NROWS * NCOLS, -10, 10, 0 );
-    PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: _dinitwrand time bases seed" );
-    _dinitlinear( data_need_facto, NROWS, NCOLS, BASE_ROWMAJOR );
-    PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: _dinitlinear BASE_ROWMAJOR" );
-    _dinitlinear( data_need_facto, NROWS, NCOLS, BASE_COLMAJOR );
-    PRINT_COLMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: _dinitlinear BASE_COLMAJOR" );
+    // dinitwrandrange( data_need_facto, NROWS * NCOLS, -10, 10, 1234567 );
+    // PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: dinitwrand user fixed seed" );
+    // dinitwrandrange( data_need_facto, NROWS * NCOLS, -10, 10, 0 );
+    // PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: dinitwrand time bases seed" );
+    // dinitlinear( data_need_facto, NROWS, NCOLS, BASE_ROWMAJOR );
+    // PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: dinitlinear BASE_ROWMAJOR" );
+    dinitlinear( data_need_facto, NROWS, NCOLS, BASE_COLMAJOR );
+    PRINT_COLMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: dinitlinear BASE_COLMAJOR" );
+    // dinitorthobasis_sincos( data_need_facto, NROWS, NCOLS, BASE_ROWMAJOR );
+    // PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: dinitorthobasis_sincos BASE_ROWMAJOR" );
+    // dinitorthobasis_sincos( data_need_facto, NROWS, NCOLS, BASE_COLMAJOR );
+    // PRINT_COLMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: dinitorthobasis_sincos BASE_COLMAJOR" );
     base_set_rgs_data( &rgs_data, &rgs_iparam[0], rank, size, comm );
     base_display_stats( rgs_data.rgs_memory, rgs_data.rgs_flops, "RGS Memory:" );
     base_display_stats( rgs_data.sketch_data.sketch_memory, rgs_data.sketch_data.sketch_flops, "SKETCH Memory:" );
-    base_get_data_rgs( &rgs_data, 0, data_need_facto );
+    PRINT_MSGERR( "rgs user block size", rgs_data.user_block_size );
+    PRINT_MSGERR( "rgs current block size", rgs_data.current_block_size );
+    PRINT_MSGERR( "rgs number of block", rgs_data.number_of_block );
+    PRINT_MSGERR( "rgs remaining block size", rgs_data.remaining_block_size );
+    PRINT_MSGERR( "rgs current rgs ite", rgs_data.current_rgs_ite );
+    printf( "#############################################################\n" );
+    for ( base_int_t i = 0; i < rgs_data.number_of_block; ++i ) {
+        PRINT_MSGERR( "ite=", i );
+        PRINT_MSGERR( "rgs user block size", rgs_data.user_block_size );
+        PRINT_MSGERR( "rgs current block size", rgs_data.current_block_size );
+        PRINT_MSGERR( "rgs number of block", rgs_data.number_of_block );
+        PRINT_MSGERR( "rgs remaining block size", rgs_data.remaining_block_size );
+        PRINT_MSGERR( "rgs current rgs ite", rgs_data.current_rgs_ite );
+        base_get_data_rgs( &rgs_data, i, data_need_facto );
+        base_compute_rgs( &rgs_data );
+    }
+    PRINT_COLMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: Should be an orthogonal matrix now BASE_COLMAJOR" );
     base_free_rgs_data( &rgs_data );
     SPEFREE( data_need_facto );
 

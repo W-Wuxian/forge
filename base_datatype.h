@@ -59,8 +59,52 @@ typedef uint64_t base_uint_t;
 
 typedef enum { BASE_ROWMAJOR, BASE_COLMAJOR } base_matrix_layout_e;
 
+/* f_{mu}(x)= ( sin( 10(mu+x) ) ) / ( cos( 100(mu-x) ) + 1.1 ) for x in [0,1] for parameter mu in [0,1]
+function's domain is discretized with n=10^6 evenly spaces points x_i
+parameter set is discretized with m=300 venly spaces points mu_j.
+W
+matrix [W]_{i,j} = f_{mu_j}(x_i), 1 <= i <= n, 1 <= j <= m
+https://arxiv.org/pdf/2011.05090 Randomized Gram-Schmidt process with application to GMRES
+Oleg Balabanov and Laura Grigori */
+static inline double
+dorthobasis_sincos( double x, double mu )
+{
+    return ( sin( (double)10 * ( mu + x ) ) ) / ( cos( (double)100 * ( mu - x ) ) + 1.1 );
+}
 static inline void
-_dinitlinear( double *mat, base_int_t nr, base_int_t nc, base_matrix_layout_e layout )
+dinitorthobasis_sincos( double *mat, base_int_t n, base_int_t m, base_matrix_layout_e layout )
+{
+    assert( mat != NULL );
+    assert( n > 1 );
+    assert( m > 1 );
+    double dx  = base_d_p1 / ( n - 1 );
+    double dmu = base_d_p1 / ( m - 1 );
+
+    switch ( layout ) {
+        case BASE_ROWMAJOR:
+            for ( base_int_t i = 0; i < n; ++i ) {
+                base_int_t k = i * m;
+                double     x = i * dx;
+                for ( base_int_t j = 0; j < m; ++j ) {
+                    mat[j + k] = dorthobasis_sincos( x, j * dmu );
+                }
+            }
+            break;
+        case BASE_COLMAJOR:
+        default:
+            for ( base_int_t j = 0; j < m; j++ ) {
+                base_int_t k  = j * n;
+                double     mu = j * dmu;
+                for ( base_int_t i = 0; i < n; i++ ) {
+                    mat[i + k] = dorthobasis_sincos( i * dx, mu );
+                }
+            }
+            break;
+    }
+}
+
+static inline void
+dinitlinear( double *mat, base_int_t nr, base_int_t nc, base_matrix_layout_e layout )
 {
     // base_int_t i = 0, k = 0;
     // if ( layout == BASE_ROWMAJOR ) {
@@ -81,21 +125,34 @@ _dinitlinear( double *mat, base_int_t nr, base_int_t nc, base_matrix_layout_e la
     // }
 
     base_int_t i = 0, k = 0, tmp = 0;
-    if ( layout == BASE_COLMAJOR ) {
-        tmp = nr;
-        nr  = nc;
-        nc  = tmp;
+    if ( layout == BASE_ROWMAJOR ) {
+        tmp = nc;
+        nc  = nr;
+        nr  = tmp;
     }
-    for ( ; i < nr; ++i ) {
-        k = i * nc;
-        for ( base_int_t j = 0; j < nc; ++j ) {
+    for ( ; i < nc; ++i ) {
+        k = i * nr;
+        for ( base_int_t j = 0; j < nr; ++j ) {
             mat[j + k] = (double)( j + k );
         }
     }
+
+    // base_int_t i = 0, k = 0, tmp = 0;
+    // if ( layout == BASE_COLMAJOR ) {
+    //     tmp = nr;
+    //     nr  = nc;
+    //     nc  = tmp;
+    // }
+    // for ( ; i < nr; ++i ) {
+    //     k = i * nc;
+    //     for ( base_int_t j = 0; j < nc; ++j ) {
+    //         mat[j + k] = (double)( j + k );
+    //     }
+    // }
 }
 
 static inline void
-_dinitwrandrange( double *mat, base_int_t nele, double min, double max, base_uint_t se )
+dinitwrandrange( double *mat, base_int_t nele, double min, double max, base_uint_t se )
 {
     if ( se ) {
         srand( se );
