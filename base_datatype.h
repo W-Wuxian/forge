@@ -58,7 +58,7 @@ typedef uint64_t base_uint_t;
 #define base_d_alpha_m1 base_d_m1
 
 typedef enum { BASE_ROWMAJOR, BASE_COLMAJOR } base_matrix_layout_e;
-
+typedef enum { BASE_MAT_INIT_SYNTETIC, BASE_MAT_INIT_LINEAR, BASE_MAT_INIT_RANGE_RANDOM } base_matrix_init_method_e;
 /* f_{mu}(x)= ( sin( 10(mu+x) ) ) / ( cos( 100(mu-x) ) + 1.1 ) for x in [0,1] for parameter mu in [0,1]
 function's domain is discretized with n=10^6 evenly spaces points x_i
 parameter set is discretized with m=300 venly spaces points mu_j.
@@ -154,7 +154,7 @@ dinitlinear( double *mat, base_int_t nr, base_int_t nc, base_matrix_layout_e lay
 static inline void
 dinitwrandrange( double *mat, base_int_t nele, double min, double max, base_uint_t se )
 {
-    if ( se ) {
+    if ( se > 0 ) {
         srand( se );
     }
     else if ( !se ) {  // i.e se==0
@@ -166,6 +166,8 @@ dinitwrandrange( double *mat, base_int_t nele, double min, double max, base_uint
         mat[i] = min + scale * (double)rand();
     }
 }
+
+#define BASE_MATCREATE( mat, init_func, ... ) init_func( ( mat ), __VA_ARGS__ )
 
 static inline base_int_t
 base_imin( base_int_t a, base_int_t b )

@@ -18,7 +18,7 @@
 #include "base_datatype.h"
 
 #define PRINT_INFO() printf( "In file:%s, function:%s() and line:%d\n", __FILE__, __FUNCTION__, __LINE__ )
-#define PRINT_MSGERR( a, b ) printf( "%s %d\nIn file:%s, function:%s() and line:%d\n", ( a ), ( b ), __FILE__, __FUNCTION__, __LINE__ )
+#define PRINT_MSGERR( a, ... ) printf( "%s %d\nIn file:%s, function:%s() and line:%d\n", ( a ), ##__VA_ARGS__, __FILE__, __FUNCTION__, __LINE__ )
 
 #if defined( NOASSERTNULL ) || defined( NDEBUG )
 #define BASE_ASSERT_ISNOTNULL( a ) ( (void)0 )

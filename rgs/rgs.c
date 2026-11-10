@@ -14,7 +14,7 @@ base_set_rgs_data( base_rgs_t *rgs_data, base_int_t *iparam, int rank, int size,
     // Set Least-Squares Solver Flag
     rgs_data->lss_alg            = iparam[IDX_LSS_ALG];
     rgs_data->number_reortho_lss = iparam[IDX_NUMBER_REORTHO_LSS];
-    // Set Inter-Block Orthogonalization
+    // Set Inter-block orthogonalization
     rgs_data->number_reortho_sketched_cholqr = iparam[IDX_NUMBER_REORTHO_SKETCHED_CHOLQR];
     // Init current RGS iteration
     rgs_data->current_rgs_ite = 0;
@@ -73,6 +73,19 @@ base_set_rgs_data( base_rgs_t *rgs_data, base_int_t *iparam, int rank, int size,
     base_int_t sum = ( size_pske + size_sske + size_qfac + size_tmp_data_tsqr + size_rfac + size_tmp_data_work );
     base_memory_rgs( &rgs_data->rgs_memory, rgs_data->sketch_data.sketch_memory, (size_t)( sum * sizeof( double ) ) );
     base_flops_rgs( rgs_data );
+}
+
+void
+base_free_rgs_data( base_rgs_t *rgs_data )
+{
+    base_free_sketch_data( &rgs_data->sketch_data );
+    SPEFREE( rgs_data->data_work );
+    rgs_data->tmp_data_work = NULL;
+    rgs_data->pske          = NULL;
+    rgs_data->sske          = NULL;
+    rgs_data->rfac          = NULL;
+    rgs_data->qfac          = NULL;
+    rgs_data->tmp_data_tsqr = NULL;
 }
 
 void
@@ -140,7 +153,7 @@ base_compute_rgs( base_rgs_t *rgs_data )
                      qite,
                      rgs_data->nrows_data_in );
     }
-    if ( rgs_data->current_block_size > 1 ) { /**< Randomized Block Gram-Schmidt :: Computes R_{ite,ite} & S_{:,ite}*/
+    if ( rgs_data->current_block_size > 1 ) { /**< Randomized block Gram-Schmidt :: Computes R_{ite,ite} & S_{:,ite}*/
         if ( rgs_data->number_reortho_sketched_cholqr == 0 ) {
             base_l2qr_sketched_cholqr( rgs_data );
             PRINT_MSGERR( "base_l2qr_sketched_cholqr current_block_size", rgs_data->current_block_size );
@@ -188,7 +201,7 @@ _base_lss_rgs( base_rgs_t *rgs_data )
     double *Stmp = rgs_data->tmp_data_work + tmp_offset;
     /**< Least-Squares Solver*/
     switch ( rgs_data->lss_alg ) {
-        case RGS_BCGLS: /** TODO Block Conjugate Gradient Least Squares (BCGLS) solving S^TS X = S^TP */
+        case RGS_BCGLS: /** TODO block Conjugate Gradient Least Squares (BCGLS) solving S^TS X = S^TP */
             break;
         case RGS_HH: /**< ?gels uses QR-factorization (?geqrf) to solve overdetermined system: ||S_{:,0:ite-1}X - Rtmp||_{2} */
             ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', Kproj, ite * nblocks, rgs_data->sske, Kproj, Stmp, Kproj );
@@ -217,7 +230,7 @@ _base_lss_rgs( base_rgs_t *rgs_data )
                 exit( 1 );
             }
             break;
-        case RGS_BMGS: /**< Block Modified Gram-Schmidt process with l re-orthogonalization */
+        case RGS_BMGS: /**< block Modified Gram-Schmidt process with l re-orthogonalization */
             while ( l ) {
                 ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', Kproj, blocks_size, PSkeite, Kproj, Rtmp, Kproj );
                 if ( ierr != 0 ) {
@@ -262,9 +275,9 @@ _base_lss_rgs( base_rgs_t *rgs_data )
             break;
         case RGS_CGS: /**< Classical Gram-Schmidt with l re-orthogonalization (Richardson iterations) */
         default:
-            cblas_dgemm(
-                CblasColMajor, CblasTrans, CblasNoTrans, ite * nblocks, blocks_size, Kproj, base_d_alpha_m1, rgs_data->sske, Kproj, PSkeite, Kproj, base_d_beta_ze, Rite, ncols ); /**< Rite <- S^TP
-                                                                                                                                                                                    */
+            /**< Rite <- S^TP */
+            cblas_dgemm( CblasColMajor, CblasTrans, CblasNoTrans, ite * nblocks, blocks_size, Kproj, base_d_alpha_m1, rgs_data->sske, Kproj, PSkeite, Kproj, base_d_beta_ze, Rite, ncols );
+
             while ( l - 1 ) {
                 ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', Kproj, blocks_size, PSkeite, Kproj, Rtmp, Kproj );
                 if ( ierr != 0 ) {
@@ -402,8 +415,8 @@ TSQR( MPI_Comm comm, base_int_t m, base_int_t n, double *A, double *Q, double *R
     int ierr = 0;
     int size = 1;
     int rank = 0;
-    /* MPI_Comm_rank( comm, &rank );
-    MPI_Comm_size( comm, &size );
+    /* ierr = MPI_Comm_rank( comm, &rank );
+    ierr = MPI_Comm_size( comm, &size );
     if ( m < size * n ) {
         printf( "Number of local lines for TSQR is smaller than number of columns * number of procs.\nThis case is not treated in this subroutine\n" );
         exit( 1 );
@@ -525,18 +538,9 @@ TSQR( MPI_Comm comm, base_int_t m, base_int_t n, double *A, double *Q, double *R
     return ierr;
 }
 
-void
-base_free_rgs_data( base_rgs_t *rgs_data )
-{
-    base_free_sketch_data( &rgs_data->sketch_data );
-    SPEFREE( rgs_data->data_work );
-    rgs_data->tmp_data_work = NULL;
-    rgs_data->pske          = NULL;
-    rgs_data->sske          = NULL;
-    rgs_data->rfac          = NULL;
-    rgs_data->qfac          = NULL;
-    rgs_data->tmp_data_tsqr = NULL;
-}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*                                RGS Utils and Errors                                                          */
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void
 base_flops_rgs( base_rgs_t *rgs_data )
@@ -573,4 +577,298 @@ void
 base_memory_rgs( base_mem_t *rgs_memory, base_mem_t sketch_memory, size_t mem_in_bytes )
 {
     *rgs_memory = base_mem_add( sketch_memory, set_mem_in_units( mem_in_bytes ) );
+}
+
+double
+base_backward_error( double *V, base_int_t m, base_int_t n, double *Q, double *R, base_int_t ldr )
+{
+    double nrmV;
+    double nrmVQR;
+
+    nrmV = LAPACKE_dlange( LAPACK_COL_MAJOR, 'F', m, n, V, m );  // Frobenius-norm (V)
+    cblas_dgemm( CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, n, base_d_alpha_m1, Q, m, R, ldr, base_d_beta_p1, V, m );
+    nrmVQR = LAPACKE_dlange( LAPACK_COL_MAJOR, 'F', m, n, V, m );  // Frobenius-norm (V-QR)
+    // printf("nrmVQR = %lE \t nrmV = %lE\n",nrmVQR, nrmV);
+    return nrmVQR / nrmV;
+}
+
+double
+base_distmatbackward_error( double *V, base_int_t m, base_int_t n, double *Q, double *R, base_int_t ldr, MPI_Comm comm )
+{
+    int    ierr  = 0;
+    double nrm[] = { base_d_ze, base_d_ze };
+    // Frobenius norm of V as sqrt(trace(VTV))
+    nrm[0] = LAPACKE_dlange( LAPACK_COL_MAJOR, 'F', m, n, V, m ); /**< Frobenius-norm (V) */
+    nrm[0] *= nrm[0];                                             /**< square */
+    // Frobenius norm of V-QR
+    cblas_dgemm( CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, n, base_d_alpha_m1, Q, m, R, ldr, base_d_beta_p1, V, m );
+    nrm[1] = LAPACKE_dlange( LAPACK_COL_MAJOR, 'F', m, n, V, m );  // Frobenius-norm (V-QR)
+    nrm[1] *= nrm[1];
+    ierr = MPI_Allreduce( MPI_IN_PLACE, nrm, 2, MPI_DOUBLE, MPI_SUM, comm );
+    if ( ierr != MPI_SUCCESS )
+        PRINT_MSGERR( "base_distmatbackward_error::MPI_Allreduce::ierr != MPI_SUCCESS ", ierr );
+    nrm[0] = sqrt( nrm[0] );
+    nrm[1] = sqrt( nrm[1] );
+    return nrm[1] / nrm[0];
+}
+
+double
+base_blockdisttrace( double *A, base_int_t m, base_int_t n, MPI_Comm comm )
+{
+    int ierr = 0;
+    int rank = -1;
+    ierr     = MPI_Comm_rank( comm, &rank );
+    // int nele = m*n;
+    base_int_t inc  = 0;
+    base_int_t inci = 0;
+    base_int_t i;
+    base_int_t j;
+    double     tr = 0;
+    // double* tmp = NULL;
+    double *buf = NULL;
+    /*SPEALLOC(tmp, base_dalign, nele * sizeof(double));
+    memset(tmp, 0, nele * sizeof(double));*/
+    SPEALLOC( buf, base_dalign, n * sizeof( double ) );
+    if ( buf == NULL )
+        PRINT_MSGERR( "base_blockdisttrace::buf couldn't be allocated (is NULL)" );
+    memset( buf, 0, n * sizeof( double ) );
+    // vdMul(nele, A, A, tmp); // The use of vdMul is fine but mkl_mem_stat will report a memory leak from it
+    //  anyway the use of SPEFREE_buffer() should fix it
+    for ( j = 0; j < n; ++j ) {
+        inc = j * m;
+        for ( i = 0; i < m; ++i ) {
+            inci = inc + i;
+            buf[j] += ( A[inci] * A[inci] );  // tmp[inc + i];
+        }
+    }
+    ierr = MPI_Allreduce( MPI_IN_PLACE, buf, n, MPI_DOUBLE, MPI_SUM, comm );
+    if ( ierr != MPI_SUCCESS )
+        PRINT_MSGERR( "base_blockdisttrace::MPI_Allreduce::ierr != MPI_SUCCESS" );
+    for ( i = 0; i < n; ++i )
+        tr += buf[i];
+    /*SPEFREE(tmp);
+    tmp = NULL;*/
+    SPEFREE( buf );
+    buf = NULL;
+    return tr;
+}
+
+double
+base_blockdistmatbackward_error( double                   *V,
+                                 base_int_t                m,
+                                 base_int_t                n,
+                                 base_int_t                ncols,
+                                 double                   *Q,
+                                 double                   *R,
+                                 base_int_t                ldr,
+                                 base_matrix_init_method_e usrc,
+                                 int                       lite,
+                                 base_int_t                nb,
+                                 base_int_t                globalsize,
+                                 double                    TrV,
+                                 MPI_Comm                  comm )
+{
+    int        ierr  = 0;
+    int        rank  = -1;
+    int        size  = -1;
+    double    *nrm   = NULL;
+    double     Fnrm  = 0;
+    base_int_t i     = 0;
+    base_int_t i_tmp = 1;
+    ierr             = MPI_Comm_rank( comm, &rank );
+    ierr             = MPI_Comm_size( comm, &size );
+
+    SPEALLOC( nrm, base_dalign, ( lite + 1 ) * sizeof( double ) );
+    if ( nrm == NULL )
+        PRINT_MSGERR( "base_blockdistmatbackward_error::nrm couldn't be allocated (is NULL)" );
+    memset( nrm, 0, ( lite + 1 ) * sizeof( double ) );
+    // Frobenius norm of V is already computed during the RBGS iteration.
+    // Starting with the last block V, previously computed during the last RBGS iteration
+    cblas_dgemm( CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, ncols, base_d_alpha_m1, Q, m, R + ncols * lite * nb, ldr, base_d_beta_p1, V, m );
+    nrm[0] = LAPACKE_dlange( LAPACK_COL_MAJOR, 'F', m, n, V, m );
+    nrm[0] *= nrm[0];
+    for ( i = lite - 1; i > -1; --i ) {
+        switch ( usrc ) { /**< compute the block matrix */
+            case BASE_MAT_INIT_LINEAR:
+                BASE_MATCREATE( V, dinitlinear, m, n, BASE_COLMAJOR );
+                break;
+            case BASE_MAT_INIT_RANGE_RANDOM:
+                BASE_MATCREATE( V, dinitwrandrange, m * n, -m * n, n * m, -1 );
+                break;
+            case BASE_MAT_INIT_SYNTETIC:
+            default:
+                BASE_MATCREATE( V, dinitorthobasis_sincos, m, n, BASE_COLMAJOR );
+                break;
+        }
+        cblas_dgemm( CblasColMajor, CblasNoTrans, CblasNoTrans, m, nb, ncols, base_d_alpha_m1, Q, m, R + ncols * i * nb, ldr, base_d_beta_p1, V, m ); /**< Compute the block V - QR */
+        nrm[i_tmp] = LAPACKE_dlange( LAPACK_COL_MAJOR, 'F', m, nb, V, m );                                                                            /**< compute a block Frobenius norm */
+        nrm[i_tmp] *= nrm[i_tmp];                                                                                                                     /**< square it EQV trace( (V - QR)^T(V - QR) ) */
+        i_tmp += 1;
+    }
+    ierr = MPI_Allreduce( MPI_IN_PLACE, nrm, ( lite + 1 ), MPI_DOUBLE, MPI_SUM, comm );
+    if ( ierr != MPI_SUCCESS )
+        PRINT_MSGERR( "base_blockdistmatbackward_error::MPI_Allreduce::ierr != MPI_SUCCESS" );
+    // vdSqrt((lite+1), nrm, nrm); /**< square root EQV to block Frobenius norm*/
+    for ( i = 0; i < lite + 1; ++i )
+        Fnrm += nrm[i]; /**< Frobenius norm */
+    Fnrm = sqrt( Fnrm );
+    SPEFREE( nrm );
+    nrm = NULL;
+    return Fnrm / sqrt( TrV );
+}
+
+double
+base_ortho_error( double *Q, base_int_t m, base_int_t n )
+{
+    double  nrm      = 0;
+    size_t  size_Idn = sizeof( double ) * n * n;
+    double *Idn      = NULL;
+
+    SPEALLOC( Idn, base_dalign, size_Idn );
+    if ( Idn == NULL )
+        PRINT_MSGERR( "base_matortho_error::Idn couldn't be allocated (is NULL)" );
+    memset( Idn, 0, size_Idn );
+    double    *Idnptr = Idn;
+    base_int_t offset = 0;
+    for ( int i = 0; i < n; ++i ) {
+        *( Idnptr + i ) = base_d_beta_p1;
+        offset          = n;
+        Idnptr += offset;
+    }
+    cblas_dgemm( CblasColMajor, CblasTrans, CblasNoTrans, n, n, m, base_d_alpha_m1, Q, m, Q, m, base_d_beta_p1, Idn, n );
+    nrm = LAPACKE_dlange( LAPACK_COL_MAJOR, 'F', n, n, Idn, n );  // Frobenius-norm (In - QTQ)
+
+    SPEFREE( Idn );
+    Idn = NULL;
+    return nrm;
+}
+
+double
+base_cond( double *MAT, base_int_t m, base_int_t n )
+{
+    int        info    = 0;
+    double    *tau     = NULL;
+    double    *u       = NULL;
+    double    *v       = NULL;
+    double    *supb    = NULL;
+    double     cond    = 0;
+    base_int_t dim_tau = ( m < n ) ? m : n;
+    dim_tau            = ( dim_tau > 1 ) ? dim_tau : 1;
+
+    SPEALLOC( tau, base_dalign, sizeof( double ) * dim_tau );
+    if ( tau == NULL )
+        PRINT_MSGERR( "base_matcond_d::tau couldn't be allocated (is NULL)" );
+    SPEALLOC( u, base_dalign, sizeof( double ) * 1 );
+    if ( u == NULL )
+        PRINT_MSGERR( "base_matcond_d::u couldn't be allocated (is NULL)" );
+    SPEALLOC( v, base_dalign, sizeof( double ) * 1 );
+    if ( v == NULL )
+        PRINT_MSGERR( "base_matcond_d::v couldn't be allocated (is NULL)" );
+    SPEALLOC( supb, base_dalign, sizeof( double ) * dim_tau - 2 );
+    if ( supb == NULL )
+        PRINT_MSGERR( "base_matcond_d::supb couldn't be allocated (is NULL)" );
+
+    info = LAPACKE_dgesvd( LAPACK_COL_MAJOR, 'N', 'N', m, n, MAT, m, tau, u, 1, v, 1, supb );
+    if ( info != 0 )
+        PRINT_MSGERR( "base_matcond_d::LAPACKE_dgesvd error info: ", info );
+    // printf("dim_tau %d tau[0] %lE tau[end] %lE\n",dim_tau,tau[0],tau[dim_tau-1]);
+    cond = fabs( tau[0] ) / fabs( tau[dim_tau - 1] ); /**< smax /smin */
+
+    SPEFREE( tau );
+    tau = NULL;
+    SPEFREE( u );
+    u = NULL;
+    SPEFREE( v );
+    v = NULL;
+    SPEFREE( supb );
+    supb = NULL;
+
+    return cond;
+}
+
+double
+base_rcond( double *MAT, base_int_t m, base_int_t n )
+{
+    int        info     = 0;
+    double     rcond    = 1.0;
+    double     anorm    = LAPACKE_dlange( LAPACK_COL_MAJOR, '1', m, n, MAT, m );  // 1-norm
+    base_int_t dim_ipiv = ( m < n ) ? m : n;
+    int       *ipiv     = NULL;
+    dim_ipiv            = ( dim_ipiv > 1 ) ? dim_ipiv : 1;
+
+    SPEALLOC( ipiv, base_ialign, sizeof( int ) * dim_ipiv );
+    if ( ipiv == NULL )
+        PRINT_MSGERR( "%s", "base_matrcond_d::ipiv couldn't be allocated (is NULL)" );
+    info = LAPACKE_dgetrf( LAPACK_COL_MAJOR, m, n, MAT, m, ipiv );
+    info = LAPACKE_dgecon( LAPACK_COL_MAJOR, '1', n, MAT, m, anorm, &rcond );
+    SPEFREE( ipiv );
+    ipiv = NULL;
+    return rcond;
+}
+
+void
+distload( int rank, int size, base_int_t work, base_int_t *load )
+{
+    base_int_t S1 = 0, S2 = 0;
+    base_int_t CORE = 0;
+    if ( size == 1 ) {
+        *load = work;
+    }
+    else {
+        CORE = work / size;
+        if ( rank < work % size ) {
+            S1 = rank * ( CORE + 1 ) + 1;
+            S2 = ( rank + 1 ) * ( CORE + 1 );
+        }
+        else {
+            S1 = 1 + work % size + rank * CORE;
+            S2 = S1 + CORE - 1;
+        }
+        *load = S2 - S1 + 1;
+    }
+}
+
+void
+distloadidxi( int rank, int size, base_int_t work, base_int_t *load, base_int_t *ia1, base_int_t *ia2 )
+{
+    base_int_t S1 = 0, S2 = 0;
+    base_int_t CORE = 0;
+    if ( size == 1 ) {
+        *load = work;
+        *ia1  = 0;
+        *ia2  = work - 1;
+    }
+    else {
+        CORE = work / size;
+        if ( rank < work % size ) {
+            S1 = rank * ( CORE + 1 ) + 1;
+            S2 = ( rank + 1 ) * ( CORE + 1 );
+        }
+        else {
+            S1 = 1 + work % size + rank * CORE;
+            S2 = S1 + CORE - 1;
+        }
+        *load = S2 - S1 + 1;
+        *ia1  = S1;
+        *ia2  = S2;
+    }
+}
+
+void
+base_rgs_assert_error( base_rgs_t *rgs_data, base_int_t n )
+{
+    double sumbs = n;
+    double Err   = 0.0;
+    LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', rgs_data->sketch_dim, sumbs, rgs_data->pske, rgs_data->sketch_dim, rgs_data->tmp_data_work, rgs_data->sketch_dim );
+    Err = base_backward_error( rgs_data->tmp_data_work, rgs_data->sketch_dim, sumbs, rgs_data->sske, rgs_data->rfac, rgs_data->ncols_data_in );
+    // assert((Err<1e-14));
+    printf( "Backward Error = %g\n", Err );
+    LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', rgs_data->sketch_dim, sumbs, rgs_data->sske, rgs_data->sketch_dim, rgs_data->tmp_data_work, rgs_data->sketch_dim );
+    Err = base_ortho_error( rgs_data->tmp_data_work, rgs_data->sketch_dim, sumbs );
+    // assert((Err<1e-14));
+    printf( "Mat Ortho Error = %g\n", Err );
+    LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', rgs_data->sketch_dim, sumbs, rgs_data->sske, rgs_data->sketch_dim, rgs_data->tmp_data_work, rgs_data->sketch_dim );
+    Err = base_cond( rgs_data->tmp_data_work, rgs_data->sketch_dim, sumbs );
+    // assert((Err-1.0<1e-14));
+    printf( "Mat Cond Error = %g\n", Err );
 }

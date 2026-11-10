@@ -96,6 +96,7 @@ main()
         base_compute_rgs( &rgs_data );
     }
     PRINT_COLMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: Should be an orthogonal matrix now BASE_COLMAJOR" );
+    base_rgs_assert_error( &rgs_data, NCOLS );
     base_free_rgs_data( &rgs_data );
     SPEFREE( data_need_facto );
 
