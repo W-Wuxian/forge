@@ -10,6 +10,7 @@
 #include <math.h>
 #include <assert.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <cblas.h>
 #include <lapacke.h>
 #include "fftw3.h"
@@ -17,8 +18,49 @@
 // #include "mkl.h"
 #include "base_datatype.h"
 
+#ifdef _WIN32
+#define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = _aligned_malloc( ( size ), ( align ) ) ) == NULL ? -1 : 0 )
+#elif defined( USE_POSIX_MEMALIGN )
+#define SPEALLOC( ptr, align, size ) posix_memalign( (void **)&( ptr ), ( align ), ( size ) )
+#elif defined( USE_MKL_MALLOC )
+#define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = mkl_malloc( ( size ), ( align ) ) ) == NULL ? -1 : 0 )
+#elif defined( USE_MALLOC )
+#define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = malloc( size ) ) == NULL ? -1 : 0 )
+#else
+#define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = malloc( size ) ) == NULL ? -1 : 0 )
+#endif
+
+#if defined( USE_MKL_MALLOC )
+#define SPEFREE( ptr )                                                                                                                                                                                 \
+    {                                                                                                                                                                                                  \
+        mkl_free( ptr );                                                                                                                                                                               \
+        ptr = NULL;                                                                                                                                                                                    \
+    }
+#else
+#define SPEFREE( ptr )                                                                                                                                                                                 \
+    {                                                                                                                                                                                                  \
+        free( ptr );                                                                                                                                                                                   \
+        ptr = NULL;                                                                                                                                                                                    \
+    }
+#endif
+
 #define PRINT_INFO() printf( "In file:%s, function:%s() and line:%d\n", __FILE__, __FUNCTION__, __LINE__ )
-#define PRINT_MSGERR( a, ... ) printf( "%s %d\nIn file:%s, function:%s() and line:%d\n", ( a ), ##__VA_ARGS__, __FILE__, __FUNCTION__, __LINE__ )
+// #define PRINT_MSGERR( a, ... ) printf( "%s %" BASE_PRId "\nIn file:%s, function:%s() and line:%d\n", ( a ), ##__VA_ARGS__, __FILE__, __FUNCTION__, __LINE__ )
+//  #define PRINT_MSGIERR( a, ... ) printf( "%s %d \nIn file:%s, function:%s() and line:%d\n", ( a ), ##__VA_ARGS__, __FILE__, __FUNCTION__, __LINE__ )
+//  1. Helper macros for 1 and 2 arguments
+#define PRINT_MSGERR_1( a ) printf( "In %s from %s() at %d\n %s\n", __FILE__, __func__, __LINE__, ( a ) )
+#define PRINT_MSGERR_2( a, b ) printf( "In %s from %s() at %d\n %s %" BASE_PRId "\n", __FILE__, __func__, __LINE__, ( a ), ( b ) )
+// 2. Argument counter selector
+#define GET_MSGERR_MACRO( _1, _2, NAME, ... ) NAME
+// 3. Public macro
+#define PRINT_MSGERR( ... ) GET_MSGERR_MACRO( __VA_ARGS__, PRINT_MSGERR_2, PRINT_MSGERR_1 )( __VA_ARGS__ )
+// 1. Helper macros for 1 and 2 arguments
+#define PRINT_MSGIERR_1( a ) printf( "In %s from %s() at %d\n %s\n", __FILE__, __func__, __LINE__, ( a ) )
+#define PRINT_MSGIERR_2( a, b ) printf( "In %s from %s() at %d\n %s %d\n", __FILE__, __func__, __LINE__, ( a ), ( b ) )
+// 2. Argument counter selector
+#define GET_MSGIERR_MACRO( _1, _2, NAME, ... ) NAME
+// 3. Public macro
+#define PRINT_MSGIERR( ... ) GET_MSGIERR_MACRO( __VA_ARGS__, PRINT_MSGIERR_2, PRINT_MSGIERR_1 )( __VA_ARGS__ )
 
 #if defined( NOASSERTNULL ) || defined( NDEBUG )
 #define BASE_ASSERT_ISNOTNULL( a ) ( (void)0 )
@@ -37,13 +79,15 @@
 #if defined( NOASSERTINT ) || defined( NDEBUG )
 #define BASE_ASSERT_INT( a, b ) ( (void)0 )
 #define BASE_SILENT_ASSERT_INT( a, b ) ( (void)0 )
+#define BASE_ASSERT_UINT( a, b ) ( (void)0 )
+#define BASE_SILENT_ASSERT_UINT( a, b ) ( (void)0 )
 #else
 #define BASE_ASSERT_INT( a, b )                                                                                                                                                                        \
     do {                                                                                                                                                                                               \
         if ( ( a ) != ( b ) ) {                                                                                                                                                                        \
             PRINT_INFO();                                                                                                                                                                              \
             printf( "assertion a==b failed:\n" );                                                                                                                                                      \
-            printf( "a %zu b %zu\n", (size_t)( a ), (size_t)( b ) );                                                                                                                                   \
+            printf( "a %" BASE_PRId " b %" BASE_PRId "\n", (base_int_t)( a ), (base_int_t)( b ) );                                                                                                     \
         }                                                                                                                                                                                              \
         assert( ( a ) == ( b ) );                                                                                                                                                                      \
     } while ( 0 )
@@ -53,7 +97,25 @@
         if ( ( a ) != ( b ) ) {                                                                                                                                                                        \
             PRINT_INFO();                                                                                                                                                                              \
             printf( "assertion a==b failed:\n" );                                                                                                                                                      \
-            printf( "a %zu b %zu\n", (size_t)( a ), (size_t)( b ) );                                                                                                                                   \
+            printf( "a %" BASE_PRId " b %" BASE_PRId "\n", (base_int_t)( a ), (base_int_t)( b ) );                                                                                                     \
+        }                                                                                                                                                                                              \
+    } while ( 0 )
+#define BASE_ASSERT_UINT( a, b )                                                                                                                                                                       \
+    do {                                                                                                                                                                                               \
+        if ( ( a ) != ( b ) ) {                                                                                                                                                                        \
+            PRINT_INFO();                                                                                                                                                                              \
+            printf( "assertion a==b failed:\n" );                                                                                                                                                      \
+            printf( "a %" BASE_PRIu " b %" BASE_PRIu "\n", (base_uint_t)( a ), (base_uint_t)( b ) );                                                                                                   \
+        }                                                                                                                                                                                              \
+        assert( ( a ) == ( b ) );                                                                                                                                                                      \
+    } while ( 0 )
+
+#define BASE_SILENT_ASSERT_UINT( a, b )                                                                                                                                                                \
+    do {                                                                                                                                                                                               \
+        if ( ( a ) != ( b ) ) {                                                                                                                                                                        \
+            PRINT_INFO();                                                                                                                                                                              \
+            printf( "assertion a==b failed:\n" );                                                                                                                                                      \
+            printf( "a %" BASE_PRIu " b %" BASE_PRIu "\n", (base_iint_t)( a ), (base_uint_t)( b ) );                                                                                                   \
         }                                                                                                                                                                                              \
     } while ( 0 )
 #endif
@@ -135,32 +197,6 @@
             }                                                                                                                                                                                          \
         }                                                                                                                                                                                              \
     } while ( 0 )
-
-#ifdef _WIN32
-#define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = _aligned_malloc( ( size ), ( align ) ) ) == NULL ? -1 : 0 )
-#elif defined( USE_POSIX_MEMALIGN )
-#define SPEALLOC( ptr, align, size ) posix_memalign( (void **)&( ptr ), ( align ), ( size ) )
-#elif defined( USE_MKL_MALLOC )
-#define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = mkl_malloc( ( size ), ( align ) ) ) == NULL ? -1 : 0 )
-#elif defined( USE_MALLOC )
-#define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = malloc( size ) ) == NULL ? -1 : 0 )
-#else
-#define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = malloc( size ) ) == NULL ? -1 : 0 )
-#endif
-
-#if defined( USE_MKL_MALLOC )
-#define SPEFREE( ptr )                                                                                                                                                                                 \
-    {                                                                                                                                                                                                  \
-        mkl_free( ptr );                                                                                                                                                                               \
-        ptr = NULL;                                                                                                                                                                                    \
-    }
-#else
-#define SPEFREE( ptr )                                                                                                                                                                                 \
-    {                                                                                                                                                                                                  \
-        free( ptr );                                                                                                                                                                                   \
-        ptr = NULL;                                                                                                                                                                                    \
-    }
-#endif
 
 // Source - https://stackoverflow.com/a/77881417
 // Posted by Lundin, modified by community. See post 'Timeline' for change history

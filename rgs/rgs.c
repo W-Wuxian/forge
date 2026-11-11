@@ -593,7 +593,7 @@ base_backward_error( double *V, base_int_t m, base_int_t n, double *Q, double *R
 }
 
 double
-base_distmatbackward_error( double *V, base_int_t m, base_int_t n, double *Q, double *R, base_int_t ldr, MPI_Comm comm )
+base_distbackward_error( double *V, base_int_t m, base_int_t n, double *Q, double *R, base_int_t ldr, MPI_Comm comm )
 {
     int    ierr  = 0;
     double nrm[] = { base_d_ze, base_d_ze };
@@ -654,19 +654,19 @@ base_blockdisttrace( double *A, base_int_t m, base_int_t n, MPI_Comm comm )
 }
 
 double
-base_blockdistmatbackward_error( double                   *V,
-                                 base_int_t                m,
-                                 base_int_t                n,
-                                 base_int_t                ncols,
-                                 double                   *Q,
-                                 double                   *R,
-                                 base_int_t                ldr,
-                                 base_matrix_init_method_e usrc,
-                                 int                       lite,
-                                 base_int_t                nb,
-                                 base_int_t                globalsize,
-                                 double                    TrV,
-                                 MPI_Comm                  comm )
+base_blockdistbackward_error( double                   *V,
+                              base_int_t                m,
+                              base_int_t                n,
+                              base_int_t                ncols,
+                              double                   *Q,
+                              double                   *R,
+                              base_int_t                ldr,
+                              base_matrix_init_method_e usrc,
+                              int                       lite,
+                              base_int_t                nb,
+                              base_int_t                globalsize,
+                              double                    TrV,
+                              MPI_Comm                  comm )
 {
     int        ierr  = 0;
     int        rank  = -1;

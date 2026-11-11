@@ -187,7 +187,7 @@ base_dummy_fwht( double *data, base_uint_t n )
     // Require n to be a power of 2
     base_uint_t l2 = base_ilog2( n ) - 1;
     base_uint_t l3 = 1 << l2;
-    BASE_ASSERT_INT( n, l3 );
+    BASE_ASSERT_UINT( n, l3 );
     // Compute the FWHT
     base_uint_t tmp;
     base_uint_t i;
@@ -211,7 +211,7 @@ base_fwht_mat( double *data, base_int_t n, base_int_t ncols )
     base_uint_t localsize = (base_uint_t)n;
     base_uint_t l2        = base_ilog2( localsize ) - 1;
     base_uint_t l3        = 1 << l2;
-    BASE_ASSERT_INT( localsize, l3 );
+    BASE_ASSERT_UINT( localsize, l3 );
     // Compute the FWHT
     base_uint_t tmp;
     base_uint_t i;
@@ -235,7 +235,7 @@ base_fwht_mat_v3( double *data, double *buffer, base_int_t n, base_int_t ncols )
     base_uint_t localsize = n;
     base_uint_t l2        = base_ilog2( localsize ) - 1;
     base_uint_t l3        = 1 << l2;
-    BASE_ASSERT_INT( localsize, l3 );
+    BASE_ASSERT_UINT( localsize, l3 );
     // Compute the FWHT
     base_uint_t tmp;
     base_uint_t i;
@@ -259,7 +259,7 @@ base_fwht_mat_rmaj( double *data, base_int_t n, base_int_t ncols )
     base_uint_t localsize = n;
     base_uint_t l2        = base_ilog2( localsize ) - 1;
     base_uint_t l3        = 1 << l2;
-    BASE_ASSERT_INT( localsize, l3 );
+    BASE_ASSERT_UINT( localsize, l3 );
     // Compute the FWHT
     base_uint_t tmp;
     base_uint_t i;
@@ -283,7 +283,7 @@ base_fwht_mat_rmaj_v2( double *data, base_int_t n, base_int_t ncols )
     base_uint_t localsize = n;
     base_uint_t l2        = base_ilog2( localsize ) - 1;
     base_uint_t l3        = 1 << l2;
-    BASE_ASSERT_INT( localsize, l3 );
+    BASE_ASSERT_UINT( localsize, l3 );
     // Compute the FWHT
     base_uint_t tmp;
     base_uint_t i;
@@ -307,7 +307,7 @@ base_fwht_mat_rmaj_v3( double *__restrict__ data, base_int_t n, base_int_t ncols
     base_uint_t localsize = n;
     base_uint_t l2        = base_ilog2( localsize ) - 1;
     base_uint_t l3        = 1 << l2;
-    BASE_ASSERT_INT( localsize, l3 );
+    BASE_ASSERT_UINT( localsize, l3 );
     // Compute the FWHT
     base_uint_t tmp;
     base_uint_t i;
@@ -331,7 +331,7 @@ base_fwht_mat_rmaj_v4( double *__restrict__ data, base_int_t n, base_int_t ncols
     base_uint_t localsize = n;
     base_uint_t l2        = base_ilog2( localsize ) - 1;
     base_uint_t l3        = 1 << l2;
-    BASE_ASSERT_INT( localsize, l3 );
+    BASE_ASSERT_UINT( localsize, l3 );
     // Compute the FWHT
     base_uint_t tmp;
     base_uint_t i;
@@ -355,7 +355,7 @@ base_fwht_mat_rmaj_v5( double *__restrict__ data, base_int_t n, base_int_t ncols
     base_uint_t localsize = n;
     base_uint_t l2        = base_ilog2( localsize ) - 1;
     base_uint_t l3        = 1 << l2;
-    BASE_ASSERT_INT( localsize, l3 );
+    BASE_ASSERT_UINT( localsize, l3 );
     // Compute the FWHT
     base_uint_t tmp;
     base_uint_t i;

@@ -1,12 +1,15 @@
 #ifndef __BASE_DATATYPE_H__
 #define __BASE_DATATYPE_H__
 
-#if defined( BASE_INT64 )
+#if defined( BASE_INT64 ) || ( !defined( BASE_INT32 ) && !defined( BASE_LONG ) && !defined( BASE_INT ) )
 
 typedef int64_t  base_int_t;
 typedef uint64_t base_uint_t;
 #define BASE_INT_MAX INT64_MAX
 #define BASE_INT_MIN INT64_MIN
+#define BASE_PRId PRId64
+#define BASE_UINT_MAX UINT64_MAX
+#define BASE_PRIu PRIu64
 
 #elif defined( BASE_INT32 )
 
@@ -14,6 +17,9 @@ typedef int32_t  base_int_t;
 typedef uint32_t base_uint_t;
 #define BASE_INT_MAX INT32_MAX
 #define BASE_INT_MIN INT32_MIN
+#define BASE_PRId PRId32
+#define BASE_UINT_MAX UINT32_MAX
+#define BASE_PRIu PRIu32
 
 #elif defined( BASE_LONG )
 
@@ -21,6 +27,9 @@ typedef long          base_int_t;
 typedef unsigned long base_uint_t;
 #define BASE_INT_MAX LONG_MAX
 #define BASE_INT_MIN LONG_MIN
+#define BASE_PRId "ld"
+#define BASE_UINT_MAX ULONG_MAX
+#define BASE_PRIu "lu"
 
 #elif defined( BASE_INT )
 
@@ -28,13 +37,9 @@ typedef int          base_int_t;
 typedef unsigned int base_uint_t;
 #define BASE_INT_MAX INT_MAX
 #define BASE_INT_MIN INT_MIN
-
-#else
-
-typedef int64_t  base_int_t;
-typedef uint64_t base_uint_t;
-#define BASE_INT_MAX INT64_MAX
-#define BASE_INT_MIN INT64_MIN
+#define BASE_PRId "d"
+#define BASE_UINT_MAX UINT_MAX
+#define BASE_PRIu "u"
 
 #endif
 
@@ -106,24 +111,6 @@ dinitorthobasis_sincos( double *mat, base_int_t n, base_int_t m, base_matrix_lay
 static inline void
 dinitlinear( double *mat, base_int_t nr, base_int_t nc, base_matrix_layout_e layout )
 {
-    // base_int_t i = 0, k = 0;
-    // if ( layout == BASE_ROWMAJOR ) {
-    //     for ( ; i < nr; ++i ) {
-    //         k = i * nc;
-    //         for ( base_int_t j = 0; j < nc; ++j ) {
-    //             mat[j + k] = (double)( j + k );
-    //         }
-    //     }
-    // }
-    // else if ( layout == BASE_COLMAJOR ) {
-    //     for ( ; i < nc; ++i ) {
-    //         k = i * nr;
-    //         for ( base_int_t j = 0; j < nr; ++j ) {
-    //             mat[j + k] = (double)( j + k );
-    //         }
-    //     }
-    // }
-
     base_int_t i = 0, k = 0, tmp = 0;
     if ( layout == BASE_ROWMAJOR ) {
         tmp = nc;
@@ -136,19 +123,6 @@ dinitlinear( double *mat, base_int_t nr, base_int_t nc, base_matrix_layout_e lay
             mat[j + k] = (double)( j + k );
         }
     }
-
-    // base_int_t i = 0, k = 0, tmp = 0;
-    // if ( layout == BASE_COLMAJOR ) {
-    //     tmp = nr;
-    //     nr  = nc;
-    //     nc  = tmp;
-    // }
-    // for ( ; i < nr; ++i ) {
-    //     k = i * nc;
-    //     for ( base_int_t j = 0; j < nc; ++j ) {
-    //         mat[j + k] = (double)( j + k );
-    //     }
-    // }
 }
 
 static inline void
@@ -164,6 +138,25 @@ dinitwrandrange( double *mat, base_int_t nele, double min, double max, base_uint
     double     scale = ( max - min ) / (double)RAND_MAX;
     for ( ; i < nele; ++i ) {
         mat[i] = min + scale * (double)rand();
+    }
+}
+
+static inline void
+dinitlarnv( double *MAT, int rank, base_int_t localsize, base_int_t ncols, base_int_t nb, int cite )
+{
+    int        ierr      = 0;
+    base_int_t remainder = ncols % nb;
+    base_int_t coef      = ( ncols - remainder ) / nb;
+    if ( remainder > 0 )
+        coef += 1;
+    base_uint_t Rseed = 1234567;
+    base_int_t  cur   = ( remainder == 0 ) ? nb : ( ( cite < coef - 1 ) ? nb : remainder );
+    srand( rank * Rseed + cite * Rseed );
+    int iseed[4] = { rand() % 4095, rand() % 4095, rand() % 4095, 5 };
+    ierr         = LAPACKE_dlarnv( 3, iseed, localsize * cur, MAT );
+    if ( ierr != 0 ) {
+        printf( "ierr = %d\n", ierr );
+        exit( 1 );
     }
 }
 

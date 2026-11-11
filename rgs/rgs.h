@@ -4,10 +4,13 @@
 #include "sketch.h"
 
 #if !defined( WITH_MPI )
+#define MPI_Init( ... ) ( (void)0 )
+#define MPI_Finalize() ( (void)0 )
 #define MPI_Comm void *
 #define MPI_SUCCESS 0
 // insde TSQR MPI_Allgather is switched for dlacpy
 //((void)0)
+#define MPI_Barrier( ... ) ( (void)0 )
 #define MPI_Comm_rank( ... ) 0
 #define MPI_Comm_size( ... ) 0
 #define MPI_Allgather( ... ) 0
@@ -232,19 +235,20 @@ double base_distbackward_error( double *V, base_int_t m, base_int_t n, double *Q
  * @param comm - MPI communicator
  * @return ||V-QR|| / ||V|| with the Frobenius norm
  */
-double base_blockdistbackward_error( double    *V,
-                                     base_int_t m,
-                                     base_int_t n,
-                                     base_int_t ncols,
-                                     double    *Q,
-                                     double    *R,
-                                     base_int_t ldr,
-                                     int        usrc,
-                                     int        lite,
-                                     base_int_t nb,
-                                     base_int_t globalsize,
-                                     double     TrV,
-                                     MPI_Comm   comm );
+
+double base_blockdistbackward_error( double                   *V,
+                                     base_int_t                m,
+                                     base_int_t                n,
+                                     base_int_t                ncols,
+                                     double                   *Q,
+                                     double                   *R,
+                                     base_int_t                ldr,
+                                     base_matrix_init_method_e usrc,
+                                     int                       lite,
+                                     base_int_t                nb,
+                                     base_int_t                globalsize,
+                                     double                    TrV,
+                                     MPI_Comm                  comm );
 
 /**
  * \fn base_blockdisttrace
