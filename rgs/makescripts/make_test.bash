@@ -11,7 +11,7 @@ GUIX_FILES=$PWD/../guix_files
 echo "$GUIX_FILES"
 
 comp="guix time-machine -C ${GUIX_FILES}/forge-channels.scm -- shell -m ${GUIX_FILES}/fwht_manifest.scm --file=${GUIX_FILES}/fftw.scm --file=${GUIX_FILES}/${FWHT_BUILD_TYPE} -- gcc"
-
+echo $comp
 
 FORGE_ROOT=$PWD/..
 echo "FORGE_ROOT $FORGE_ROOT"

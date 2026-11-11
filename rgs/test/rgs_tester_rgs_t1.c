@@ -59,23 +59,15 @@ main()
 
     rgs_iparam[IDX_USER_BLOCK_SIZE]                = NCOLS;
     rgs_iparam[IDX_LSS_ALG]                        = RGS_CGS;
-    rgs_iparam[IDX_NUMBER_REORTHO_LSS]             = 2;
+    rgs_iparam[IDX_NUMBER_REORTHO_LSS]             = 4;
     rgs_iparam[IDX_NUMBER_REORTHO_SKETCHED_CHOLQR] = 2;
     base_rgs_t rgs_data;
     double    *data_need_facto = NULL;
     SPEALLOC( data_need_facto, base_dalign, sizeof( double ) * NROWS * NCOLS );
-    // dinitwrandrange( data_need_facto, NROWS * NCOLS, -10, 10, 1234567 );
-    // PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: dinitwrand user fixed seed" );
-    // dinitwrandrange( data_need_facto, NROWS * NCOLS, -10, 10, 0 );
-    // PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: dinitwrand time bases seed" );
-    // dinitlinear( data_need_facto, NROWS, NCOLS, BASE_ROWMAJOR );
-    // PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: dinitlinear BASE_ROWMAJOR" );
-    dinitlinear( data_need_facto, NROWS, NCOLS, BASE_COLMAJOR );
-    PRINT_COLMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: dinitlinear BASE_COLMAJOR" );
-    // dinitorthobasis_sincos( data_need_facto, NROWS, NCOLS, BASE_ROWMAJOR );
-    // PRINT_ROWMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: dinitorthobasis_sincos BASE_ROWMAJOR" );
-    // dinitorthobasis_sincos( data_need_facto, NROWS, NCOLS, BASE_COLMAJOR );
-    // PRINT_COLMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: dinitorthobasis_sincos BASE_COLMAJOR" );
+    // BASE_MATCREATE(data_need_facto, dinitwrandrange, NROWS * NCOLS, -100, 100, -1);
+    // BASE_MATCREATE(data_need_facto, dinitlinear, NROWS, NCOLS, BASE_ROWMAJOR);
+    BASE_MATCREATE( data_need_facto, dinitorthobasis_sincos, NROWS, NCOLS, BASE_ROWMAJOR );
+    PRINT_COLMAJ_MAT( data_need_facto, NROWS, NCOLS, "data need refacto: BASE_COLMAJOR" );
     base_set_rgs_data( &rgs_data, &rgs_iparam[0], rank, size, comm );
     base_display_stats( rgs_data.rgs_memory, rgs_data.rgs_flops, "RGS Memory:" );
     base_display_stats( rgs_data.sketch_data.sketch_memory, rgs_data.sketch_data.sketch_flops, "SKETCH Memory:" );
@@ -83,7 +75,7 @@ main()
     PRINT_MSGERR( "rgs current block size", rgs_data.current_block_size );
     PRINT_MSGERR( "rgs number of block", rgs_data.number_of_block );
     PRINT_MSGERR( "rgs remaining block size", rgs_data.remaining_block_size );
-    PRINT_MSGERR( "rgs current rgs ite", rgs_data.current_rgs_ite );
+    PRINT_MSGIERR( "rgs current rgs ite", rgs_data.current_rgs_ite );
     printf( "#############################################################\n" );
     for ( base_int_t i = 0; i < rgs_data.number_of_block; ++i ) {
         PRINT_MSGERR( "ite=", i );
@@ -91,7 +83,7 @@ main()
         PRINT_MSGERR( "rgs current block size", rgs_data.current_block_size );
         PRINT_MSGERR( "rgs number of block", rgs_data.number_of_block );
         PRINT_MSGERR( "rgs remaining block size", rgs_data.remaining_block_size );
-        PRINT_MSGERR( "rgs current rgs ite", rgs_data.current_rgs_ite );
+        PRINT_MSGIERR( "rgs current rgs ite", rgs_data.current_rgs_ite );
         base_get_data_rgs( &rgs_data, i, data_need_facto );
         base_compute_rgs( &rgs_data );
     }

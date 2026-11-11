@@ -108,7 +108,7 @@ base_get_data_rgs( base_rgs_t *rgs_data, int rgs_ite, double *data_need_facto )
                            rgs_data->nrows_data_in );
     if ( ierr != 0 ) {
         if ( rgs_data->rank == 0 )
-            PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
+            PRINT_MSGIERR( "LAPACKE_dlacpy ierr= ", ierr );
         exit( 1 );
     }
 }
@@ -207,26 +207,26 @@ _base_lss_rgs( base_rgs_t *rgs_data )
             ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', Kproj, ite * nblocks, rgs_data->sske, Kproj, Stmp, Kproj );
             if ( ierr != 0 ) {
                 if ( rgs_data->rank == 0 )
-                    PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
+                    PRINT_MSGIERR( "LAPACKE_dlacpy ierr= ", ierr );
                 exit( 1 );
             }
             ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', Kproj, blocks_size, PSkeite, Kproj, Rtmp, Kproj );
             if ( ierr != 0 ) {
                 if ( rgs_data->rank == 0 )
-                    PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
+                    PRINT_MSGIERR( "LAPACKE_dlacpy ierr= ", ierr );
                 exit( 1 );
             }
             ierr = LAPACKE_dgels( LAPACK_COL_MAJOR, 'N', Kproj, ite * nblocks, blocks_size, Stmp, Kproj, Rtmp, Kproj );
             if ( ierr != 0 ) {
                 if ( rgs_data->rank == 0 )
-                    PRINT_MSGERR( "LAPACKE_dgels ierr= ", ierr );
+                    PRINT_MSGIERR( "LAPACKE_dgels ierr= ", ierr );
                 exit( 1 );
             }
             /**< Update R_{0:ite-1, ite} with the solution returned by ?gels */
             ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', ite * nblocks, blocks_size, Rtmp, Kproj, Rite, ncols );
             if ( ierr != 0 ) {
                 if ( rgs_data->rank == 0 )
-                    PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
+                    PRINT_MSGIERR( "LAPACKE_dlacpy ierr= ", ierr );
                 exit( 1 );
             }
             break;
@@ -235,7 +235,7 @@ _base_lss_rgs( base_rgs_t *rgs_data )
                 ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', Kproj, blocks_size, PSkeite, Kproj, Rtmp, Kproj );
                 if ( ierr != 0 ) {
                     if ( rgs_data->rank == 0 )
-                        PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
+                        PRINT_MSGIERR( "LAPACKE_dlacpy ierr= ", ierr );
                     exit( 1 );
                 }
                 for ( j = 0; j < rgs_data->current_rgs_ite; ++j ) {
@@ -282,7 +282,7 @@ _base_lss_rgs( base_rgs_t *rgs_data )
                 ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', Kproj, blocks_size, PSkeite, Kproj, Rtmp, Kproj );
                 if ( ierr != 0 ) {
                     if ( rgs_data->rank == 0 )
-                        PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
+                        PRINT_MSGIERR( "LAPACKE_dlacpy ierr= ", ierr );
                     exit( 1 );
                 }
                 /**< Rtmp = Rtmp - S_{:,0:ite-1}R_{0:ite-1,ite} */
@@ -330,7 +330,7 @@ base_sketched_cholqr( base_rgs_t *rgs_data )
     ierr = LAPACKE_dpotrf( LAPACK_COL_MAJOR, 'U', blocks_size, Riteite, ncols );  // the Upper triangular part of STS is rewrite with U(=R)
     if ( ierr != 0 ) {
         if ( rgs_data->rank == 0 )
-            PRINT_MSGERR( "LAPACKE_dpotrf ierr= ", ierr );
+            PRINT_MSGIERR( "LAPACKE_dpotrf ierr= ", ierr );
         exit( 1 );
     }
     // Zeroed strictly lower part of R
@@ -374,7 +374,7 @@ base_l2qr_sketched_cholqr( base_rgs_t *rgs_data )
     PRINT_COLMAJ_MAT( rgs_data->tmp_data_tsqr, nIn, blocks_size, "tmp_data_tsqr" );
     if ( ierr != 0 ) {
         if ( rgs_data->rank == 0 )
-            PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
+            PRINT_MSGIERR( "LAPACKE_dlacpy ierr= ", ierr );
         exit( 1 );
     }
     ierr = TSQR( comm, nIn, blocks_size, rgs_data->tmp_data_tsqr, Qite, rgs_data->tmp_data_work, work );
@@ -389,7 +389,7 @@ base_l2qr_sketched_cholqr( base_rgs_t *rgs_data )
     PRINT_COLMAJ_MAT( work, blocks_size, blocks_size, "work ==  Riteite" );
     if ( ierr != 0 ) {
         if ( rgs_data->rank == 0 )
-            PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
+            PRINT_MSGIERR( "LAPACKE_dlacpy ierr= ", ierr );
         exit( 1 );
     }
     PRINT_COLMAJ_MAT( rgs_data->tmp_data_tsqr, nIn, blocks_size, "tmp_data_tsqr before dgemm" );
@@ -446,7 +446,7 @@ TSQR( MPI_Comm comm, base_int_t m, base_int_t n, double *A, double *Q, double *R
     ierr = LAPACKE_dgeqrt( LAPACK_COL_MAJOR, m, n, n, A, m, work, n );
     if ( ierr != 0 ) {
         if ( rank == 0 )
-            PRINT_MSGERR( "LAPACKE_dgeqrt ierr= ", ierr );
+            PRINT_MSGIERR( "LAPACKE_dgeqrt ierr= ", ierr );
         exit( 1 );
     }
     //	Set R to zeros
@@ -455,7 +455,7 @@ TSQR( MPI_Comm comm, base_int_t m, base_int_t n, double *A, double *Q, double *R
     ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'U', n, n, A, m, R, n );
     if ( ierr != 0 ) {
         if ( rank == 0 )
-            PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
+            PRINT_MSGIERR( "LAPACKE_dlacpy ierr= ", ierr );
         exit( 1 );
     }
     //	Assemble the matrix of concatenated R
@@ -488,14 +488,14 @@ TSQR( MPI_Comm comm, base_int_t m, base_int_t n, double *A, double *Q, double *R
     ierr = LAPACKE_dgeqrt( LAPACK_COL_MAJOR, n * size, n, n, OQ_s, n * size, Qtau_s, n );
     if ( ierr != 0 ) {
         if ( rank == 0 )
-            PRINT_MSGERR( "LAPACKE_dgeqrt ierr= ", ierr );
+            PRINT_MSGIERR( "LAPACKE_dgeqrt ierr= ", ierr );
         exit( 1 );
     }
     //	Copy the result R into the output parameter R
     ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'U', n, n, OQ_s, n * size, R, n );
     if ( ierr != 0 ) {
         if ( rank == 0 )
-            PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
+            PRINT_MSGIERR( "LAPACKE_dlacpy ierr= ", ierr );
         exit( 1 );
     }
     //	Set Q to 0
@@ -511,14 +511,14 @@ TSQR( MPI_Comm comm, base_int_t m, base_int_t n, double *A, double *Q, double *R
     ierr = LAPACKE_dgemqrt( LAPACK_COL_MAJOR, 'L', 'N', n * size, n, n, n, OQ_s, n * size, Qtau_s, n, Q, m );
     if ( ierr != 0 ) {
         if ( rank == 0 )
-            PRINT_MSGERR( "LAPACKE_dgemqrt ierr= ", ierr );
+            PRINT_MSGIERR( "LAPACKE_dgemqrt ierr= ", ierr );
         exit( 1 );
     }
     //	Put the block corresponding to my rank on the top of the result matrix
     ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', n, n, Q + rank * n, m, Q, m );
     if ( ierr != 0 ) {
         if ( rank == 0 )
-            PRINT_MSGERR( "LAPACKE_dlacpy ierr= ", ierr );
+            PRINT_MSGIERR( "LAPACKE_dlacpy ierr= ", ierr );
         exit( 1 );
     }
     //	Set under first block to 0
@@ -532,7 +532,7 @@ TSQR( MPI_Comm comm, base_int_t m, base_int_t n, double *A, double *Q, double *R
     ierr = LAPACKE_dgemqrt( LAPACK_COL_MAJOR, 'L', 'N', m, n, n, n, A, m, Atau_s, n, Q, m );
     if ( ierr != 0 ) {
         if ( rank == 0 )
-            PRINT_MSGERR( "LAPACKE_dgemqrt ierr= ", ierr );
+            PRINT_MSGIERR( "LAPACKE_dgemqrt ierr= ", ierr );
         exit( 1 );
     }
     return ierr;
@@ -606,7 +606,7 @@ base_distmatbackward_error( double *V, base_int_t m, base_int_t n, double *Q, do
     nrm[1] *= nrm[1];
     ierr = MPI_Allreduce( MPI_IN_PLACE, nrm, 2, MPI_DOUBLE, MPI_SUM, comm );
     if ( ierr != MPI_SUCCESS )
-        PRINT_MSGERR( "base_distmatbackward_error::MPI_Allreduce::ierr != MPI_SUCCESS ", ierr );
+        PRINT_MSGIERR( "base_distmatbackward_error::MPI_Allreduce::ierr != MPI_SUCCESS ", ierr );
     nrm[0] = sqrt( nrm[0] );
     nrm[1] = sqrt( nrm[1] );
     return nrm[1] / nrm[0];
@@ -630,7 +630,7 @@ base_blockdisttrace( double *A, base_int_t m, base_int_t n, MPI_Comm comm )
     memset(tmp, 0, nele * sizeof(double));*/
     SPEALLOC( buf, base_dalign, n * sizeof( double ) );
     if ( buf == NULL )
-        PRINT_MSGERR( "base_blockdisttrace::buf couldn't be allocated (is NULL)" );
+        PRINT_MSGIERR( "base_blockdisttrace::buf couldn't be allocated (is NULL)" );
     memset( buf, 0, n * sizeof( double ) );
     // vdMul(nele, A, A, tmp); // The use of vdMul is fine but mkl_mem_stat will report a memory leak from it
     //  anyway the use of SPEFREE_buffer() should fix it
@@ -643,7 +643,7 @@ base_blockdisttrace( double *A, base_int_t m, base_int_t n, MPI_Comm comm )
     }
     ierr = MPI_Allreduce( MPI_IN_PLACE, buf, n, MPI_DOUBLE, MPI_SUM, comm );
     if ( ierr != MPI_SUCCESS )
-        PRINT_MSGERR( "base_blockdisttrace::MPI_Allreduce::ierr != MPI_SUCCESS" );
+        PRINT_MSGIERR( "base_blockdisttrace::MPI_Allreduce::ierr != MPI_SUCCESS" );
     for ( i = 0; i < n; ++i )
         tr += buf[i];
     /*SPEFREE(tmp);
@@ -680,7 +680,7 @@ base_blockdistmatbackward_error( double                   *V,
 
     SPEALLOC( nrm, base_dalign, ( lite + 1 ) * sizeof( double ) );
     if ( nrm == NULL )
-        PRINT_MSGERR( "base_blockdistmatbackward_error::nrm couldn't be allocated (is NULL)" );
+        PRINT_MSGIERR( "base_blockdistmatbackward_error::nrm couldn't be allocated (is NULL)" );
     memset( nrm, 0, ( lite + 1 ) * sizeof( double ) );
     // Frobenius norm of V is already computed during the RBGS iteration.
     // Starting with the last block V, previously computed during the last RBGS iteration
@@ -707,7 +707,7 @@ base_blockdistmatbackward_error( double                   *V,
     }
     ierr = MPI_Allreduce( MPI_IN_PLACE, nrm, ( lite + 1 ), MPI_DOUBLE, MPI_SUM, comm );
     if ( ierr != MPI_SUCCESS )
-        PRINT_MSGERR( "base_blockdistmatbackward_error::MPI_Allreduce::ierr != MPI_SUCCESS" );
+        PRINT_MSGIERR( "base_blockdistmatbackward_error::MPI_Allreduce::ierr != MPI_SUCCESS" );
     // vdSqrt((lite+1), nrm, nrm); /**< square root EQV to block Frobenius norm*/
     for ( i = 0; i < lite + 1; ++i )
         Fnrm += nrm[i]; /**< Frobenius norm */
@@ -726,7 +726,7 @@ base_ortho_error( double *Q, base_int_t m, base_int_t n )
 
     SPEALLOC( Idn, base_dalign, size_Idn );
     if ( Idn == NULL )
-        PRINT_MSGERR( "base_matortho_error::Idn couldn't be allocated (is NULL)" );
+        PRINT_MSGIERR( "base_matortho_error::Idn couldn't be allocated (is NULL)" );
     memset( Idn, 0, size_Idn );
     double    *Idnptr = Idn;
     base_int_t offset = 0;
@@ -746,7 +746,7 @@ base_ortho_error( double *Q, base_int_t m, base_int_t n )
 double
 base_cond( double *MAT, base_int_t m, base_int_t n )
 {
-    int        info    = 0;
+    int        ierr    = 0;
     double    *tau     = NULL;
     double    *u       = NULL;
     double    *v       = NULL;
@@ -757,20 +757,20 @@ base_cond( double *MAT, base_int_t m, base_int_t n )
 
     SPEALLOC( tau, base_dalign, sizeof( double ) * dim_tau );
     if ( tau == NULL )
-        PRINT_MSGERR( "base_matcond_d::tau couldn't be allocated (is NULL)" );
+        PRINT_MSGIERR( "base_matcond_d::tau couldn't be allocated (is NULL)" );
     SPEALLOC( u, base_dalign, sizeof( double ) * 1 );
     if ( u == NULL )
-        PRINT_MSGERR( "base_matcond_d::u couldn't be allocated (is NULL)" );
+        PRINT_MSGIERR( "base_matcond_d::u couldn't be allocated (is NULL)" );
     SPEALLOC( v, base_dalign, sizeof( double ) * 1 );
     if ( v == NULL )
-        PRINT_MSGERR( "base_matcond_d::v couldn't be allocated (is NULL)" );
+        PRINT_MSGIERR( "base_matcond_d::v couldn't be allocated (is NULL)" );
     SPEALLOC( supb, base_dalign, sizeof( double ) * dim_tau - 2 );
     if ( supb == NULL )
-        PRINT_MSGERR( "base_matcond_d::supb couldn't be allocated (is NULL)" );
+        PRINT_MSGIERR( "base_matcond_d::supb couldn't be allocated (is NULL)" );
 
-    info = LAPACKE_dgesvd( LAPACK_COL_MAJOR, 'N', 'N', m, n, MAT, m, tau, u, 1, v, 1, supb );
-    if ( info != 0 )
-        PRINT_MSGERR( "base_matcond_d::LAPACKE_dgesvd error info: ", info );
+    ierr = LAPACKE_dgesvd( LAPACK_COL_MAJOR, 'N', 'N', m, n, MAT, m, tau, u, 1, v, 1, supb );
+    if ( ierr != 0 )
+        PRINT_MSGIERR( "base_matcond_d::LAPACKE_dgesvd error ierr: ", ierr );
     // printf("dim_tau %d tau[0] %lE tau[end] %lE\n",dim_tau,tau[0],tau[dim_tau-1]);
     cond = fabs( tau[0] ) / fabs( tau[dim_tau - 1] ); /**< smax /smin */
 
@@ -789,7 +789,7 @@ base_cond( double *MAT, base_int_t m, base_int_t n )
 double
 base_rcond( double *MAT, base_int_t m, base_int_t n )
 {
-    int        info     = 0;
+    int        ierr     = 0;
     double     rcond    = 1.0;
     double     anorm    = LAPACKE_dlange( LAPACK_COL_MAJOR, '1', m, n, MAT, m );  // 1-norm
     base_int_t dim_ipiv = ( m < n ) ? m : n;
@@ -798,9 +798,13 @@ base_rcond( double *MAT, base_int_t m, base_int_t n )
 
     SPEALLOC( ipiv, base_ialign, sizeof( int ) * dim_ipiv );
     if ( ipiv == NULL )
-        PRINT_MSGERR( "%s", "base_matrcond_d::ipiv couldn't be allocated (is NULL)" );
-    info = LAPACKE_dgetrf( LAPACK_COL_MAJOR, m, n, MAT, m, ipiv );
-    info = LAPACKE_dgecon( LAPACK_COL_MAJOR, '1', n, MAT, m, anorm, &rcond );
+        PRINT_MSGIERR( "base_matrcond_d::ipiv couldn't be allocated (is NULL)" );
+    ierr = LAPACKE_dgetrf( LAPACK_COL_MAJOR, m, n, MAT, m, ipiv );
+    if ( ierr > 0 )
+        PRINT_MSGIERR( "Factor(ierr, ierr) == 0 and ierr = ", ierr );
+    if ( ierr < 0 )
+        PRINT_MSGIERR( "ierr-th argument had an illegal parameter value, ierr = ", ierr );
+    ierr = LAPACKE_dgecon( LAPACK_COL_MAJOR, '1', n, MAT, m, anorm, &rcond );
     SPEFREE( ipiv );
     ipiv = NULL;
     return rcond;
