@@ -15,7 +15,7 @@ echo $comp
 
 FORGE_ROOT=$PWD/..
 echo "FORGE_ROOT $FORGE_ROOT"
-RESOLVE_CPATH_FORGE="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I$FORGE_ROOT/sketch -I$FORGE_ROOT/rgs"
+RESOLVE_CPATH_FORGE="-I$FORGE_ROOT -I$FORGE_ROOT/fwht_utils -I$FORGE_ROOT/fwht -I$FORGE_ROOT/sketch -I$FORGE_ROOT/rgs -I$FORGE_ROOT/dense_matrix"
 
 mkdir -p bin/
 rm -f bin/*
@@ -30,8 +30,8 @@ debug_option="-O0 -g3 -fopenmp -Wall -Wno-unknown-pragmas -DPRINTMAT"
 #debug_option="-O3 -g3 -pg -Wall -fopenmp -ftree-vectorize -fdump-tree-vect-details -DPRINTMAT"
 #debug_option="-O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -DNOPRINTMAT"
 #debug_option="-O3 -march=native -Wall -fopenmp -fopt-info-vec-optimized=vec_success.report -DPRINTMAT"
-echo "" > build.log
-
+echo "" > build.txt
+echo "" > valgrind.txt
 ###########################################################################################################################################
 for SK_ALGO in SRHT_CFWHT #SRHT_FFTW SRHT_HADI_FWHT GAUSS
 do
@@ -39,6 +39,7 @@ do
     do
         echo "rgs test t1 using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
         $comp $debug_option -DSKETCH_NUM_THREADS=1 -DSKETCH_NUM_GPUS=1 -DFFTW_WITH_OMP -DSKETCH_ALG=${SK_ALGO} -DSKETCH_TYPE=${SK_TYPE}  -o bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 \
+        $FORGE_ROOT/dense_matrix/gdsm.c \
         $FORGE_ROOT/rgs/rgs.c \
         $FORGE_ROOT/sketch/sketch.c \
         $FORGE_ROOT/fwht_utils/hada.c \
@@ -46,11 +47,11 @@ do
         test/rgs_tester_rgs_t1.c \
         -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
         ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
-        2>&1 | tee -a build.log
-        bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
+        2>&1 | tee -a build.txt
+        bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.txt
         #mv gmon.out prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
         #gprof bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
-        valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.log
+        valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.txt
     done
 done
 
@@ -60,6 +61,7 @@ do
     do
         echo "TSQR test t1 using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
         $comp $debug_option -DSKETCH_NUM_THREADS=1 -DSKETCH_NUM_GPUS=1 -DFFTW_WITH_OMP -DSKETCH_ALG=${SK_ALGO} -DSKETCH_TYPE=${SK_TYPE}  -o bin/tester_tsqr_${SK_ALGO}_${SK_TYPE}_t1 \
+        $FORGE_ROOT/dense_matrix/gdsm.c \
         $FORGE_ROOT/rgs/rgs.c \
         $FORGE_ROOT/sketch/sketch.c \
         $FORGE_ROOT/fwht_utils/hada.c \
@@ -67,11 +69,11 @@ do
         test/tsqr_tester_tsqr_t1.c \
         -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
         ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
-        2>&1 | tee -a build.log
-        bin/tester_tsqr_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
+        2>&1 | tee -a build.txt
+        bin/tester_tsqr_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.txt
         #mv gmon.out prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
         #gprof bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
-        valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_tsqr_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.log
+        valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_tsqr_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.txt
     done
 done
 
@@ -88,11 +90,11 @@ done
 #         test/rgs_tester_rgs_t1.c \
 #         -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
 #         ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
-#         2>&1 | tee -a build.log
-#         bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
+#         2>&1 | tee -a build.txt
+#         bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.txt
 #         #mv gmon.out prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
 #         #gprof bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
-#         #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.log
+#         #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.txt
 #     done
 # done
 
@@ -108,10 +110,10 @@ done
 #         test/rgs_tester_rgs_t1.c \
 #         -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
 #         ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
-#         2>&1 | tee -a build.log
-#         LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so.1 bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.log
+#         2>&1 | tee -a build.txt
+#         LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libcuda.so.1 bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.txt
 #         #mv gmon.out prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
 #         #gprof bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
-#         #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.log
+#         #valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.txt
 #     done
 # done

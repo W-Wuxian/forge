@@ -1,6 +1,7 @@
 #ifndef __RGS_H__
 #define __RGS_H__
 
+#include "gdsm.h"
 #include "sketch.h"
 
 #if !defined( WITH_MPI )
