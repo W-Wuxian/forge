@@ -30,52 +30,58 @@ debug_option="-O0 -g3 -fopenmp -Wall -Wno-unknown-pragmas -DPRINTMAT"
 #debug_option="-O3 -g3 -pg -Wall -fopenmp -ftree-vectorize -fdump-tree-vect-details -DPRINTMAT"
 #debug_option="-O3 -march=native -Wall -fopenmp -fopt-info-vec-all=vec.report -DNOPRINTMAT"
 #debug_option="-O3 -march=native -Wall -fopenmp -fopt-info-vec-optimized=vec_success.report -DPRINTMAT"
-echo "" > build.txt
-echo "" > valgrind.txt
+
 ###########################################################################################################################################
-for SK_ALGO in SRHT_CFWHT #SRHT_FFTW SRHT_HADI_FWHT GAUSS
+for NUMTEST in 2
 do
-    for SK_TYPE in SKETCH_2D
+    for SK_ALGO in SRHT_CFWHT SRHT_FFTW SRHT_HADI_FWHT GAUSS #SRHT_CFWHT #SRHT_FFTW SRHT_HADI_FWHT GAUSS
     do
-        echo "rgs test t1 using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
-        $comp $debug_option -DSKETCH_NUM_THREADS=1 -DSKETCH_NUM_GPUS=1 -DFFTW_WITH_OMP -DSKETCH_ALG=${SK_ALGO} -DSKETCH_TYPE=${SK_TYPE}  -o bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 \
-        $FORGE_ROOT/dense_matrix/gdsm.c \
-        $FORGE_ROOT/rgs/rgs.c \
-        $FORGE_ROOT/sketch/sketch.c \
-        $FORGE_ROOT/fwht_utils/hada.c \
-        $FORGE_ROOT/fwht/base_fwht.c \
-        test/rgs_tester_rgs_t1.c \
-        -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
-        ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
-        2>&1 | tee -a build.txt
-        bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.txt
-        #mv gmon.out prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
-        #gprof bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
-        valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.txt
+        for SK_TYPE in SKETCH_2D
+        do
+            echo "" > build_tester_rgs_${SK_ALGO}_${SK_TYPE}_t${NUMTEST}.txt
+            echo "" > valgrind_tester_rgs_${SK_ALGO}_${SK_TYPE}_t${NUMTEST}.txt
+            echo "rgs test t${NUMTEST} using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
+            $comp $debug_option -DNOPRINTMAT -DSKETCH_NUM_THREADS=1 -DSKETCH_NUM_GPUS=1 -DFFTW_WITH_OMP -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t${NUMTEST} \
+            $FORGE_ROOT/mmio.c \
+            $FORGE_ROOT/dense_matrix/gdsm.c \
+            $FORGE_ROOT/rgs/rgs.c \
+            $FORGE_ROOT/sketch/sketch.c \
+            $FORGE_ROOT/fwht_utils/hada.c \
+            $FORGE_ROOT/fwht/base_fwht.c \
+            test/rgs_tester_rgs_t${NUMTEST}.c \
+            -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
+            ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
+            2>&1 | tee -a build_tester_rgs_${SK_ALGO}_${SK_TYPE}_t${NUMTEST}.txt
+            bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t${NUMTEST} |& tee -a build_tester_rgs_${SK_ALGO}_${SK_TYPE}_t${NUMTEST}.txt
+            #mv gmon.out prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t${NUMTEST}.out
+            #gprof bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t${NUMTEST} prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t${NUMTEST}.out > prof/gprof-tester_rgs_${SK_ALGO}_${SK_TYPE}_t${NUMTEST}.out
+            valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t${NUMTEST} 2>&1 |& tee -a valgrind_tester_rgs_${SK_ALGO}_${SK_TYPE}_t${NUMTEST}.txt
+        done
     done
 done
 
-for SK_ALGO in SRHT_CFWHT #SRHT_FFTW SRHT_HADI_FWHT GAUSS
-do
-    for SK_TYPE in SKETCH_2D
-    do
-        echo "TSQR test t1 using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
-        $comp $debug_option -DSKETCH_NUM_THREADS=1 -DSKETCH_NUM_GPUS=1 -DFFTW_WITH_OMP -DSKETCH_ALG=${SK_ALGO} -DSKETCH_TYPE=${SK_TYPE}  -o bin/tester_tsqr_${SK_ALGO}_${SK_TYPE}_t1 \
-        $FORGE_ROOT/dense_matrix/gdsm.c \
-        $FORGE_ROOT/rgs/rgs.c \
-        $FORGE_ROOT/sketch/sketch.c \
-        $FORGE_ROOT/fwht_utils/hada.c \
-        $FORGE_ROOT/fwht/base_fwht.c \
-        test/tsqr_tester_tsqr_t1.c \
-        -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
-        ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
-        2>&1 | tee -a build.txt
-        bin/tester_tsqr_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.txt
-        #mv gmon.out prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
-        #gprof bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
-        valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_tsqr_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.txt
-    done
-done
+# for SK_ALGO in SRHT_CFWHT #SRHT_FFTW SRHT_HADI_FWHT GAUSS
+# do
+#     for SK_TYPE in SKETCH_2D
+#     do
+#         echo "TSQR test t1 using sketch algo ${SK_ALGO} and sketch type ${SK_TYPE}"
+#         $comp $debug_option -DSKETCH_NUM_THREADS=1 -DSKETCH_NUM_GPUS=1 -DFFTW_WITH_OMP -DWHICH_SKETCH_ALG=${SK_ALGO} -DWHICH_SKETCH_TYPE=${SK_TYPE}  -o bin/tester_tsqr_${SK_ALGO}_${SK_TYPE}_t1 \
+#         $FORGE_ROOT/mmio.c \
+#         $FORGE_ROOT/dense_matrix/gdsm.c \
+#         $FORGE_ROOT/rgs/rgs.c \
+#         $FORGE_ROOT/sketch/sketch.c \
+#         $FORGE_ROOT/fwht_utils/hada.c \
+#         $FORGE_ROOT/fwht/base_fwht.c \
+#         test/tsqr_tester_tsqr_t1.c \
+#         -L${GUIX_ENVIRONMENT}/lib -lopenblas -lfftw3 -lfftw3_omp -lpthread -lm -lfwht \
+#         ${RESOLVE_CPATH_FORGE} -I${GUIX_ENVIRONMENT}/include \
+#         2>&1 | tee -a build.txt
+#         bin/tester_tsqr_${SK_ALGO}_${SK_TYPE}_t1 |& tee -a build.txt
+#         #mv gmon.out prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
+#         #gprof bin/tester_rgs_${SK_ALGO}_${SK_TYPE}_t1 prof/gmon-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out > prof/gprof-tester_rgs_${SK_ALGO}_${SK_TYPE}_t1.out
+#         valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes bin/tester_tsqr_${SK_ALGO}_${SK_TYPE}_t1 2>&1 |& tee -a valgrind.txt
+#     done
+# done
 
 # for SK_ALGO in SRHT_CFWHT SRHT_FFTW SRHT_HADI_FWHT SRHT_HADI_FWHT_OPENMP
 # do

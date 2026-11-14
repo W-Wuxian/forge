@@ -13,10 +13,12 @@
 #include <limits.h>
 #include <cblas.h>
 #include <lapacke.h>
-#include "fftw3.h"
-#include "fwht.h"
+#include <fftw3.h>
+#include <fwht.h>
+
 // #include "mkl.h"
 #include "base_datatype.h"
+#include "mmio.h"
 
 #ifdef _WIN32
 #define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = _aligned_malloc( ( size ), ( align ) ) ) == NULL ? -1 : 0 )
@@ -29,6 +31,12 @@
 #else
 #define SPEALLOC( ptr, align, size ) ( ( ( ptr ) = malloc( size ) ) == NULL ? -1 : 0 )
 #endif
+
+#define CHECKSPEALLOC( ... )                                                                                                                                                                           \
+    if ( SPEALLOC( __VA_ARGS__ ) != 0 ) {                                                                                                                                                              \
+        PRINT_INFO();                                                                                                                                                                                  \
+        exit( 1 );                                                                                                                                                                                     \
+    }
 
 #if defined( USE_MKL_MALLOC )
 #define SPEFREE( ptr )                                                                                                                                                                                 \

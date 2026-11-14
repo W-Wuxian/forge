@@ -1,12 +1,38 @@
 # forge
+- [] Matrix Generation
+  - [] matrix gen on MatrixMarket or SuiteSparse Matrix Collection
+  - [] matrix gen lamatgen
+  - [] matrix gen on real PDE
+- [] test with it
+- [] Search for Dense and Sparse Matrix Package standard
 
 - [X] install latest version of fftw form sources
 - [X] install latest version of hadi/fwht
 - [X] manage OMP version for sketch CFWHT FFTW HADI_FWHT and GAUSS
+
 - [] choose optim functions from hadi fwht
 - [] split GAUSS sketch from CFWHT FFTW and HADI_FWHT sketch functions
-- [] need to uniformize skecth test macro WHICH_SKETCH_TYPE vs SKETCH_TYPE 
-I need to looks for:
+- [] need to uniformize skecth test macro WHICH_SKETCH_TYPE vs SKETCH_TYPE
+
+I need to looks at:
+
+https://stackoverflow.com/questions/28926828/when-to-use-static-inline-instead-of-regular-functions
+
+# Matrix
+## Sparse
+Matrix Market MMIO: https://math.nist.gov/MatrixMarket/mmio-c.html
+because I can be defined to a complex by some header, I applied the following switch:
+```bash
+sed -E 's/I_/row_idx_/g; s/J_/col_idx_/g; s/\bI\b/row_idx/g; s/\bJ\b/col_idx/g' mmio.c > test_mmio.c
+sed -E 's/I_/row_idx_/g; s/J_/col_idx_/g; s/\bI\b/row_idx/g; s/\bJ\b/col_idx/g' mmio.h > test_mmio.h
+```
+
+https://solverstack.gitlabpages.inria.fr/spm/md_README.html
+https://github.com/abdullateefv/SparseMatrix/tree/master
+https://people.math.sc.edu/Burkardt/c_src/csparse/csparse.html
+https://people.engr.tamu.edu/davis/suitesparse.html
+## Dense
+preAlps dense matrix
 
 # FWHT
 

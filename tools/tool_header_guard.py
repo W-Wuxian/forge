@@ -40,6 +40,7 @@ if __name__ == "__main__":
     # Par défaut: cherche dans "../"
     if len(sys.argv) < 2:
         paths = [
+            Path("../dense_matrix"),
             Path("../rgs"),
             Path("../sketch"),
             Path("../fwht_utils"),
@@ -47,7 +48,7 @@ if __name__ == "__main__":
             Path("../base_datatype.h"),
             Path("../base_header.h")
         ]
-        print("📁 Pas de chemin spécifié → utilisation de '../' par défaut")
+        print("📁 Pas de chemin spécifié → utilisation de la list par defaut par défaut")
     else:
         paths = [Path(arg) for arg in sys.argv[1:]]
 

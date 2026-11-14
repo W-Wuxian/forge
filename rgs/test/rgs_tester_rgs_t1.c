@@ -10,6 +10,7 @@
  */
 
 #include "rgs.h"
+#include "gdsm.h"
 
 #ifndef NROWS
 #define NROWS 8
@@ -91,6 +92,14 @@ main()
     base_rgs_assert_error( &rgs_data, NCOLS );
     base_free_rgs_data( &rgs_data );
     SPEFREE( data_need_facto );
+
+    int     m = 0, n = 0, nz = 0;
+    double *A = NULL;
+    BASE_MATCREATE( &A, dinitmmiodense, &m, &n, &nz, "../MMTX/e05r0000.mtx", BASE_COLMAJOR );
+    PRINT_COLMAJ_MAT( A, 10, 10, "A" );
+    if ( A != NULL ) {
+        SPEFREE( A );
+    }
 
     return ierr;
 }

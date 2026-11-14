@@ -55,6 +55,12 @@ dkms.conf
 *.dwo
 
 #
+MMIO/*
+MMTX/*
+*.mtx
+build_*
+valgrind_*
+*.txt
 *.log
 run
 ext/
