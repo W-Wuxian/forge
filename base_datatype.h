@@ -8,6 +8,7 @@ typedef uint64_t base_uint_t;
 #define BASE_INT_MAX INT64_MAX
 #define BASE_INT_MIN INT64_MIN
 #define BASE_PRId PRId64
+#define BASE_SCNd SCNd64
 #define BASE_UINT_MAX UINT64_MAX
 #define BASE_PRIu PRIu64
 
@@ -18,6 +19,7 @@ typedef uint32_t base_uint_t;
 #define BASE_INT_MAX INT32_MAX
 #define BASE_INT_MIN INT32_MIN
 #define BASE_PRId PRId32
+#define BASE_SCNd SCNd32
 #define BASE_UINT_MAX UINT32_MAX
 #define BASE_PRIu PRIu32
 
@@ -28,6 +30,7 @@ typedef unsigned long base_uint_t;
 #define BASE_INT_MAX LONG_MAX
 #define BASE_INT_MIN LONG_MIN
 #define BASE_PRId "ld"
+#define BASE_SCNd "ld"
 #define BASE_UINT_MAX ULONG_MAX
 #define BASE_PRIu "lu"
 
@@ -38,6 +41,7 @@ typedef unsigned int base_uint_t;
 #define BASE_INT_MAX INT_MAX
 #define BASE_INT_MIN INT_MIN
 #define BASE_PRId "d"
+#define BASE_SCNd "d"
 #define BASE_UINT_MAX UINT_MAX
 #define BASE_PRIu "u"
 
@@ -49,7 +53,13 @@ typedef unsigned int base_uint_t;
 #define fix_dbl double
 #define fix_flt float
 
-// p1 -> +1  m1 -> -1   ze -> 0.0
+// DEFINED values:
+// p1 -> +1  m1 -> -1  ze -> 0
+// INTEGER defined values:
+#define base_i_p1 (base_int_t)1.0
+#define base_i_m1 ( base_int_t ) - 1.0
+#define base_i_ze (base_int_t)0.0
+// REAL defined values:
 #define base_d_p1 (fix_dbl)1.0
 #define base_d_m1 ( fix_dbl ) - 1.0
 #define base_d_ze (fix_dbl)0.0

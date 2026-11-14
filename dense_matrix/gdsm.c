@@ -85,12 +85,13 @@ dinitlarnv( double *mat, int rank, base_int_t localsize, base_int_t ncols, base_
 }
 
 void
-dinitmmiodense( double **mat, int *m, int *n, int *nz, char *fmm, base_matrix_layout_e layout )
+dinitmmiodense( double **mat, size_t *mat_capacity, base_int_t *m, base_int_t *n, base_int_t *nz, base_int_t *lda, char *fmm, base_matrix_layout_e layout )
 {
     int         ret_code;
     MM_typecode matcode;
     FILE       *f;
     size_t      i;
+    size_t      min_capacity = 0;
     printf( "%s\n", fmm );
     if ( ( f = fopen( fmm, "r" ) ) == NULL ) {
         PRINT_INFO();
@@ -112,35 +113,48 @@ dinitmmiodense( double **mat, int *m, int *n, int *nz, char *fmm, base_matrix_la
 
     switch ( matcode[1] ) {
         case 'C':  // mm_is_sparse || mm_is_coordinate
-            if ( ( ret_code = mm_read_mtx_crd_size( f, m, n, nz ) ) != 0 )
-                exit( 1 );
-            /* SPEALLOC(*mat, base_dalign, (size_t)(*m) * (size_t)(*n) * sizeof( double ) );
-            BASE_ASSERT_ISNOTNULL(mat); */
-            CHECKSPEALLOC( *mat, base_dalign, (size_t)( *m ) * (size_t)( *n ) * sizeof( double ) );
+            if ( ( ret_code = mm_read_mtx_crd_size( f, m, n, nz ) ) != 0 ) {
+                exit( 0 );
+            }
+
+            min_capacity = (size_t)( *m ) * (size_t)( *n );
+            if ( ( ( mat_capacity == NULL ) && ( *mat == NULL ) ) ||
+                 ( ( mat_capacity != NULL ) && ( *mat == NULL ) ) ) {  // on veut allouer un pointeur initialiser et retourner le pointeur vers le bloc alloue
+                *mat_capacity = min_capacity;
+                *lda          = ( layout == BASE_COLMAJOR ) ? ( *m ) : ( *m );
+                CHECKSPEALLOC( *mat, base_dalign, (size_t)( *m ) * (size_t)( *n ) * sizeof( double ) );
+            }
+            else if ( *mat_capacity < min_capacity ) {
+                PRINT_MSGERR( "mat_capacity < min_capacity" );
+                exit( 0 );
+            }
+            else if ( *lda < ( ( layout == BASE_COLMAJOR ) ? ( *m ) : ( *m ) ) ) {
+                PRINT_MSGERR( "lda is less than m if mat is COL MAJOR or less then n if mat is ROW MAJOR" );
+                exit( 0 );
+            }
+            else if ( *mat != NULL && *mat_capacity >= min_capacity ) {
+            }
+
             memset( *mat, 0, (size_t)( *m ) * (size_t)( *n ) * sizeof( double ) );
-            int    *row_idx = NULL, *col_idx = NULL;
-            double *val = NULL;
-            CHECKSPEALLOC( row_idx, base_ialign, (size_t)( *nz ) * sizeof( int ) );
-            CHECKSPEALLOC( col_idx, base_ialign, (size_t)( *nz ) * sizeof( int ) );
+            base_int_t *row_idx = NULL, *col_idx = NULL;
+            double     *val = NULL;
+            CHECKSPEALLOC( row_idx, base_ialign, (size_t)( *nz ) * sizeof( base_int_t ) );
+            CHECKSPEALLOC( col_idx, base_ialign, (size_t)( *nz ) * sizeof( base_int_t ) );
             CHECKSPEALLOC( val, base_dalign, (size_t)( *nz ) * sizeof( double ) );
-            /* SPEALLOC(row_idx, base_ialign, (size_t)(*nz) * sizeof( int ));
-            BASE_ASSERT_ISNOTNULL(row_idx);
-            SPEALLOC(col_idx, base_ialign, (size_t)(*nz) * sizeof( int ));
-            BASE_ASSERT_ISNOTNULL(col_idx);
-            SPEALLOC(val, base_dalign, (size_t)(*nz) * sizeof( double ) );
-            BASE_ASSERT_ISNOTNULL(val); */
             /* NOTE: when reading in doubles, ANSI C requires the use of the "l"  */
             /*   specifier as in "%lg", "%lf", "%le", otherwise errors will occur */
             /*  (ANSI C X3.159-1989, Sec. 4.9.6.2, p. 136 lines 13-15)            */
-            printf( "m %d n %d nz %d\n", *m, *n, *nz );
+            printf( "m %" BASE_PRId " n %" BASE_PRId " nz %" BASE_PRId "\n", *m, *n, *nz );
             for ( i = 0; i < (size_t)( *nz ); i++ ) {
-                fscanf( f, "%d %d %lg", &row_idx[i], &col_idx[i], &val[i] );
+                fscanf( f, "%" BASE_SCNd " %" BASE_SCNd " %lg", &row_idx[i], &col_idx[i], &val[i] );
                 row_idx[i]--; /* adjust from 1-based to 0-based */
                 col_idx[i]--;
-                size_t k    = ( layout == BASE_COLMAJOR ) ? ( row_idx[i] + col_idx[i] * (size_t)( *m ) ) : ( row_idx[i] * (size_t)( *n ) + col_idx[i] );
+                // size_t k    = ( layout == BASE_COLMAJOR ) ? ( row_idx[i] + col_idx[i] * (size_t)( *m ) ) : ( row_idx[i] * (size_t)( *n ) + col_idx[i] );
+                size_t k    = ( layout == BASE_COLMAJOR ) ? ( row_idx[i] + col_idx[i] * (size_t)( *lda ) ) : ( row_idx[i] * (size_t)( *lda ) + col_idx[i] );
                 ( *mat )[k] = val[i];  // sparse to dense filling
                 if ( mm_is_symmetric( matcode ) && row_idx[i] != col_idx[i] ) {
-                    size_t k_sym    = ( layout == BASE_COLMAJOR ) ? ( col_idx[i] + row_idx[i] * (size_t)( *m ) ) : ( col_idx[i] * (size_t)( *n ) + row_idx[i] );
+                    // size_t k_sym    = ( layout == BASE_COLMAJOR ) ? ( col_idx[i] + row_idx[i] * (size_t)( *m ) ) : ( col_idx[i] * (size_t)( *n ) + row_idx[i] );
+                    size_t k_sym    = ( layout == BASE_COLMAJOR ) ? ( col_idx[i] + row_idx[i] * (size_t)( *lda ) ) : ( col_idx[i] * (size_t)( *lda ) + row_idx[i] );
                     ( *mat )[k_sym] = val[i];
                 }
             }
@@ -151,14 +165,33 @@ dinitmmiodense( double **mat, int *m, int *n, int *nz, char *fmm, base_matrix_la
         case 'A':  // mm_is_array || mm_is_dense
         default:
             *nz = -1;
-            if ( ( ret_code = mm_read_mtx_array_size( f, m, n ) ) != 0 )
-                exit( 1 );
-            // SPEALLOC(*mat, base_dalign, (size_t)(*m) * (size_t)(*n) * sizeof( double ) );
-            CHECKSPEALLOC( *mat, base_dalign, (size_t)( *m ) * (size_t)( *n ) * sizeof( double ) );
+            if ( ( ret_code = mm_read_mtx_array_size( f, m, n ) ) != 0 ) {
+                exit( 0 );
+            }
+
+            min_capacity = (size_t)( *m ) * (size_t)( *n );
+            if ( ( ( mat_capacity == NULL ) && ( *mat == NULL ) ) ||
+                 ( ( mat_capacity != NULL ) && ( *mat == NULL ) ) ) {  // on veut allouer un pointeur initialiser et retourner le pointeur vers le bloc alloue
+                *mat_capacity = min_capacity;
+                *lda          = ( layout == BASE_COLMAJOR ) ? ( *m ) : ( *m );
+                CHECKSPEALLOC( *mat, base_dalign, (size_t)( *m ) * (size_t)( *n ) * sizeof( double ) );
+            }
+            else if ( *mat_capacity < min_capacity ) {
+                PRINT_MSGERR( "mat_capacity < min_capacity" );
+                exit( 0 );
+            }
+            else if ( *lda < ( ( layout == BASE_COLMAJOR ) ? ( *m ) : ( *m ) ) ) {
+                PRINT_MSGERR( "lda is less than m if mat is COL MAJOR or less then n if mat is ROW MAJOR" );
+                exit( 0 );
+            }
+            else if ( *mat != NULL && *mat_capacity >= min_capacity ) {
+            }
+
             double v = 0;
             for ( size_t j = 0; j < (size_t)( *n ); ++j ) {
                 for ( i = 0; i < (size_t)( *m ); ++i ) {
-                    size_t k = ( layout == BASE_COLMAJOR ) ? ( i + j * (size_t)( *m ) ) : ( i * (size_t)( *n ) + j );
+                    // size_t k = ( layout == BASE_COLMAJOR ) ? ( i + j * (size_t)( *m ) ) : ( i * (size_t)( *n ) + j );
+                    size_t k = ( layout == BASE_COLMAJOR ) ? ( i + j * (size_t)( *lda ) ) : ( i * (size_t)( *lda ) + j );
                     fscanf( f, "%lg", &v );
                     ( *mat )[k] = v;
                 }

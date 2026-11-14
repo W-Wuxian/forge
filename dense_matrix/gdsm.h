@@ -3,6 +3,7 @@
 
 // Generate DenSe Matrix
 #include "base_header.h"
+#include "mmio.h"
 
 #define BASE_MATCREATE( mat, init_func, ... ) init_func( ( mat ), __VA_ARGS__ )
 
@@ -84,6 +85,6 @@ void dinitlarnv( double *mat, int rank, base_int_t localsize, base_int_t ncols, 
  * @param fmm path to MatrixMarket file
  * @param layout BASE_COLMAJOR or BASE_ROWMAJOR
  */
-void dinitmmiodense( double **mat, int *m, int *n, int *nz, char fmm[], base_matrix_layout_e layout );
+void dinitmmiodense( double **mat, size_t *mat_capacity, base_int_t *m, base_int_t *n, base_int_t *nz, base_int_t *lda, char *fmm, base_matrix_layout_e layout );
 
 #endif  //__GDSM_H__

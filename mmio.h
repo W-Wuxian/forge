@@ -9,6 +9,8 @@
 #ifndef MM_IO_H
 #define MM_IO_H
 
+#include "base_header.h"
+
 #define MM_MAX_LINE_LENGTH 1025
 #define MatrixMarketBanner "%%MatrixMarket"
 #define MM_MAX_TOKEN_LENGTH 64
@@ -18,12 +20,12 @@ typedef char MM_typecode[4];
 char *mm_typecode_to_str( MM_typecode matcode );
 
 int mm_read_banner( FILE *f, MM_typecode *matcode );
-int mm_read_mtx_crd_size( FILE *f, int *M, int *N, int *nz );
-int mm_read_mtx_array_size( FILE *f, int *M, int *N );
+int mm_read_mtx_crd_size( FILE *f, base_int_t *M, base_int_t *N, base_int_t *nz );
+int mm_read_mtx_array_size( FILE *f, base_int_t *M, base_int_t *N );
 
 int mm_write_banner( FILE *f, MM_typecode matcode );
-int mm_write_mtx_crd_size( FILE *f, int M, int N, int nz );
-int mm_write_mtx_array_size( FILE *f, int M, int N );
+int mm_write_mtx_crd_size( FILE *f, base_int_t M, base_int_t N, base_int_t nz );
+int mm_write_mtx_array_size( FILE *f, base_int_t M, base_int_t N );
 
 /********************* MM_typecode query fucntions ***************************/
 
@@ -110,10 +112,10 @@ int mm_is_valid( MM_typecode matcode ); /* too complex for a macro */
 
 /*  high level routines */
 
-int mm_write_mtx_crd( char fname[], int M, int N, int nz, int row_idx[], int col_idx[], double val[], MM_typecode matcode );
-int mm_read_mtx_crd_data( FILE *f, int M, int N, int nz, int row_idx[], int col_idx[], double val[], MM_typecode matcode );
-int mm_read_mtx_crd_entry( FILE *f, int *row_idx, int *col_idx, double *real, double *img, MM_typecode matcode );
+int mm_write_mtx_crd( char fname[], base_int_t M, base_int_t N, base_int_t nz, base_int_t row_idx[], base_int_t col_idx[], double val[], MM_typecode matcode );
+int mm_read_mtx_crd_data( FILE *f, base_int_t M, base_int_t N, base_int_t nz, base_int_t row_idx[], base_int_t col_idx[], double val[], MM_typecode matcode );
+int mm_read_mtx_crd_entry( FILE *f, base_int_t *row_idx, base_int_t *col_idx, double *real, double *img, MM_typecode matcode );
 
-int mm_read_unsymmetric_sparse( const char *fname, int *M_, int *N_, int *nz_, double **val_, int **row_idx_, int **col_idx_ );
+int mm_read_unsymmetric_sparse( const char *fname, base_int_t *M_, base_int_t *N_, base_int_t *nz_, double **val_, base_int_t **row_idx_, base_int_t **col_idx_ );
 
 #endif

@@ -115,10 +115,8 @@ void base_SetFFTW( fftw_plan *Hadaplan, view_t *vIn, int FT, double *In, double 
  */
 void base_FreeFFTW( fftw_plan *Hadaplan );
 
-#ifdef FFTW_WITH_OMP
 void base_SetFFTW_OMP( fftw_plan *Hadaplan, view_t *vIn, int nt, int FT, double *In, double *Out );
 void base_FreeFFTW_OMP( fftw_plan *Hadaplan );
-#endif
 
 /**
  * @brief FWHT flops

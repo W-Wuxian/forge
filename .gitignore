@@ -67,6 +67,7 @@ ext/
 keep/
 prof/
 bin/
+logs/
 output/
 gen/
 jube_bench*/

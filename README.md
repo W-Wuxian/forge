@@ -14,6 +14,9 @@
 - [] split GAUSS sketch from CFWHT FFTW and HADI_FWHT sketch functions
 - [] need to uniformize skecth test macro WHICH_SKETCH_TYPE vs SKETCH_TYPE
 
+Run dev mode:
+guix time-machine -C /home/wuxian/Work/github/FORGE/forge/rgs/../guix_files/forge-channels.scm -- shell -m /home/wuxian/Work/github/FORGE/forge/rgs/../guix_files/fwht_manifest.scm --file=/home/wuxian/Work/github/FORGE/forge/rgs/../guix_files/fftw.scm --file=/home/wuxian/Work/github/FORGE/forge/rgs/../guix_files/fwht-fork-cuda-SM86.scm -- code ./ &
+
 I need to looks at:
 
 https://stackoverflow.com/questions/28926828/when-to-use-static-inline-instead-of-regular-functions

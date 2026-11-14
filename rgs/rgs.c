@@ -201,8 +201,8 @@ _base_lss_rgs( base_rgs_t *rgs_data )
     double *Stmp = rgs_data->tmp_data_work + tmp_offset;
     /**< Least-Squares Solver*/
     switch ( rgs_data->lss_alg ) {
-        case RGS_BCGLS: /** TODO block Conjugate Gradient Least Squares (BCGLS) solving S^TS X = S^TP */
-            break;
+        // case RGS_BCGLS: /** TODO block Conjugate Gradient Least Squares (BCGLS) solving S^TS X = S^TP */
+        //     break;
         case RGS_HH: /**< ?gels uses QR-factorization (?geqrf) to solve overdetermined system: ||S_{:,0:ite-1}X - Rtmp||_{2} */
             ierr = LAPACKE_dlacpy( LAPACK_COL_MAJOR, 'A', Kproj, ite * nblocks, rgs_data->sske, Kproj, Stmp, Kproj );
             if ( ierr != 0 ) {

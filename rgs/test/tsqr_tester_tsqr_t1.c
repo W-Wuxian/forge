@@ -48,12 +48,14 @@ main( int argc, char **argv )
     memset( Q, 0, size_Q );
     memset( R, 0, size_R );
     memset( work, 0, size_work );
-    BASE_MATCREATE( A, dinitlarnv, rank, m, n, n, 0 ); /**< Generate a distributed block row-wise ColMajor matrix */
-    PRINT_COLMAJ_MAT( A, m, n, "A:" );
+    // BASE_MATCREATE( A, dinitlarnv, rank, m, n, n, 0 ); /**< Generate a distributed block row-wise ColMajor matrix */
+    BASE_MATCREATE( A, dinitorthobasis_sincos, m, n, BASE_ROWMAJOR );
+    PRINT_COLMAJ_MAT( A, base_imin( 10, m ), base_imin( 10, n ), "A:", m, base_i_ze, base_i_ze );
     ierr = TSQR( comm, m, n, A, Q, R, work );
-    PRINT_COLMAJ_MAT( Q, m, n, "Q:" );
-    PRINT_COLMAJ_MAT( R, n, n, "R" );
-    BASE_MATCREATE( A, dinitlarnv, rank, m, n, n, 0 ); /**< Generate a distributed block row-wise ColMajor matrix */
+    PRINT_COLMAJ_MAT( Q, base_imin( 10, m ), base_imin( 10, n ), "Q:", m, base_i_ze, base_i_ze );
+    PRINT_COLMAJ_MAT( R, base_imin( 10, n ), base_imin( 10, n ), "R:", n, base_i_ze, base_i_ze );
+    // BASE_MATCREATE( A, dinitlarnv, rank, m, n, n, 0 ); /**< Generate a distributed block row-wise ColMajor matrix */
+    BASE_MATCREATE( A, dinitorthobasis_sincos, m, n, BASE_ROWMAJOR );
     nrm = ( size > 1 ) ? base_distbackward_error( A, m, n, Q, R, n, comm ) : base_backward_error( A, m, n, Q, R, n );
     printf( "nrm = %lE\n", nrm );
     SPEFREE( A );

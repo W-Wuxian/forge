@@ -444,7 +444,6 @@ base_FreeFFTW( fftw_plan *Hadaplan )
     fftw_cleanup();
 }
 
-#ifdef FFTW_WITH_OMP
 void
 base_SetFFTW_OMP( fftw_plan *Hadaplan, view_t *vIn, int nt, int FT, double *In, double *Out )
 {
@@ -520,7 +519,6 @@ base_FreeFFTW_OMP( fftw_plan *Hadaplan )
     fftw_destroy_plan( *Hadaplan );
     fftw_cleanup_threads();
 }
-#endif
 
 double
 base_flops_fwht( double m, double n )

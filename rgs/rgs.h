@@ -35,7 +35,7 @@ typedef enum {
     RGS_CGS,  /** Classical Gram-Schmidt with l re-ortthogonalization */
     RGS_BMGS, /** Block Modified Gram-Schmidt with l re-ortthogonalization */
     RGS_HH,   /** Householder solver i.e gels QR */
-    RGS_BCGLS /** Block Conjugate Gradient Least Squares */
+    // RGS_BCGLS /** Block Conjugate Gradient Least Squares */
 } base_rgs_lss_alg_e;
 
 /**

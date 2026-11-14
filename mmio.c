@@ -14,14 +14,14 @@
 #include "mmio.h"
 
 int
-mm_read_unsymmetric_sparse( const char *fname, int *M_, int *N_, int *nz_, double **val_, int **row_idx_, int **col_idx_ )
+mm_read_unsymmetric_sparse( const char *fname, base_int_t *M_, base_int_t *N_, base_int_t *nz_, double **val_, base_int_t **row_idx_, base_int_t **col_idx_ )
 {
     FILE       *f;
     MM_typecode matcode;
-    int         M, N, nz;
-    int         i;
+    base_int_t  M, N, nz;
+    base_int_t  i;
     double     *val;
-    int        *row_idx, *col_idx;
+    base_int_t *row_idx, *col_idx;
 
     if ( ( f = fopen( fname, "r" ) ) == NULL )
         return -1;
@@ -51,8 +51,8 @@ mm_read_unsymmetric_sparse( const char *fname, int *M_, int *N_, int *nz_, doubl
 
     /* reseve memory for matrices */
 
-    row_idx = (int *)malloc( nz * sizeof( int ) );
-    col_idx = (int *)malloc( nz * sizeof( int ) );
+    row_idx = (base_int_t *)malloc( nz * sizeof( base_int_t ) );
+    col_idx = (base_int_t *)malloc( nz * sizeof( base_int_t ) );
     val     = (double *)malloc( nz * sizeof( double ) );
 
     *val_     = val;
@@ -64,7 +64,7 @@ mm_read_unsymmetric_sparse( const char *fname, int *M_, int *N_, int *nz_, doubl
     /*  (ANSI C X3.159-1989, Sec. 4.9.6.2, p. 136 lines 13-15)            */
 
     for ( i = 0; i < nz; i++ ) {
-        fscanf( f, "%d %d %lg\n", &row_idx[i], &col_idx[i], &val[i] );
+        fscanf( f, "%" BASE_SCNd " %" BASE_SCNd " %lg\n", &row_idx[i], &col_idx[i], &val[i] );
         row_idx[i]--; /* adjust from 1-based to 0-based */
         col_idx[i]--;
     }
@@ -164,16 +164,16 @@ mm_read_banner( FILE *f, MM_typecode *matcode )
 }
 
 int
-mm_write_mtx_crd_size( FILE *f, int M, int N, int nz )
+mm_write_mtx_crd_size( FILE *f, base_int_t M, base_int_t N, base_int_t nz )
 {
-    if ( fprintf( f, "%d %d %d\n", M, N, nz ) != 3 )
+    if ( fprintf( f, "%" BASE_SCNd " %" BASE_SCNd " %" BASE_SCNd "\n", M, N, nz ) != 3 )
         return MM_COULD_NOT_WRITE_FILE;
     else
         return 0;
 }
 
 int
-mm_read_mtx_crd_size( FILE *f, int *M, int *N, int *nz )
+mm_read_mtx_crd_size( FILE *f, base_int_t *M, base_int_t *N, base_int_t *nz )
 {
     char line[MM_MAX_LINE_LENGTH];
     int  num_items_read;
@@ -188,12 +188,12 @@ mm_read_mtx_crd_size( FILE *f, int *M, int *N, int *nz )
     } while ( line[0] == '%' );
 
     /* line[] is either blank or has M,N, nz */
-    if ( sscanf( line, "%d %d %d", M, N, nz ) == 3 )
+    if ( sscanf( line, "%" BASE_SCNd " %" BASE_SCNd " %" BASE_SCNd "", M, N, nz ) == 3 )
         return 0;
 
     else
         do {
-            num_items_read = fscanf( f, "%d %d %d", M, N, nz );
+            num_items_read = fscanf( f, "%" BASE_SCNd " %" BASE_SCNd " %" BASE_SCNd "", M, N, nz );
             if ( num_items_read == EOF )
                 return MM_PREMATURE_EOF;
         } while ( num_items_read != 3 );
@@ -202,7 +202,7 @@ mm_read_mtx_crd_size( FILE *f, int *M, int *N, int *nz )
 }
 
 int
-mm_read_mtx_array_size( FILE *f, int *M, int *N )
+mm_read_mtx_array_size( FILE *f, base_int_t *M, base_int_t *N )
 {
     char line[MM_MAX_LINE_LENGTH];
     int  num_items_read;
@@ -216,12 +216,12 @@ mm_read_mtx_array_size( FILE *f, int *M, int *N )
     } while ( line[0] == '%' );
 
     /* line[] is either blank or has M,N, nz */
-    if ( sscanf( line, "%d %d", M, N ) == 2 )
+    if ( sscanf( line, "%" BASE_SCNd " %" BASE_SCNd "", M, N ) == 2 )
         return 0;
 
     else /* we have a blank line */
         do {
-            num_items_read = fscanf( f, "%d %d", M, N );
+            num_items_read = fscanf( f, "%" BASE_SCNd " %" BASE_SCNd "", M, N );
             if ( num_items_read == EOF )
                 return MM_PREMATURE_EOF;
         } while ( num_items_read != 2 );
@@ -230,9 +230,9 @@ mm_read_mtx_array_size( FILE *f, int *M, int *N )
 }
 
 int
-mm_write_mtx_array_size( FILE *f, int M, int N )
+mm_write_mtx_array_size( FILE *f, base_int_t M, base_int_t N )
 {
-    if ( fprintf( f, "%d %d\n", M, N ) != 2 )
+    if ( fprintf( f, "%" BASE_SCNd " %" BASE_SCNd "\n", M, N ) != 2 )
         return MM_COULD_NOT_WRITE_FILE;
     else
         return 0;
@@ -245,24 +245,24 @@ mm_write_mtx_array_size( FILE *f, int M, int N )
 /******************************************************************/
 
 int
-mm_read_mtx_crd_data( FILE *f, int M, int N, int nz, int row_idx[], int col_idx[], double val[], MM_typecode matcode )
+mm_read_mtx_crd_data( FILE *f, base_int_t M, base_int_t N, base_int_t nz, base_int_t row_idx[], base_int_t col_idx[], double val[], MM_typecode matcode )
 {
-    int i;
+    base_int_t i;
     if ( mm_is_complex( matcode ) ) {
         for ( i = 0; i < nz; i++ )
-            if ( fscanf( f, "%d %d %lg %lg", &row_idx[i], &col_idx[i], &val[2 * i], &val[2 * i + 1] ) != 4 )
+            if ( fscanf( f, "%" BASE_SCNd " %" BASE_SCNd " %lg %lg", &row_idx[i], &col_idx[i], &val[2 * i], &val[2 * i + 1] ) != 4 )
                 return MM_PREMATURE_EOF;
     }
     else if ( mm_is_real( matcode ) ) {
         for ( i = 0; i < nz; i++ ) {
-            if ( fscanf( f, "%d %d %lg\n", &row_idx[i], &col_idx[i], &val[i] ) != 3 )
+            if ( fscanf( f, "%" BASE_SCNd " %" BASE_SCNd " %lg\n", &row_idx[i], &col_idx[i], &val[i] ) != 3 )
                 return MM_PREMATURE_EOF;
         }
     }
 
     else if ( mm_is_pattern( matcode ) ) {
         for ( i = 0; i < nz; i++ )
-            if ( fscanf( f, "%d %d", &row_idx[i], &col_idx[i] ) != 2 )
+            if ( fscanf( f, "%" BASE_SCNd " %" BASE_SCNd "", &row_idx[i], &col_idx[i] ) != 2 )
                 return MM_PREMATURE_EOF;
     }
     else
@@ -272,19 +272,19 @@ mm_read_mtx_crd_data( FILE *f, int M, int N, int nz, int row_idx[], int col_idx[
 }
 
 int
-mm_read_mtx_crd_entry( FILE *f, int *row_idx, int *col_idx, double *real, double *imag, MM_typecode matcode )
+mm_read_mtx_crd_entry( FILE *f, base_int_t *row_idx, base_int_t *col_idx, double *real, double *imag, MM_typecode matcode )
 {
     if ( mm_is_complex( matcode ) ) {
-        if ( fscanf( f, "%d %d %lg %lg", row_idx, col_idx, real, imag ) != 4 )
+        if ( fscanf( f, "%" BASE_SCNd " %" BASE_SCNd " %lg %lg", row_idx, col_idx, real, imag ) != 4 )
             return MM_PREMATURE_EOF;
     }
     else if ( mm_is_real( matcode ) ) {
-        if ( fscanf( f, "%d %d %lg\n", row_idx, col_idx, real ) != 3 )
+        if ( fscanf( f, "%" BASE_SCNd " %" BASE_SCNd " %lg\n", row_idx, col_idx, real ) != 3 )
             return MM_PREMATURE_EOF;
     }
 
     else if ( mm_is_pattern( matcode ) ) {
-        if ( fscanf( f, "%d %d", row_idx, col_idx ) != 2 )
+        if ( fscanf( f, "%" BASE_SCNd " %" BASE_SCNd "", row_idx, col_idx ) != 2 )
             return MM_PREMATURE_EOF;
     }
     else
@@ -302,7 +302,7 @@ mm_read_mtx_crd_entry( FILE *f, int *row_idx, int *col_idx, double *real, double
 ************************************************************************/
 
 int
-mm_read_mtx_crd( char *fname, int *M, int *N, int *nz, int **row_idx, int **col_idx, double **val, MM_typecode *matcode )
+mm_read_mtx_crd( char *fname, base_int_t *M, base_int_t *N, base_int_t *nz, base_int_t **row_idx, base_int_t **col_idx, double **val, MM_typecode *matcode )
 {
     int   ret_code;
     FILE *f;
@@ -321,8 +321,8 @@ mm_read_mtx_crd( char *fname, int *M, int *N, int *nz, int **row_idx, int **col_
     if ( ( ret_code = mm_read_mtx_crd_size( f, M, N, nz ) ) != 0 )
         return ret_code;
 
-    *row_idx = (int *)malloc( *nz * sizeof( int ) );
-    *col_idx = (int *)malloc( *nz * sizeof( int ) );
+    *row_idx = (base_int_t *)malloc( *nz * sizeof( base_int_t ) );
+    *col_idx = (base_int_t *)malloc( *nz * sizeof( base_int_t ) );
     *val     = NULL;
 
     if ( mm_is_complex( *matcode ) ) {
@@ -364,10 +364,10 @@ mm_write_banner( FILE *f, MM_typecode matcode )
 }
 
 int
-mm_write_mtx_crd( char fname[], int M, int N, int nz, int row_idx[], int col_idx[], double val[], MM_typecode matcode )
+mm_write_mtx_crd( char fname[], base_int_t M, base_int_t N, base_int_t nz, base_int_t row_idx[], base_int_t col_idx[], double val[], MM_typecode matcode )
 {
-    FILE *f;
-    int   i;
+    FILE      *f;
+    base_int_t i;
 
     if ( strcmp( fname, "stdout" ) == 0 )
         f = stdout;
@@ -379,18 +379,18 @@ mm_write_mtx_crd( char fname[], int M, int N, int nz, int row_idx[], int col_idx
     fprintf( f, "%s\n", mm_typecode_to_str( matcode ) );
 
     /* print matrix sizes and nonzeros */
-    fprintf( f, "%d %d %d\n", M, N, nz );
+    fprintf( f, "%" BASE_SCNd " %" BASE_SCNd " %" BASE_SCNd "\n", M, N, nz );
 
     /* print values */
     if ( mm_is_pattern( matcode ) )
         for ( i = 0; i < nz; i++ )
-            fprintf( f, "%d %d\n", row_idx[i], col_idx[i] );
+            fprintf( f, "%" BASE_SCNd " %" BASE_SCNd "\n", row_idx[i], col_idx[i] );
     else if ( mm_is_real( matcode ) )
         for ( i = 0; i < nz; i++ )
-            fprintf( f, "%d %d %20.16g\n", row_idx[i], col_idx[i], val[i] );
+            fprintf( f, "%" BASE_SCNd " %" BASE_SCNd " %20.16g\n", row_idx[i], col_idx[i], val[i] );
     else if ( mm_is_complex( matcode ) )
         for ( i = 0; i < nz; i++ )
-            fprintf( f, "%d %d %20.16g %20.16g\n", row_idx[i], col_idx[i], val[2 * i], val[2 * i + 1] );
+            fprintf( f, "%" BASE_SCNd " %" BASE_SCNd " %20.16g %20.16g\n", row_idx[i], col_idx[i], val[2 * i], val[2 * i + 1] );
     else {
         if ( f != stdout )
             fclose( f );
